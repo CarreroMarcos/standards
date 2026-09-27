@@ -94,9 +94,6 @@ Define success criteria up front and loop until verified, with a verify step for
 each action. Vague tasks become testable goals.
 → §6 "Ground Claims in Verification".
 
-## 7. Dead Code: Observe Freely, Remove Only with Proof
+## 7. Dead Code
 
-Flagging suspected dead code is always safe. Deleting it requires deterministic
-proof that no execution path reaches it, or explicit human confirmation.
-Lack of observed execution is not proof of non-use.
-→ §3 "Dead-Code Removal Is a Separate Authority".
+→ `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority": flag freely, remove only with deterministic proof or explicit human confirmation.
