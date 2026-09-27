@@ -1,3 +1,10 @@
+---
+title: Workflow Standard
+version: "2.0"
+scope: The seven-phase development workflow
+last_reviewed: 2026-09-27
+---
+
 # Workflow Standard
 
 Portable feature-development discipline — seven phases: brainstorm → spec → plan → implement (TDD) → simplify → security review → commit.
