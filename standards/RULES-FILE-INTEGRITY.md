@@ -1,3 +1,10 @@
+---
+title: Rules-File Integrity
+version: "2.0"
+scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
+last_reviewed: 2026-09-27
+---
+
 # Rules-File Integrity
 
 Rules files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and equivalents) are executable input to AI assistants: they travel with repositories, survive context summarization, and assistants treat them as authoritative directives. A compromised rules file silently redirects behavior across every project that installs it. Treat rules files as code — review every diff as one.
