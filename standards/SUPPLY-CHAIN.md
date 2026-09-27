@@ -35,3 +35,5 @@ npm audit  # Node
 ```
 
 **Minimum CI requirement:** SCA scan (`pip-audit` or `npm audit`) on every merge request that modifies `requirements*.txt`, `package*.json`, or `*.lock` files.
+
+**Enterprise environments:** route installs through an approved internal mirror (Artifactory, Nexus) — packages not in the mirror require explicit security review.
