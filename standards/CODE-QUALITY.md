@@ -2,7 +2,9 @@
 
 Operational quality rules for AI-generated code. Design principles live in
 `ENGINEERING_PRINCIPLES.md` (cited below as §N); this file holds only what an
-agent must do or report on each task.
+agent must do or report on each task. Deliberately not carried over: per-language
+`extensions/<language>.md` files, metrics tables, and CI/pre-commit enforcement
+boilerplate — nothing in this repo reads them.
 
 ## 1. Prove Completion, Don't Claim It
 
@@ -96,4 +98,4 @@ each action. Vague tasks become testable goals.
 
 ## 7. Dead Code
 
-→ `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority": flag freely, remove only with deterministic proof or explicit human confirmation.
+Dead-code removal policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority".
