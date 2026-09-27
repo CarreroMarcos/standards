@@ -1,3 +1,10 @@
+---
+title: Supply Chain Security
+version: "2.0"
+scope: Supply chain security: dependencies, provenance, SBOM
+last_reviewed: 2026-09-27
+---
+
 # Supply Chain Security
 
 Applies to: adding, upgrading, or regenerating dependencies in AI-assisted development.
