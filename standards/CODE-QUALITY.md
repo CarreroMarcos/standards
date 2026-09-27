@@ -98,4 +98,4 @@ each action. Vague tasks become testable goals.
 
 ## 7. Dead Code
 
-Dead-code removal policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority".
+Observe freely, remove only with proof: flagging suspected dead code is always safe, deleting it requires deterministic proof or explicit human confirmation. Full policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority".
