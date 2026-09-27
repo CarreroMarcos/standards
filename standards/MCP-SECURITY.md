@@ -48,6 +48,8 @@ Never:
 "API_KEY": "${API_KEY}"
 ```
 
-Gitignore `mcp.json` / `.mcp.json` when they carry secrets, and commit a `mcp.json.example` with `${ENV_VAR_NAME}` placeholders instead of real values.
+## Keep MCP configs out of version control
 
-Everything else — secret storage, rotation, agent exposure, and general (non-MCP) gitignore and `.env.example` conventions — is owned by SECRETS.md.
+Gitignore `mcp.json` / `.mcp.json` when they carry secrets. Commit a `mcp.json.example` with `${ENV_VAR_NAME}` placeholders instead of real values.
+
+Secret storage, rotation, and agent exposure are owned by SECRETS.md.
