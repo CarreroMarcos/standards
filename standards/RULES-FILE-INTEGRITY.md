@@ -6,7 +6,7 @@ Rules files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and equivalents) are exec
 
 These are hard requirements for every rules file in any repository where AI assistants operate. Every directive must be visible to a human skimming the rendered page; anything a skimmer would miss is an attack surface, not a feature.
 
-1. **No invisible or deceptive characters.** No zero-width joiners (`U+200B`–`U+200F`), stray byte-order marks (`U+FEFF`), bidirectional overrides (`U+202A`–`U+202E`, `U+2066`–`U+2069`), non-breaking spaces (`U+00A0`), or any code point in the private-use area. Visible non-ASCII is allowed — accented Latin, dashes, `§`, `→`, emoji when visibly intentional. The ban is on what a human skimmer can't see, not on non-English text.
+1. **No invisible or deceptive characters.** No zero-width spaces or joiners (`U+200B`–`U+200D`), bidi-control characters (`U+200E`–`U+200F`, `U+202A`–`U+202E`, `U+2066`–`U+2069`), stray byte-order marks (`U+FEFF`), non-breaking spaces (`U+00A0` — it renders as blank, so it counts as invisible), or any code point in the private-use area. Visible non-ASCII is allowed — accented Latin, dashes, `§`, `→`, emoji when visibly intentional. The ban is on what a human skimmer can't see, not on non-English text.
 2. **No hidden-instruction containers.** No HTML comments. No `<script>`, `<style>`, or any HTML that renders differently from the source text. No Markdown link titles that differ from the visible link text when the difference could instruct the agent.
 
    Example — never this: an HTML comment carrying a directive, such as one suspending the review rules for the project. (Described, not reproduced — this file follows its own rule.)
@@ -29,7 +29,7 @@ if [ ! -d "<rules-dir>" ] || [ ! -r "<rules-dir>" ]; then
   echo "ERROR: rules directory <rules-dir> is missing or unreadable — refusing to pass the gate"
   exit 1
 fi
-# Rule 1: zero-width, bidi overrides, stray BOM, NBSP, private-use area
+# Rule 1: zero-width chars, bidi controls, stray BOM, NBSP, private-use area
 if grep -rqP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{E000}-\x{F8FF}\x{F0000}-\x{10FFFF}\x{FEFF}\x{00A0}]" <rules-dir>; then
   echo "ERROR: Invisible or deceptive Unicode found in rules files — possible injection"
   exit 1
