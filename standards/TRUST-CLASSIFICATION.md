@@ -1,3 +1,10 @@
+---
+title: Trust Classification
+version: "2.0"
+scope: Trust levels for code, data, and agents
+last_reviewed: 2026-09-27
+---
+
 # Trust Classification
 
 Classify every input by trust level before acting on it. Advisory only — this standard names the classification; runtime enforcement belongs in hooks or CI.
