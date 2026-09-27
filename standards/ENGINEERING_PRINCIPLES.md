@@ -1,10 +1,3 @@
----
-title: Engineering Principles
-version: "1.1"
-scope: Core engineering principles and practices
-last_reviewed: 2026-09-27
----
-
 # Engineering Principles
 
 | Field | Value |
