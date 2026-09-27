@@ -1,3 +1,10 @@
+---
+title: Dev Loop — the agentic build loop, as operated
+version: "1.0"
+scope: Runbook for the agentic build loop (PR reviewer dev loop)
+last_reviewed: 2026-09-27
+---
+
 # Dev Loop — the agentic build loop, as operated
 
 Reconstructed 2026-09-27 from live activity on the pr-reviewer repo (PRs
