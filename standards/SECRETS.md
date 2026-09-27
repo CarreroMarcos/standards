@@ -1,104 +1,66 @@
-# Secrets Management (Ephemeral by Default)
+# SECRETS.md — Ephemeral by Default
 
+Secrets (API keys, tokens, passwords, certificates, connection strings) live in a secrets manager, rotate on short schedules, and never touch version control or an agent's environment.
 
-This standard defines where secrets (API keys, tokens, passwords, certificates, connection strings) must live, when they must rotate, and what is never allowed. It covers what to do with secrets **at runtime**, particularly when AI agents are active.
+**Why this file exists.** In March 2026, a backdoored `litellm` build (v1.82.7/1.82.8, CVE-2026-33634) auto-executed at Python startup and harvested environment variables, SSH keys, cloud credentials, and shell history from every host it touched. Long-lived credentials sitting in a developer's env or history were in the exfiltration set. This standard keeps yours out of that set.
 
-## Why this matters
+## Agent-safe posture (read first)
 
-In March 2026, the LiteLLM supply-chain breach harvested `OPENAI_API_KEY`, `AWS_SECRET_ACCESS_KEY`, `DATABASE_URL`, and `.bash_history` from **40,000+ Python builds**. The AI tool read the developer's environment because the developer had put long-lived credentials in shell env vars visible to agent sessions. Rotation was the only remediation. The attack surface is identical for any AI coding tool with filesystem or env-read access.
+Treat every agent session as a potential read of your environment:
 
-## Principles (hard requirements)
+1. **Keep long-lived credentials out of the agent's shell.** The shell the agent runs in **must not** export long-lived credentials as environment variables. If the agent reads env, it can re-emit env.
+2. **Inject short-lived tokens for the session only.** Secrets a session needs arrive as tokens that expire within the session window.
+3. **Rotate after every session.** After any agent session that may have read credentials (even inadvertently via a tool call or log inspection), **rotate** them. Do not evaluate whether it was "actually read" — rotation is the default.
+4. **Keep shell history clean of credentials.** Never let credential-bearing commands land in `~/.bash_history`, `~/.zsh_history`, `~/.psql_history`, or equivalents. Prefix sensitive commands with a space (where the shell skips such lines) or `unset HISTFILE` for the session.
 
-### 1. Never commit a secret
+## Never commit a secret (hard boundary)
 
-- No `.env`, no `*.pem`, no `*.key`, no `id_rsa`, no `credentials.json`, no Azure/AWS/GCP credential files.
-- `.gitignore` must block `.env*`, `*.pem`, `*.key`, `id_*`, `credentials*`.
-- Pre-commit hooks should scan staged content for secret patterns (AWS access keys, Slack tokens, high-entropy strings).
+- No `.env`, `*.pem`, `*.key`, `id_rsa`, `credentials.json`, or cloud-provider credential files.
+- `.gitignore` blocks `.env*`, `*.pem`, `*.key`, `id_*`, `credentials*`.
+- Pre-commit hooks scan staged content for secret patterns (AWS access keys, Slack tokens, high-entropy strings).
 
-### 2. Use a centralized secrets store
+## Storage and lifetime
 
-Secrets must live in a secrets manager, not in files or long-lived environment variables:
+- **Store secrets in a secrets manager** — never in committed files, wikis, chat, or long-lived environment variables. Credentials never belong in an agent's rules file.
+- **Prefer short-lived issuance** wherever the provider supports it (STS, OIDC, workload identity, Vault dynamic secrets).
+- **Dev-only fallback:** an OS keychain (`keyring`, Credential Manager, `libsecret`) combined with short-lived tokens, where no secrets manager is available.
+- **Default lifetimes:** dev tokens ≤ 12 hours; CI tokens ≤ 1 hour; production service tokens ≤ 24 hours with automatic rotation. Any long-lived token needs a documented rotation SLA and an owner.
 
-- **Preferred:** HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager, or your preferred equivalent.
-- **Acceptable for dev only:** a developer-scoped keychain (`keyring` on macOS, Credential Manager on Windows, `libsecret` on Linux) combined with short-lived tokens.
-- **Never acceptable:** committed `.env` files, plaintext config stored in a wiki, credentials in `mcp.json`, credentials in an AI assistant's rules file.
+## `.env`, when unavoidable
 
-### 3. Short-lived > long-lived
-
-- Issue short-lived tokens wherever the provider supports them (AWS STS, GCP workload identity, OIDC, Vault dynamic secrets).
-- Long-lived tokens need a documented rotation SLA and an owner.
-- **Recommended defaults:** dev tokens ≤ 12 hours, CI tokens ≤ 1 hour, production service tokens ≤ 24 hours with automatic rotation.
-
-### 4. Agent-safe posture
-
-When an AI coding agent (Claude Code, Cursor, or any MCP-connected tool) is active:
-
-- The shell the agent runs in **must not** export long-lived credentials as environment variables. If the agent reads env, it can re-emit env.
-- Secrets needed for the session must be **injected as short-lived tokens** that expire within the session window.
-- After any agent session that may have read credentials (even inadvertently via a tool call or log inspection), **rotate** them. Do not evaluate whether it was "actually read" — rotation is the default.
-- Shell history files (`~/.bash_history`, `~/.zsh_history`, `~/.psql_history`, `~/.sqlite_history`, etc.) must not contain credential-bearing commands. Use `unset HISTFILE` or prefix sensitive commands with a space where the shell is configured to skip such lines.
-
-### 5. If `.env` is unavoidable
-
-Some frameworks make `.env` hard to avoid in local dev. When you must:
-
-- **Scope** it to the project folder only (never `~/.env`).
-- **Populate** it from the secrets manager at session start, not from a committed template with real values.
-- **Rotate** its contents on session end or whenever the agent session completes.
-- **Exclude** it from all read paths exposed to an MCP server or tool.
-- **Audit** by grepping for the patterns after a task: `grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=" .` should return zero matches outside `.env.example`.
-
-### 6. MCP-specific rules
-
-(Expanding on `MCP-SECURITY.md`.)
-
-- MCP server configs (`mcp.json`, `~/.claude/mcp.json`, equivalents) reference secrets by environment variable name, never by value.
-- When starting an MCP server that needs credentials, pass them via the parent process's ephemeral env, not the user's long-lived env.
-- Audit the MCP server's tool definitions on install and after updates — a compromised tool description can instruct an agent to re-emit secrets.
-
-## Practical workflows
-
-### Dev laptop with Claude Code / Cursor
-
-```
-1. Log in to the secrets manager CLI (e.g., `vault login`, `aws sso login`) — this issues a short-lived token.
-2. Launch the IDE/agent session inside a shell spawned from that authenticated context.
-3. The secrets manager CLI provides short-lived service credentials on demand (e.g., `aws s3 ls` uses the STS token).
-4. At session end, the short-lived token expires naturally. Nothing to clean up.
-```
-
-### CI / CD pipeline
-
-- CI runner authenticates to the secrets manager via OIDC / workload identity — no long-lived keys stored in CI.
-- Job receives short-lived credentials scoped to its task.
-- Credentials are never echoed to build logs. Mask patterns at the runner level.
-
-### Incident: secret may have been exposed
-
-Minimum steps:
-
-1. Rotate the affected credentials **immediately**, regardless of confidence level.
-2. Preserve evidence (logs, commit diff, shell history snapshot if available).
-3. Revoke the token at the provider side, not just locally.
-4. File the incident; write the post-mortem.
+- Scope it to the project folder — never `~/.env`.
+- Populate it from the secrets manager at session start; never from a committed template with real values.
+- Rotate its contents on session end or whenever the agent session completes.
+- Exclude it from every read path exposed to an agent or tool.
+- Verify after a task: `grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=" .` returns zero matches outside `.env.example`.
 
 ## What never belongs near an agent
 
-- Root-level API keys (AWS root, GitHub PAT with broad scope, `glpat-*` tokens in the remote URL) — even in a terminal the agent can't see, if the agent can `git remote -v` the leak vector exists.
-- Long-lived database passwords in `~/.pgpass`, `~/.my.cnf`, etc., if the agent can read the file system.
-- SSH keys in `~/.ssh` — if the agent can ask a tool to read a file, it can read these.
+- **Root-level API keys** (AWS root, broadly scoped GitHub PAT, `glpat-*` tokens in the remote URL) — even in a terminal the agent can't see, the agent can run `git remote -v`, so the leak vector exists.
+- **Long-lived database passwords** in `~/.pgpass`, `~/.my.cnf`, etc. — if the agent can ask a tool to read a file, it can read these.
+- **SSH keys** in `~/.ssh` — if the agent can ask a tool to read a file, it can read these.
 
-If the agent must operate against these systems, proxy the access through a short-lived credential issued by the secrets manager.
+When the agent must act on these systems, proxy its access through a short-lived credential issued by the secrets manager.
+
+## MCP server configs
+
+- Reference secrets by environment-variable name, never by value.
+- Start a credentialed MCP server from the parent process's ephemeral env, not the user's long-lived env.
+- Server-side hygiene (reviewing tool descriptions for secret-re-emission vectors): `MCP-SECURITY.md`.
+
+## Workflows
+
+**Dev laptop:** authenticate to the secrets manager (this issues a short-lived token); launch the agent session inside a shell spawned from that authenticated context; let the CLI vend short-lived service credentials on demand; the token expires at session end — nothing to clean up.
+
+**CI:** the runner authenticates to the secrets manager via OIDC / workload identity — no long-lived keys stored in CI. Each job receives short-lived, task-scoped credentials; never echo credentials to build logs, and mask patterns at the runner level.
+
+## Incident: secret may have been exposed
+
+1. Rotate the affected credentials **immediately**, regardless of confidence level.
+2. Revoke the token at the provider side — not just locally.
+3. Preserve evidence (logs, commit diff, shell-history snapshot).
+4. File the incident; write the post-mortem.
 
 ## References
 
-- LiteLLM March 2026 supply-chain breach — agent harvested env vars and shell history from 40k+ Python builds.
-- OWASP LLM Top 10 (2025) — LLM02 Sensitive Information Disclosure, LLM06 Excessive Agency.
-- GitHub Copilot agentic security principles — https://github.blog/ai-and-ml/github-copilot/how-githubs-agentic-security-principles-make-our-ai-agents-as-secure-as-possible/
-- `MCP-SECURITY.md` for MCP-specific credential rules.
-
----
-
-**Version**: 1.0.0
-**Last Updated**: April 24, 2026
-**Owner**: Personal
+LiteLLM March 2026 supply-chain breach (CVE-2026-33634). OWASP LLM Top 10 (2025): LLM02 Sensitive Information Disclosure, LLM06 Excessive Agency.
