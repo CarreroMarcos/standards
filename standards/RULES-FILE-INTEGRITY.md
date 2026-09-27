@@ -25,6 +25,7 @@ These are hard requirements for every rules file in any repository where AI assi
 
 ```bash
 # .git/hooks/pre-commit
+export LC_ALL=C.UTF-8  # rule-1 pattern uses codepoints above U+FFFF, which grep -P rejects outside UTF-8 mode
 if [ ! -d "<rules-dir>" ] || [ ! -r "<rules-dir>" ]; then
   echo "ERROR: rules directory <rules-dir> is missing or unreadable — refusing to pass the gate"
   exit 1
@@ -43,7 +44,7 @@ if grep -rqEi --exclude=RULES-FILE-INTEGRITY.md "ignore (previous|the above|prio
 fi
 ```
 
-The rule-3 pattern list is the denylist specification — quoted as documentation, not live directives. The example hook excludes this document from the rule-3 scan (rule 6's human review covers the excluded file). Make the hook executable (`chmod +x .git/hooks/pre-commit`) — git silently skips non-executable hooks. Known limitation: the hook also flags phrases quoted in security-education documents, which rule 3 permits in quote blocks, and it bans private-use glyphs outright, so intentionally visible custom glyphs (icon fonts) need a documented allowlist in a production lint.
+The rule-3 pattern list is the denylist specification — quoted as documentation, not live directives. The example hook excludes this document from the rule-3 scan (rule 6's human review covers the excluded file). Make the hook executable (`chmod +x .git/hooks/pre-commit`) — git silently skips non-executable hooks. `.git/hooks/` isn't shared across clones, so install the hook per machine (or mirror these checks in CI) for the gate to hold everywhere. Known limitation: the hook also flags phrases quoted in security-education documents, which rule 3 permits in quote blocks, and it bans private-use glyphs outright, so intentionally visible custom glyphs (icon fonts) need a documented allowlist in a production lint.
 
 Review rules files adopted from community sources or cloned repositories before letting them load — read the contents first, then trust.
 
