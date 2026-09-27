@@ -1,3 +1,10 @@
+---
+title: Logging Standard
+version: "2.0"
+scope: Logging: what to log, levels, structure, retention
+last_reviewed: 2026-09-27
+---
+
 # Logging Standard
 
 Emit structured, queryable logs that never expose secrets.
