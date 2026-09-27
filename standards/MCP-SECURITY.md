@@ -45,7 +45,7 @@ In `mcp.json`, give the server the secret's environment variable — never the v
 Never:
 
 ```json
-"API_KEY": "sk-live-abc123..."
+"API_KEY": "${API_KEY}"
 ```
 
 Everything beyond this illustration — storage, rotation, agent exposure, gitignore, `.example` configs — is owned by SECRETS.md.
