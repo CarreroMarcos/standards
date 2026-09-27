@@ -20,6 +20,8 @@ Give every finding: Domain, Severity, Location, Evidence, Basis, Impact, Recomme
 
 Value scales: Severity is `Critical | High | Medium | Low | Info`. Blocking is `true | false`. Basis is `VERIFIED | INFERRED | SPECULATIVE`.
 
+Compatibility note: `Basis` replaced the earlier `Confidence` field — any parser keyed on `Confidence` must update.
+
 ## 3. Basis classification
 
 The `Basis` field classifies how the reviewer arrived at the finding.
