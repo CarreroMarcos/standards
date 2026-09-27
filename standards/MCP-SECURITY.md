@@ -1,3 +1,10 @@
+---
+title: MCP Security Standard
+version: "2.0"
+scope: Security rules for Model Context Protocol (MCP) servers
+last_reviewed: 2026-09-27
+---
+
 # MCP Security Standard
 
 Selecting, configuring, and auditing MCP servers — the external tools (databases, APIs, filesystems) an agent calls through the Model Context Protocol.
