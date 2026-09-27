@@ -57,7 +57,7 @@ Default every High finding to `Blocking: true` unless you have specific evidence
 
 ## 5. Report sections
 
-Use these sections in order: Scope, Files reviewed, Domain coverage, Supported Findings, Predicted Risks (omit if empty), Testing gaps, Opposition review, Verdict.
+Assemble the report after all findings are collected: gather every finding first, then sort them into these sections in order: Scope, Files reviewed, Domain coverage, Supported Findings, Predicted Risks (omit if empty), Testing gaps, Opposition review, Verdict.
 
 **Supported Findings** — VERIFIED and INFERRED findings, each row prefixed `[VERIFIED]` or `[INFERRED]` in the Basis column.
 
