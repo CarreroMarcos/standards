@@ -1,19 +1,12 @@
+---
+title: Engineering Principles
+version: "1.1"
+scope: Core engineering principles and practices
+last_reviewed: 2026-09-27
+---
+
 # Engineering Principles
 
-| Field | Value |
-| --- | --- |
-| `standard_id` | `ENGINEERING-PRINCIPLES-001` |
-| `status` | `adopted` |
-| `scope` | Language-neutral design, change-safety, resilience, and agentic-system decision guidance; Python-specific defaults in §7 |
-| `owner` | Repository standards maintainer |
-| `version` | `1.1` |
-| `last_reviewed` | `2026-09-27` |
-| `changes_in_1.1` | `§2 comment provenance; §3 dead-code removal authority; §4 independent expected values + tracer bullet; §8 independent plan review; §9 multi-agent orchestration discipline` |
-| `review_cycle` | At least annually or when an owning domain standard or cited external source changes |
-| `sources` | Local engineering synthesis; owning standards linked below; SLSA v1.2 where cited |
-| `enforcement` | `advisory`; referenced normative standards own pass/fail requirements |
-| `evidence` | Decision rationale, focused diff, and verification required by the owning standard |
-| `waiver` | Principles are advisory; record normative exceptions with the owning standard |
 > This reference exists because these principles are counterintuitive enough that memory gets them wrong. When a trigger in `AGENTS.md` sends you here, read the named section and apply its reasoning.
 >
 > These are decision principles, not a checklist of fashionable patterns. Use them to reason from requirements, critical flows, state and authority boundaries, failure modes, and evidence toward the simplest system that safely satisfies the need.
