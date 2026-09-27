@@ -48,6 +48,6 @@ Never:
 "API_KEY": "${API_KEY}"
 ```
 
-Everything beyond this illustration — storage, rotation, agent exposure, general gitignore and `.env.example` conventions — is owned by SECRETS.md.
-
 Gitignore `mcp.json` / `.mcp.json` when they carry secrets, and commit a `mcp.json.example` with `${ENV_VAR_NAME}` placeholders instead of real values.
+
+Everything else — secret storage, rotation, agent exposure, and general (non-MCP) gitignore and `.env.example` conventions — is owned by SECRETS.md.
