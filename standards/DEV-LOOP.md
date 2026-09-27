@@ -100,7 +100,10 @@ The session runs on a headless Ubuntu laptop (24/7), reached over Tailscale
 SSH from a phone (ShellFish iOS, tmux sessions). Stopping or steering the
 loop = that tmux session.
 
-## Open
+## Verification terms
 
-- "Unmasked verify" — the orchestrator's pre-push checklist term; definition
-  pending from the orchestrator.
+- **Unmasked verify** — the orchestrator's pre-push checklist term: verify
+  against the real state (actual files, actual test output) rather than
+  trusting the fixer's summary. Confirmed by Marcos from the orchestrator's
+  reasoning.
+
