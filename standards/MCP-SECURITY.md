@@ -1,4 +1,4 @@
-# MCP-SECURITY
+# MCP Security Standard
 
 Selecting, configuring, and auditing MCP servers — the external tools (databases, APIs, filesystems) an agent calls through the Model Context Protocol.
 
@@ -48,4 +48,6 @@ Never:
 "API_KEY": "${API_KEY}"
 ```
 
-Everything beyond this illustration — storage, rotation, agent exposure, gitignore, `.example` configs — is owned by SECRETS.md.
+Everything beyond this illustration — storage, rotation, agent exposure, general gitignore and `.env.example` conventions — is owned by SECRETS.md.
+
+Gitignore `mcp.json` / `.mcp.json` when they carry secrets, and commit a `mcp.json.example` with `${ENV_VAR_NAME}` placeholders instead of real values.
