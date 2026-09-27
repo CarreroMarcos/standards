@@ -1,3 +1,10 @@
+---
+title: SECRETS.md — Ephemeral by Default
+version: "2.0"
+scope: Secrets management: storage, rotation, agent exposure
+last_reviewed: 2026-09-27
+---
+
 # SECRETS.md — Ephemeral by Default
 
 Secrets (API keys, tokens, passwords, certificates, connection strings) live in a secrets manager, rotate on short schedules, and never touch version control or an agent's environment.
