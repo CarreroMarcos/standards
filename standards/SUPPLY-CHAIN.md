@@ -1,97 +1,39 @@
-# Supply Chain Security Standard
+# Supply Chain Security
 
-**Version**: 1.0.0
-**Applies to**: All AI-assisted development
+Applies to: adding, upgrading, or regenerating dependencies in AI-assisted development.
 
-## The Risk: Slopsquatting
+## The attack: slopsquatting
 
-AI coding assistants hallucinate package names. Research across 17 LLMs (2025) found that
-~20% of AI-generated code samples referenced packages that do not exist. Of those, 43%
-recurred across multiple queries — meaning attackers can predict which names to register.
+AI assistants hallucinate package names. Research across 17 LLMs (2025) found that ~20% of AI-generated code samples referenced packages that do not exist. Of those, 43% recurred across multiple queries — meaning attackers can predict which names to register.
 
-This attack is called **slopsquatting**: a malicious actor registers the hallucinated package
-name on PyPI/npm/Maven so that `pip install <hallucinated-name>` installs malware.
+An attacker registers a hallucinated name on PyPI/npm, and `pip install <hallucinated-name>` installs their code. The hallucination is the delivery mechanism.
 
-No confirmed in-the-wild exploitation as of April 2026, but the pattern is well-established.
+## Verify every suggested package at the registry — before installing
 
-## Required Controls
-
-### 1. Verify Before Installing
-
-Before installing any AI-suggested package:
+Resolve the name against the official registry first:
 
 ```bash
-# Python — check PyPI
-pip index versions <package-name>
-
-# Node — check npm
-npm view <package-name> version
-
-# Check the repo URL exists and looks legitimate
-pip show <package-name>  # after install
+pip index versions <package-name>  # Python
+npm view <package-name> version    # Node
 ```
 
-If the package does not exist on the official registry, do not install it.
+If the package does not exist on the official registry, do not install it. Resolve first, install second — no exceptions for "it looks legitimate" or a plausible repo URL.
 
-### 2. Use Internal Mirrors (Enterprise)
+Check age and download history before first use: a package registered yesterday with no dependents is not the same risk as an established one.
 
-Route all package installs through an approved internal mirror (Artifactory, Nexus, etc.).
-Packages not in the mirror require explicit security review before approval.
+## Make dependency additions explicit and pinned
+
+Route every new dependency through the manifest — `requirements*.txt`, `package.json`, lockfiles — so it arrives as a reviewed diff, never as a transcript of an `install` command. Pin versions; the lockfile records what actually resolved.
+
+## Scan what you pull in
+
+Run Software Composition Analysis on dependencies, especially after AI-assisted sessions:
 
 ```bash
-# Example: configure pip to use internal mirror
-pip install --index-url https://your-artifactory/api/pypi/pypi/simple <package>
+pip-audit  # Python
+npm audit  # Node
 ```
 
-### 3. SCA Scanning
+**Minimum CI requirement:** SCA scan (`pip-audit` or `npm audit`) on every merge request that modifies `requirements*.txt`, `package*.json`, or `*.lock` files.
 
-Run Software Composition Analysis on all dependencies, especially after AI-assisted sessions:
-
-```bash
-# Python
-pip-audit  # or: safety check
-
-# Node
-npm audit
-
-# Both — integrate in CI before merge
-```
-
-### 4. Rules File Integrity
-
-When adopting AI assistant rules files from community sources or cloned
-repositories:
-
-1. Review file contents before allowing them to load
-2. Check for non-ASCII characters (potential Unicode injection):
-   ```bash
-   # Reject files with non-ASCII in rule headers
-   grep -rP "[\x80-\xFF]" <rules-dir> && echo "WARNING: non-ASCII found"
-   ```
-3. Add to your pre-commit hook:
-   ```bash
-   # .git/hooks/pre-commit (add this check)
-   if grep -rqP "[\x80-\xFF]" <rules-dir> 2>/dev/null; then
-     echo "ERROR: Non-ASCII characters found in rules files — possible injection"
-     exit 1
-   fi
-   ```
-
-## Soft vs. Hard Enforcement
-
-| Control | Soft (AI rule) | Hard (CI gate) |
-|---------|---------------|----------------|
-| Verify package exists | ✅ In AI rules files | ⚠️ No automated check |
-| SCA scan | ❌ Not in AI rules | ✅ Add to CI pipeline |
-| Rules file integrity | ❌ Not in AI rules | ✅ Pre-commit hook above |
-| Internal mirror | ❌ Not in AI rules | ✅ pip/npm config |
-
-**Minimum CI requirement:** SCA scan (`pip-audit` or `npm audit`) on every merge request
-that modifies `requirements*.txt`, `package*.json`, or `*.lock` files.
-
----
-
-**References:**
-- [Slopsquatting: AI Hallucinations and the New Software Supply Chain Risk — FOSSA](https://fossa.com/blog/slopsquatting-ai-hallucinations-new-software-supply-chain-risk/)
-- [AI-hallucinated code dependencies become new supply chain risk — BleepingComputer](https://www.bleepingcomputer.com/news/security/ai-hallucinated-code-dependencies-become-new-supply-chain-risk/)
-- [Rules File Backdoor — Backslash Security](https://www.backslash.security/blog/claude-code-security-best-practices)
+**Enterprise environments:** route installs through an approved internal mirror (Artifactory, Nexus) — packages not in the mirror require explicit security review.
