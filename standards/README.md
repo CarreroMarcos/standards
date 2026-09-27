@@ -1,3 +1,10 @@
+---
+title: Standards
+version: "1.0"
+scope: Index and routing table for the standards library
+last_reviewed: 2026-09-27
+---
+
 # Standards
 
 Routing table for this library. Each file is the single source of truth for its topic — don't duplicate content across files.
