@@ -15,8 +15,10 @@ Routing table for this library. Each file is the single source of truth for its 
 | SUPPLY-CHAIN.md | Dependency verification and SCA scans |
 | TRUST-CLASSIFICATION.md | Trust levels for content sources in agentic workflows |
 | WORKFLOW.md | Feature workflow: brainstorm → spec → plan → implement → simplify → security review → commit |
+| DEV-LOOP.md | Agentic build-loop runbook: ticket → implement → verify → bot rounds → Oracle gate → merge |
 
 ## Conventions
 
 - One topic per file. Files stay tool-agnostic and portable to any repo.
 - To add a standard: drop in a scannable one-topic file and add one row to the table above.
+
