@@ -1,29 +1,12 @@
-# Code Quality Standard
+# Code Quality
 
-Generic code quality rules for AI-generated code, with an extension system for language-specific patterns.
+Operational quality rules for AI-generated code. Design principles live in
+`ENGINEERING_PRINCIPLES.md` (cited below as §N); this file holds only what an
+agent must do or report on each task.
 
-## Overview
+## 1. Prove Completion, Don't Claim It
 
-AI coding assistants can generate inconsistent code if not given clear guidelines. This standard ensures:
-- Verification before claiming completion
-- Consistent commenting practices
-- Proper error handling
-- Clean code structure
-
-## Generic Core Rules
-
-These rules apply to **all languages**.
-
-### 1. Verification
-
-**Never claim "done" without evidence.**
-
-| Rule | Implementation |
-|------|----------------|
-| Run tests after changes | Execute test suite, report results |
-| Check for lint errors | Run linter, fix issues |
-| Verify build succeeds | Run build command, confirm no errors |
-| Confirm functionality | Describe what was tested |
+**Never claim "done" without evidence.** Every completion report carries executed results:
 
 ```
 ❌ "Done! I've implemented the feature."
@@ -35,64 +18,20 @@ These rules apply to **all languages**.
     - Tested: Created user, verified in database"
 ```
 
-### 2. Comments
+Run the checks again before reporting — a prior green run does not cover new
+changes. When a check cannot run, report it: "I couldn't verify X because Y."
+→ §6 "Ground Claims in Verification".
 
-**Comment the WHY, not the WHAT.**
+## 2. Be Conservative with Files
 
-| Rule | Example |
-|------|---------|
-| No obvious comments | ❌ `// Import the module` |
-| WHY comments for non-obvious logic | ✅ `// Use UTC to avoid timezone bugs in scheduling` |
-| No commented-out code | ❌ `// oldFunction()` |
-| Document breaking changes | ✅ `// BREAKING: Changed from sync to async` |
-| Rationale must trace to observable behavior, documented constraint, or explicit project guidance | ❌ `// Using Set here for significant performance gains` ✅ `// Set prevents duplicate hook registration — settings loader may merge repeated entries on reload` |
-| No speculative performance or optimization claims | ❌ `// Parallelized for performance` ✅ `// Parallelized because the upstream API enforces a 5s per-call timeout; sequential execution exceeds dashboard SLA` |
-| Do not document rationale you cannot support with observable behavior, documented constraints, or explicit project guidance — this covers historical intent, optimization claims, and architectural explanations equally | ❌ `// Legacy compatibility` (unsupported — no linked ticket, no observable constraint) ✅ [omit the comment rather than invent a reason] |
+Prefer editing over creating files. Don't create empty placeholder files. Search
+before creating so you don't produce duplicates. Group related code — avoid
+single-function files. Never generate binary or hash content.
 
-```python
-# ❌ BAD - Obvious comment
-# Loop through users
-for user in users:
-    process(user)
+## 3. Handle Errors Explicitly
 
-# ✅ GOOD - Explains WHY
-# Process sequentially to avoid rate limiting on external API
-for user in users:
-    process(user)
-```
-
-> **AI-assisted development amplifies the risk of plausible but unsupported rationale** —
-> invented optimization claims, speculative architectural history, and authoritative-sounding
-> fiction. These provenance standards apply regardless of whether a change is authored by
-> a human or an AI system.
->
-> **Absence of rationale is preferable to speculative rationale.** When the reason is not
-> traceable to observable behavior, documentation, or explicit project guidance, the comment
-> should not exist. Most AI-generated technical debt now comes from plausible explanatory
-> fiction, not missing comments.
-
-### 3. Structure
-
-**Keep code organized and maintainable.**
-
-| Rule | Rationale |
-|------|-----------|
-| Imports at top of file | Predictable location, easy to find |
-| No inline imports | Avoid hidden dependencies |
-| Prefer editing over creating files | Reduce code sprawl |
-| Small incremental changes | Easier to review and debug |
-| Single responsibility | Functions do one thing well |
-
-### 4. Error Handling
-
-**Handle all error cases explicitly.**
-
-| Rule | Implementation |
-|------|----------------|
-| Never swallow exceptions silently | Always log or re-raise |
-| Meaningful error messages | Include context, not just "Error" |
-| Handle edge cases | Empty inputs, null values, boundaries |
-| Graceful degradation | Partial results better than crash |
+Swallow nothing silently. Give every failure path an explicit decision: log,
+recover, or raise.
 
 ```python
 # ❌ BAD - Silent swallow
@@ -112,196 +51,52 @@ except ValueError as e:
     raise
 ```
 
-### 5. Documentation
+## 4. Comment the WHY, Keep Provenance Honest
 
-**Keep documentation in sync with code.**
+**Comment the WHY, not the WHAT.** A comment must trace to observable behavior,
+a documented constraint, or explicit project guidance — otherwise omit it.
+Absence of rationale beats speculative rationale.
 
-| Rule | When |
-|------|------|
-| Update docs with behavior changes | Any user-facing change |
-| Document breaking changes | Any API/interface change |
-| Clear function signatures | Parameters, return types, exceptions |
-| README for new features | Major additions |
+```python
+# ❌ BAD - Obvious comment
+# Loop through users
+for user in users:
+    process(user)
 
-### 6. File Management
-
-**Be conservative with file creation.**
-
-| Rule | Rationale |
-|------|-----------|
-| Prefer editing existing files | Reduces complexity |
-| Don't create empty placeholder files | Creates noise |
-| Don't generate binary/hash content | Expensive and unhelpful |
-| Group related code | Avoid single-function files |
-
-### 7. Dead Code & Cleanup Authority
-
-**Identifying dead code and removing it are separate authority levels.**
-
-| Authority | When allowed | Required evidence |
-|-----------|-------------|-------------------|
-| **Observe** | Always | State why it appears unused and what references were checked |
-| **Remove** | Only with deterministic proof or explicit human confirmation | Proof that no execution path reaches it (static analysis + runtime + all platform branches) |
-
-**The key constraint:** Lack of observed execution is not deterministic proof of non-use.
-
-Code that appears unused during local analysis may be:
-- A shell fallback for an alternate platform or runtime
-- A CI-only branch activated by an env variable
-- A hook script referenced by external config
-- An extension point loaded dynamically by convention
-- A compatibility shim that activates only on certain OS versions
-
-**Default posture for infra, scripting, and governance code:** Observe-only. Shell scripts, platform branches, CI conditions, and hook scripts carry the highest risk of false dead-code detection. Do not remove without a human confirmation that the code path is truly unreachable.
-
-**Observation format:** When flagging suspected dead code, state:
-1. Why it appears unused (what signals suggest it's dead)
-2. What references were checked (grep, call-site analysis, CI config, hook config)
-3. Confidence level and the specific contexts that would need to be verified to be certain
-
-**Example:**
-
-```
-# Suspected dead code: install_legacy_wrapper() — no call sites found via grep,
-# not referenced in the shell dispatch table.
-# NOT removed: didn't check wrapper scripts or external CI callers.
-# Recommend: human confirms before deletion.
+# ✅ GOOD - Explains WHY (traceable constraint)
+# Process sequentially to avoid rate limiting on external API
+for user in users:
+    process(user)
 ```
 
-**What this is not:** This section does not prohibit refactoring or cleanup. It constrains *autonomous deletion of code whose reachability cannot be proven*. Cleanup with human confirmation, cleanup of code the implementer just wrote, and cleanup where the full call graph is known — all fine.
+→ §2 "Provenance of Rationale" and "Contextual Comments".
 
-## Language Extensions
+## 5. Keep Changes Surgical and Small
 
-Add language-specific rules in `extensions/<language>.md` (relative to wherever this standard is installed).
+**Every changed line should trace directly to the user's request.** Don't improve
+adjacent code, don't refactor what isn't broken, match existing style.
+→ §6 "Smallest Change".
 
-### Extension Template
+If 200 lines could be 50, rewrite it. Minimum code that solves the problem,
+nothing speculative.
+→ §1 "Beck's Design Rules".
 
-```markdown
-# [Language] Extension for Code Quality Standard
+Work in small incremental changes — easier to review and debug.
+→ §6.
 
-## Formatting
-- Tool: [formatter name]
-- Config: [config file if any]
-- Rules: [key formatting rules]
+## 6. State Assumptions, Verify Goals
 
-## Type Safety
-- Tool: [type checker name]
-- Rules: [type annotation requirements]
+State assumptions that affect the design before coding, and push back when a
+simpler approach exists.
+→ §6 "State Assumptions Explicitly".
 
-## Testing
-- Framework: [test framework]
-- Coverage: [coverage requirements]
-- Patterns: [test naming, structure]
+Define success criteria up front and loop until verified, with a verify step for
+each action. Vague tasks become testable goals.
+→ §6 "Ground Claims in Verification".
 
-## Anti-Patterns
-- [Language-specific things to avoid]
-- [Common AI mistakes in this language]
+## 7. Dead Code: Observe Freely, Remove Only with Proof
 
-## IDE Integration
-- [How to enable in Cursor/Claude Code]
-```
-
-## Quality Checklist
-
-Use this checklist before completing work:
-
-```markdown
-## Code Quality Checklist
-
-### Verification
-- [ ] Tests pass (run `pytest` / `npm test`)
-- [ ] No lint errors (run `flake8` / `eslint`)
-- [ ] Build succeeds (run `npm run build`)
-- [ ] Functionality verified manually
-
-### Code Review
-- [ ] No obvious/redundant comments
-- [ ] WHY comments for complex logic
-- [ ] No commented-out code
-- [ ] Imports organized at top
-
-### Error Handling
-- [ ] All error cases handled
-- [ ] Meaningful error messages
-- [ ] Edge cases covered
-
-### Documentation
-- [ ] README updated if needed
-- [ ] Breaking changes documented
-- [ ] Function signatures clear
-```
-
-## Common AI Mistakes
-
-| Mistake | Prevention |
-|---------|------------|
-| Claiming done without testing | Require test output in response |
-| Creating duplicate files | Search before creating |
-| Obvious comments everywhere | Explicit "no obvious comments" rule |
-| Swallowing exceptions | Require error handling patterns |
-| Large monolithic changes | Prefer incremental approach |
-| Missing error handling | Require explicit handling |
-
-## Metrics
-
-Track code quality with:
-
-| Metric | Target | Tool |
-|--------|--------|------|
-| Test coverage | >80% new code | pytest-cov, nyc |
-| Lint errors | 0 | flake8, eslint |
-| Type coverage | >90% | mypy, tsc |
-| Complexity | <10 per function | radon, eslint |
-
-## Enforcement
-
-### Soft Enforcement (AI Rules)
-- AI follows these guidelines
-- Can be overridden by user
-
-### Hard Enforcement (CI/CD)
-- Pre-commit hooks for linting
-- CI pipeline for tests
-- Code review requirements
-- Branch protection
-
-Recommended pre-commit config:
-
-```yaml
-# .pre-commit-config.yaml
-repos:
-  - repo: local
-    hooks:
-      - id: lint
-        name: lint
-        entry: npm run lint
-        language: system
-        pass_filenames: false
-      - id: test
-        name: test
-        entry: npm test
-        language: system
-        pass_filenames: false
-```
-
-## Success Indicators
-
-Code quality is improving when:
-- ✅ Tests consistently pass
-- ✅ No lint errors in PRs
-- ✅ Code reviews are faster
-- ✅ Fewer bugs in AI-generated code
-- ✅ Consistent style across codebase
-- ✅ New team members understand code quickly
-
-## Karpathy Coding Principles
-
-Four principles from Andrej Karpathy on writing code with or without AI assistance:
-
-1. **Think Before Coding** — Don't assume. Surface tradeoffs, state assumptions explicitly, and push back when a simpler approach exists. If something is unclear, stop and ask before implementing.
-
-2. **Simplicity First** — Minimum code that solves the problem, nothing speculative. No unrequested features, abstractions, or flexibility. If 200 lines could be 50, rewrite it.
-
-3. **Surgical Changes** — Touch only what you must. Don't improve adjacent code, don't refactor things that aren't broken, and match existing style. Every changed line should trace directly to the user's request.
-
-4. **Goal-Driven Execution** — Define success criteria and loop until verified. Transform vague tasks into testable goals; for multi-step work, state a brief plan with a verify step for each action.
+Flagging suspected dead code is always safe. Deleting it requires deterministic
+proof that no execution path reaches it, or explicit human confirmation.
+Lack of observed execution is not proof of non-use.
+→ §3 "Dead-Code Removal Is a Separate Authority".
