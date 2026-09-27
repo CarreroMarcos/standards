@@ -49,10 +49,10 @@ In `mcp.json`, give the server the secret's environment variable — never the v
 }
 ```
 
-Never:
+Never — a hardcoded value, even redacted in docs:
 
 ```json
-"API_KEY": "${API_KEY}"
+"API_KEY": "sk-live-abc123"
 ```
 
 ## Keep MCP configs out of version control
