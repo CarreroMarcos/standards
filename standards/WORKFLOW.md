@@ -105,7 +105,7 @@ Scan the diff against these patterns:
 | `[MEDIUM]` | XSS, exposed error details, unsafe eval/exec |
 | `[LOW]` | Patterns safe now but risky under future changes |
 
-Fix all `[CRITICAL]` and `[HIGH]` findings before committing. Disclose `[MEDIUM]` and `[LOW]` — never drop them silently.
+Fix all `[CRITICAL]` and `[HIGH]` findings before proceeding to Phase 7. Disclose `[MEDIUM]` and `[LOW]` — never drop them silently.
 
 Full review vocabulary and procedure: `CODE-REVIEW.md`.
 
