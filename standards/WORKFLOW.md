@@ -36,14 +36,14 @@ The plan file is the durable record of implementation detail. Track only the act
 
 **Skip when:** No spec was needed.
 
-## Phase 3.5 — Independent Plan Review (advisory — not a counted phase)
+## Phase 3.5 — Independent Plan Review (advisory — not one of the seven counted phases)
 
 Between Plan and Implement: an advisory review, not a gate. Self-review shares the author's blind spots; an independent check finds what it can't.
 
 - Dispatch a fresh agent with no authorship context, on a capable model
 - It verifies the plan against its spec and the actual current repo state
 - Findings use the project's review vocabulary — `CODE-REVIEW.md` (`VERIFIED` / `INFERRED` / `SPECULATIVE`, `Severity`, `Blocking`)
-- Fix `Blocking: true` findings before proceeding; disclose non-blocking findings in the plan's Design Note — never drop them silently
+- Any `Blocking: true` finding should be fixed before proceeding; disclose non-blocking findings in the plan's Design Note — never drop them silently
 - If the review agent fails to complete, retry once; still blocked → disclose to the user and get an explicit decision before proceeding without one
 
 **Recommended for:** any plan with real consequence. Lighter for small or low-risk plans — use judgment.
