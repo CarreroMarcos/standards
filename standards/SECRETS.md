@@ -32,7 +32,7 @@ Treat every agent session as a potential read of your environment:
 - Populate it from the secrets manager at session start; never from a committed template with real values.
 - Rotate its contents on session end or whenever the agent session completes.
 - Exclude it from every read path exposed to an agent or tool.
-- Verify after a task: `grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=" . --exclude=.env --exclude=.env.example --exclude-dir=.git` returns zero matches. `.env` holds real secrets and `.env.example` holds placeholder names, so both are excluded from the scan; everything else must be clean.
+- Verify after a task: `grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=" . --exclude=.env --exclude=.env.example --exclude-dir=.git` — review each match. A hardcoded value is a leak; a read from the environment is fine.
 
 ## What never belongs near an agent
 
