@@ -51,5 +51,3 @@ Never:
 ## Keep MCP configs out of version control
 
 Gitignore `mcp.json` / `.mcp.json` when they carry secrets. Commit a `mcp.json.example` with `${ENV_VAR_NAME}` placeholders instead of real values.
-
-Secret storage, rotation, and agent exposure are owned by SECRETS.md.
