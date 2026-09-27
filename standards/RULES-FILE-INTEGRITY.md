@@ -6,7 +6,7 @@ Rules files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and equivalents) are exec
 
 These are hard requirements for every rules file in any repository where AI assistants operate. Every directive must be visible to a human skimming the rendered page; anything a skimmer would miss is an attack surface, not a feature.
 
-1. **No invisible or deceptive characters.** No zero-width joiners (`U+200B`–`U+200F`), stray byte-order marks (`U+FEFF`), bidirectional overrides (`U+202A`–`U+202E`, `U+2066`–`U+2069`), non-breaking spaces in bulk (`U+00A0`), or any code point in the private-use area. Visible non-ASCII is allowed — accented Latin, dashes, `§`, `→`, emoji when visibly intentional. The ban is on what a human skimmer can't see, not on non-English text.
+1. **No invisible or deceptive characters.** No zero-width joiners (`U+200B`–`U+200F`), stray byte-order marks (`U+FEFF`), bidirectional overrides (`U+202A`–`U+202E`, `U+2066`–`U+2069`), non-breaking spaces (`U+00A0`), or any code point in the private-use area. Visible non-ASCII is allowed — accented Latin, dashes, `§`, `→`, emoji when visibly intentional. The ban is on what a human skimmer can't see, not on non-English text.
 2. **No hidden-instruction containers.** No HTML comments. No `<script>`, `<style>`, or any HTML that renders differently from the source text. No Markdown link titles that differ from the visible link text when the difference could instruct the agent.
 
    Example — never this: an HTML comment carrying a directive, such as one suspending the review rules for the project. (Described, not reproduced — this file follows its own rule.)
@@ -34,14 +34,16 @@ if grep -rqP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{E000}-\x{F8
   echo "ERROR: Invisible or deceptive Unicode found in rules files — possible injection"
   exit 1
 fi
-# Rule 3: guardrail-bypass phrases
-if grep -rqEi "ignore (previous|the above|prior) instructions|disregard prior|disable guardrails|bypass (BLOCK|CONFIRM)|override CONFIRM|god mode|unrestricted mode" <rules-dir>; then
+# Rule 3: guardrail-bypass phrases (this document holds the denylist
+# specification, so it is excluded from its own scan — rule 6 requires
+# human review of every change to it)
+if grep -rqEi --exclude=RULES-FILE-INTEGRITY.md "ignore (previous|the above|prior) instructions|disregard prior|disable guardrails|bypass (BLOCK|CONFIRM)|override CONFIRM|god mode|unrestricted mode" <rules-dir>; then
   echo "ERROR: Guardrail-bypass pattern found in rules files — possible injection"
   exit 1
 fi
 ```
 
-The pattern list in rule 3 is the denylist specification — quoted here as documentation, not as live directives. A production implementation keeps the patterns in a denylist file and excludes its own specification from the scan.
+The pattern list in rule 3 is the denylist specification — quoted here as documentation, not as live directives. The example hook excludes this document from the rule-3 scan; rule 6 (human review of every rules-file change) covers the excluded file. Known limitation: the example hook also flags phrases quoted in security-education documents, which rule 3 permits in quote blocks — a production lint distinguishes quoted documentation from live directives.
 
 Review rules files adopted from community sources or cloned repositories before letting them load — read the contents first, then trust.
 
