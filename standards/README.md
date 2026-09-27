@@ -14,7 +14,7 @@ Routing table for this library. Each file is the single source of truth for its 
 | SECRETS.md | Ephemeral-by-default secrets management; agent-safe posture |
 | SUPPLY-CHAIN.md | Dependency verification and SCA scans |
 | TRUST-CLASSIFICATION.md | Trust levels for content sources in agentic workflows |
-| WORKFLOW.md | Feature workflow: brainstorm → spec → plan → implement → simplify → security review → commit |
+| WORKFLOW.md | Portable feature-development discipline through a clean commit; the operated loop is DEV-LOOP.md |
 | DEV-LOOP.md | Agentic build-loop runbook: ticket → implement → verify → bot rounds → Oracle gate → merge |
 
 ## Conventions
