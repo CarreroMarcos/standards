@@ -1,3 +1,10 @@
+---
+title: Code Quality
+version: "2.0"
+scope: Code quality rules: comments, dead code, testing, verification
+last_reviewed: 2026-09-27
+---
+
 # Code Quality
 
 Operational quality rules for AI-generated code. Design principles live in
