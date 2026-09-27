@@ -1,0 +1,22 @@
+# Standards
+
+Routing table for this library. Each file is the single source of truth for its topic — don't duplicate content across files.
+
+| File | Topic |
+|------|-------|
+| ENGINEERING_PRINCIPLES.md | Core engineering decision principles: design, testing, change safety, agentic systems |
+| AGENTIC-SAFETY.md | Indirect prompt injection defense; subagent scope and trust violations |
+| CODE-QUALITY.md | Code quality rules for AI-generated code (verification, comments, structure, error handling) |
+| CODE-REVIEW.md | What constitutes a complete review: vocabulary, evidence integrity |
+| LOGGING.md | Structured logging conventions |
+| MCP-SECURITY.md | MCP server trust and tool-result handling |
+| RULES-FILE-INTEGRITY.md | Hygiene rules for AI assistant rules files |
+| SECRETS.md | Ephemeral-by-default secrets management; agent-safe posture |
+| SUPPLY-CHAIN.md | Dependency verification and SCA scans |
+| TRUST-CLASSIFICATION.md | Trust levels for content sources in agentic workflows |
+| WORKFLOW.md | Feature workflow: brainstorm → spec → plan → implement → simplify → security review → commit |
+
+## Conventions
+
+- One topic per file. Files stay tool-agnostic and portable to any repo.
+- To add a standard: drop in a scannable one-topic file and add one row to the table above.
