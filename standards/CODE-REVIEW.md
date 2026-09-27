@@ -100,4 +100,4 @@ The review fails on any of:
 
 ## 9. Remediation
 
-Review identifies and recommends by default. Remediation (editing files, generating fixes) requires explicit user request after findings are presented.
+Review identifies and recommends by default. Remediation (editing files, generating tests, applying fixes) requires explicit user request after findings are presented.
