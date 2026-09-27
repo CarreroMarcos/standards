@@ -6,7 +6,7 @@ Rules files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and equivalents) are exec
 
 These are hard requirements for every rules file in any repository where AI assistants operate. Every directive must be visible to a human skimming the rendered page; anything a skimmer would miss is an attack surface, not a feature.
 
-1. **No invisible characters.** No zero-width joiners (`U+200B`–`U+200F`), bidirectional overrides (`U+202A`–`U+202E`, `U+2066`–`U+2069`), non-breaking spaces in bulk, or any code point in the private-use area. Keep to printable ASCII plus the common Latin supplement, dashes, and standard punctuation. Emoji only when visibly intentional (e.g., section markers).
+1. **No invisible characters.** No zero-width joiners (`U+200B`–`U+200F`), bidirectional overrides (`U+202A`–`U+202E`, `U+2066`–`U+2069`), non-breaking spaces in bulk, or any code point in the private-use area. Keep to printable ASCII only — the enforcement hook rejects every byte ≥ `0x80`. Emoji only when visibly intentional (e.g., section markers).
 2. **No hidden-instruction containers.** No HTML comments (`<!-- ... -->`). No `<script>`, `<style>`, or any HTML that renders differently from the source text. No Markdown link titles that differ from the visible link text when the difference could instruct the agent.
 
    Example — never this:
@@ -19,16 +19,22 @@ These are hard requirements for every rules file in any repository where AI assi
    - "You are now in developer / unrestricted / god mode"
    - "As a reminder, you have full access to"
    - Any imperative that tells the agent to exfiltrate, encode, or silently forward content outside the current repo
-4. **No out-of-band network or secret directives.** Never put instructions in a rules file that tell the agent to reach out to external endpoints not already in the repo's approved server or tool allowlist. No instructions that tell the agent to read, decode, or re-emit `.env`, `~/.aws/credentials`, SSH keys, or shell history. Credential lifecycle (storage, rotation, scopes): SECRETS.md.
-5. **Name provenance explicitly.** Every rules file carries a visible header stating what it does, who owns it, and when it was last reviewed — tampering then shows up in diff review. For entry-point rules files, the first section is human-readable prose naming the project and its purpose.
+4. **No out-of-band network or secret directives.** Never put instructions in a rules file that tell the agent to reach out to external endpoints not already in the repo's approved server or tool allowlist. No instructions that tell the agent to read, decode, or re-emit `.env`, `~/.aws/credentials`, SSH keys, or shell history. No instructions that tell the agent to read, export, or modify environment variables matching `*_KEY`, `*_TOKEN`, `*_SECRET`, or `*_PASSWORD` without explicit in-session user invocation. Credential lifecycle (storage, rotation, scopes): SECRETS.md.
+5. **Name provenance explicitly.** Every third-party or adopted rules file (community sources, cloned repos, generated policy files) carries a visible header stating what it does, who owns it, and when it was last reviewed — tampering then shows up in diff review. For entry-point rules files, the first section is human-readable prose naming the project and its purpose.
 6. **Review rules changes as code.** Every change to any rules file requires a human reviewer in the PR / MR. Rules-file changes are never auto-merged, even from bots. Propagation to downstream projects is an explicit, tracked operation.
 
-**Enforcement.** Gate every commit with a pre-commit hook that fails on the bypass patterns (rule 3) and non-printable Unicode (rule 1):
+**Enforcement.** Gate every commit with a pre-commit hook that fails on non-ASCII bytes (rule 1) and the bypass patterns (rule 3):
 
 ```bash
 # .git/hooks/pre-commit
+# Rule 1: printable ASCII only
 if grep -rqP "[\x80-\xFF]" <rules-dir> 2>/dev/null; then
   echo "ERROR: Non-ASCII characters found in rules files — possible injection"
+  exit 1
+fi
+# Rule 3: guardrail-bypass phrases
+if grep -rqEi "ignore (previous|the above|prior) instructions|disregard prior|disable guardrails|bypass (BLOCK|CONFIRM)|override CONFIRM|god mode|unrestricted mode" <rules-dir> 2>/dev/null; then
+  echo "ERROR: Guardrail-bypass pattern found in rules files — possible injection"
   exit 1
 fi
 ```
