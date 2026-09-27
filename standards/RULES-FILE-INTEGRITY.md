@@ -43,7 +43,7 @@ if grep -rqEi --exclude=RULES-FILE-INTEGRITY.md "ignore (previous|the above|prio
 fi
 ```
 
-The pattern list in rule 3 is the denylist specification — quoted here as documentation, not as live directives. The example hook excludes this document from the rule-3 scan; rule 6 (human review of every rules-file change) covers the excluded file. Known limitation: the example hook also flags phrases quoted in security-education documents, which rule 3 permits in quote blocks — a production lint distinguishes quoted documentation from live directives.
+The rule-3 pattern list is the denylist specification — quoted as documentation, not live directives. The example hook excludes this document from the rule-3 scan (rule 6's human review covers the excluded file). Known limitation: the hook also flags phrases quoted in security-education documents, which rule 3 permits in quote blocks; a production lint distinguishes quoted documentation from live directives.
 
 Review rules files adopted from community sources or cloned repositories before letting them load — read the contents first, then trust.
 
