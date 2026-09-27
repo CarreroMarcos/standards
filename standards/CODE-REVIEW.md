@@ -1,3 +1,10 @@
+---
+title: Code Review Standard
+version: "2.0"
+scope: How to run code reviews, including AI-assisted review
+last_reviewed: 2026-09-27
+---
+
 # Code Review Standard
 
 What a complete code review is and how findings are evidenced. Advisory — owning gates define pass/fail.
