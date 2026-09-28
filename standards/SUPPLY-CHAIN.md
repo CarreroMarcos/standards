@@ -2,6 +2,7 @@
 title: Supply Chain Security
 version: "2.1"
 scope: Supply chain security: dependencies, provenance, SBOM
+consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
 last_reviewed: 2026-09-27
 ---
 
