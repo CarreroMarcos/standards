@@ -2,6 +2,7 @@
 title: Code Review Standard
 version: "2.0"
 scope: How to run code reviews, including AI-assisted review
+consult_when: "When reviewing a diff - yours, a bot's, or another agent's."
 last_reviewed: 2026-09-27
 ---
 
