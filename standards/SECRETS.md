@@ -2,6 +2,7 @@
 title: SECRETS.md — Ephemeral by Default
 version: "2.1"
 scope: Secrets management: storage, rotation, agent exposure
+consult_when: "When handling credentials, API keys, or tokens - storing, passing, logging, or reviewing code that touches them."
 last_reviewed: 2026-09-27
 ---
 
