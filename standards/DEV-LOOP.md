@@ -2,6 +2,7 @@
 title: Dev Loop — the agentic build loop, as operated
 version: "1.1"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
+consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
 last_reviewed: 2026-09-27
 ---
 
