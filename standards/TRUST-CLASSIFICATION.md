@@ -2,6 +2,7 @@
 title: Trust Classification
 version: "2.1"
 scope: Trust levels for code, data, and agents
+consult_when: "When deciding whether content can be acted on or only read."
 last_reviewed: 2026-09-27
 ---
 
