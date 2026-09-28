@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.0"
+version: "1.1"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 last_reviewed: 2026-09-27
 ---
@@ -25,25 +25,43 @@ main. Repo-specific names are marked; the shape is the reusable part.
 3. **Independent verify, pre-push (orchestrator).** Per-commit custody/scope
    check, full test suite in a clean shell, ruff/format, pre-commit. This is
    the "custody law": it exists because PR #114's squash accidentally
-   carried in-progress code from a shared worktree's local main.
+   carried in-progress code from a shared worktree's local main. Like the
+   Oracle, the verifier never reads the fixer's reasoning — contract, gate
+   output, and diff only.
 4. **Push + PR.** `git push -u origin <branch>`, `gh pr create`.
 5. **Bot rounds.** Wait ~120s (bot latency; +45s if the round is
    absent/errored/unchanged), then fetch the bot's canonical comment
    (fenced `pr-reviewer:canonical` marker — exactly one per PR, PATCHed in
    place). Disposition every finding: fix it, or accept it as a documented
    residual. False positives are disproven with file/byte evidence, not
-   argued. Push → next round. Hard stop when the finding count flattens for
-   two rounds; frozen residuals go into the Oracle gate brief as "open at
-   freeze, rulings demanded." A dispositioned finding that recurs is not
-   re-litigated (freeze rule).
+   argued. The bot reads the thread before posting — a dispositioned finding
+   is never re-raised (reviewer-side freeze rule). Promote repeated
+   dispositions into standing rules: a false-positive class disproven twice
+   stops being raised. Track the bot's resolution rate (fixed findings ÷
+   raised findings), not its finding count — volume is not value. Push →
+   next round. Hard stop when the finding count flattens for two rounds;
+   watch for oscillation too — a finding that flips state across rounds is
+   oscillating, not converging: escalate instead of looping. Frozen residuals
+   go into the Oracle gate brief as "open at freeze, rulings demanded."
+   A dispositioned finding that recurs is not re-litigated (freeze rule).
 6. **Ticket hygiene.** PATCH the CI checkbox, post the Jira PR comment, move
    the ticket to In Review.
-7. **Oracle gate.** Adversarial gate on a v2 brief. APPROVE → squash-merge
-   (green CI required — green CI gates the merge, never a bot verdict),
-   then post "Oracle: APPROVE. Merged \<sha\>." CHANGES_REQUESTED → fix on
-   the branch → push → the bot re-reviews on every push, including
-   gate-ordered remediations → focused re-gate embedding the fresh round.
+7. **Oracle gate.** Adversarial gate on a v2 brief. The Oracle is a blind
+   verifier: its inputs are the brief, the diff, and the test output only —
+   it never sees the fixer's reasoning, because a verifier that reads the
+   maker's reasoning nods along with it. The gate runs hold-out checks the
+   fixer never saw (the fixer iterates against the visible suite; the gate
+   adds checks the maker never saw — anti curve-fitting). APPROVE →
+   squash-merge (green CI required — green CI gates the merge, never a bot
+   verdict), then post "Oracle: APPROVE. Merged \<sha\>."
+   CHANGES_REQUESTED → fix on the branch → push → the bot re-reviews on
+   every push, including gate-ordered remediations → focused re-gate
+   embedding the fresh round.
 8. **Next.** Move to the next ticket in the JQL queue.
+
+## Loop Contract
+
+Written before iteration 1. The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → stop and escalate), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
 
 ## Roles
 
@@ -92,6 +110,8 @@ main. Repo-specific names are marked; the shape is the reusable part.
 
 ## Failure handling (all hit in practice)
 
+- Every retry names what changed since the last attempt — a retrigger
+  without a changed hypothesis is a loop, not a recovery.
 - Bot posts "could not be completed" → exactly one empty-commit retrigger,
   re-run the wait protocol. If it errors again, note timestamp/PR/sha and a
   log window in the state file, then proceed.
@@ -100,6 +120,15 @@ main. Repo-specific names are marked; the shape is the reusable part.
   write output to a file, check `$?`, grep the summary line.
 - Exported AWS creds poison the suite — run capture and pytest in separate
   shells.
+
+## Loop Ledger
+
+Each stage writes a receipt before the loop moves on: who ran it, what was
+checked, the evidence hash (diff, test output tail, file:line refs), and a
+timestamp. The ledger is the audit form of the custody law. Secrets are
+masked in the ledger (`[REDACTED]`) — receipts prove what happened, not what
+the credentials were. Write the receipt before stopping — a stage that
+crashed without a receipt didn't happen.
 
 ## Environment
 
