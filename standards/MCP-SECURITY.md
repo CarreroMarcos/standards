@@ -2,6 +2,7 @@
 title: MCP Security Standard
 version: "2.0"
 scope: Security rules for Model Context Protocol (MCP) servers
+consult_when: "When selecting, configuring, or auditing MCP servers and tool definitions."
 last_reviewed: 2026-09-27
 ---
 
