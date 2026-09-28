@@ -2,6 +2,7 @@
 title: Code Quality
 version: "2.0"
 scope: Code quality rules: comments, dead code, testing, verification
+consult_when: "When writing or refactoring code and you want the per-task quality rules."
 last_reviewed: 2026-09-27
 ---
 
