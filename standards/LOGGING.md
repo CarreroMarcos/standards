@@ -2,6 +2,7 @@
 title: Logging Standard
 version: "2.0"
 scope: Logging: what to log, levels, structure, retention
+consult_when: "When adding or changing log/telemetry statements."
 last_reviewed: 2026-09-27
 ---
 
