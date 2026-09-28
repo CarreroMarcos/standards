@@ -1,8 +1,7 @@
 ---
 title: Engineering Principles
-version: "1.2"
+version: "1.3"
 scope: Core engineering principles and practices
-consult_when: "When making a judgment call no specific file covers."
 last_reviewed: 2026-09-27
 ---
 
@@ -631,114 +630,7 @@ For consequential migrations, correctness takes precedence over making rollback 
 
 ## §7. Python Practice
 
-The sections above are language-neutral. This one makes them concrete for async Python services. These failure modes are easy to write, hard to see in review, and often invisible until load.
-
-### Async Discipline
-
-**Keep the event loop responsive during blocking or unbounded work.** Inside `async def`, make network, database, process, and large-disk waits awaitable. A synchronous DB driver, a `requests` call, or `time.sleep` stops every concurrent task in the process. The symptom is throughput that collapses under concurrency while each individual request looks fine in isolation.
-
-**The proportionality rule:** size the execution strategy to the work and its bound. Run network and unbounded blocking I/O through awaitable paths. Run small, bounded, local work — a startup config read, a few-kilobyte file read outside the hot path, an in-memory transform — inline when the cost of offloading exceeds the blocking risk. Treat unknown-size files and paths that might be network mounts as unbounded.
-
-Use `asyncio.to_thread` for unavoidable synchronous **I/O-bound** work, such as a blocking library with no async API.
-
-For materially CPU-bound Python work, use an appropriate process pool, worker process, or other off-process execution strategy rather than assuming a thread makes the work parallel. `to_thread` can be appropriate for CPU-heavy extension code only when the implementation releases the GIL or the runtime provides equivalent parallelism.
-
-**The common failures:** using a sync DB driver inside an async handler because it worked in a single-request test; moving heavy Python CPU work to a thread and assuming the GIL disappeared; and adding `to_thread` around a 200-byte config read. The first blocks concurrency, the second may only move the blockage, and the third adds overhead without meaningful benefit.
-
-**Own every task you create.** The real hazard with `asyncio.create_task(...)` is losing ownership: nothing awaits the task, so its exception may surface only as a late "Task exception was never retrieved" log, shutdown does not wait for it, and cancellation cannot reliably be coordinated with the parent work. The event loop also keeps only weak references to tasks, so an otherwise unreferenced task may disappear before completion.
-
-Keep ownership. Await the task, hold it in a collection that outlives it, or use `asyncio.TaskGroup` for structured concurrency and automatic exception propagation.
-
-In a system that dispatches work, a silently lost task is indistinguishable from work that never arrived.
-
-**Propagate cancellation as control flow.** `asyncio.CancelledError` is cancellation, not an ordinary application failure. Keep cancellation propagation through broad catches and explicit cancellation handling. Use `try/finally` for cleanup, or catch and re-raise when cleanup needs the exception.
-
-**Bound every external wait with one timeout strategy.** Every network, database, and subprocess call needs a bound. Place that bound deliberately, because multiple nested timeout layers obscure the effective deadline.
-
-Use this layering:
-
-1. **Set one deadline per inbound request or job** at the entry point from the §5 timeout budget. This is the authoritative budget.
-2. **Configure per-call bounds through the client's own timeout configuration** — HTTP client, DB pool, driver — where the client is constructed.
-3. **Wrap an individual `await` in `asyncio.timeout` when that operation needs a stricter bound than the client default**, and state the reason. Use this as the exception rather than the pattern.
-
-A call inheriting the request deadline and its client's configured timeout is already bounded; keep one effective strategy.
-
-When a call is genuinely unbounded, fix it at layer 1 or 2 before reaching for layer 3.
-
-**When layer 1 is not available yet.** This layering assumes the codebase has somewhere to carry a request deadline. When request context or a deadline object is absent, configure the bound on the client — layer 2 — where it belongs, and note that the budget needs end-to-end wiring.
-
-A locally guessed five seconds buried three frames deep is harder to find and fix later than an unwired budget you explicitly identified.
-
-Establish the deadline convention as its own task (§0: match local convention, name the gap). Keep it separate from unrelated changes.
-
-**The common failure:** wrapping every `await` in `asyncio.timeout` with a locally invented number. Nested deadlines disagree, the innermost one wins by accident, the §5 budget becomes fiction, and a slow dependency trips a two-second inner timeout while the caller was willing to wait thirty.
-
-### Typed Boundaries
-
-**Validate at the boundary, then trust inside it.** Parse untrusted input — HTTP bodies, message payloads, tool results, external API responses — into typed models at the entry point. Past that line, pass typed objects.
-
-This is §1's information hiding made concrete: parsing and validation rules live in one place instead of every consumer re-checking `if "field" in payload`.
-
-**Pass typed values across module boundaries when the shape is known.** A `dict[str, Any]` in a signature moves the contract out of the type system and into the reader's memory. It is the Python form of the shallow module in §1 — the caller must know the internals to use it.
-
-**The exception is content that is genuinely open.** Some payloads have no fixed shape by design: a passthrough body owned by another team, arbitrary metadata or annotations, a JSON column, an audit-detail record.
-
-Modelling those with a rigid type is worse than not modelling them, because the type will claim a guarantee the data does not honor.
-
-Carry them as an explicit opaque type — a `JsonValue` alias, a `Mapping[str, Any]` with a name that says it is opaque — and keep it opaque rather than reaching inside. The rule targets dictionaries standing in for a shape you actually know; it does not require inventing shapes you do not.
-
-**Prefer generated models where a schema exists.** When you own or consume a real schema (§5), generate models from it where tooling makes that reliable and verify drift in CI.
-
-Where a usable schema is unavailable — a third-party API with no accurate specification or a small internal seam where generating one would cost more than it returns — use a hand-written typed adapter.
-
-Make it narrow: validate at the boundary, convert to your own types, and let contract tests pin the behavior you depend on.
-
-**Annotate public functions.** Where there is no external schema, the annotation is part of the contract. Run a type checker in CI where the project uses static typing so the contract receives automated verification.
-
-### Errors and Exceptions
-
-**Define a domain exception hierarchy where callers need to distinguish failure classes.** Raise meaningful types rather than bare `Exception`. Let callers distinguish failures through types and structured data rather than message strings.
-
-Do not invent an elaborate hierarchy when the application has no callers that need the distinction.
-
-**Handle exceptions explicitly and preserve outcome accuracy.** Use narrow catches with defined recovery. A broad, silent catch such as `except Exception: pass`, or a catch that logs and continues as though the operation succeeded, hides the outcome.
-
-Catching a specific expected exception and handling it is correct code. Legitimate examples:
-
-* `FileNotFoundError` during idempotent cleanup of something that may already be gone;
-* `KeyError` when probing genuinely optional data — though `.get()` may express the intent more clearly;
-* a known client exception triggering a defined fallback whose correctness is stated (§5);
-* `TimeoutError` entering an explicitly designed degraded path.
-
-The distinguishing test is whether the caller receives an accurate picture.
-
-Handle a narrow, named exception with a defined recovery. Surface a broad failure when the operation's outcome remains uncertain.
-
-**The overcorrection:** propagating every exception for safety, so an optional cache read or best-effort notification takes down a request that only needed its core operation to succeed. Exception discipline preserves honesty about what failed while allowing defined recovery.
-
-**Preserve the exception chain.** Use `raise DomainError(...) from err` so the original traceback remains available to the person debugging at 2 AM.
-
-### Subprocess and Environment
-
-**Use argv lists and explicit environments.** `subprocess.run([cmd, arg], shell=False)` keeps arguments structured. Keep interpolated values out of shell execution, and pass an explicit `env` dict rather than mutating process-global `os.environ`.
-
-**Log only the environment values needed for diagnosis.** The environment contains secrets by construction (§6).
-
-### Dependencies and Tooling
-
-**Pin and commit the lockfile for deployable applications and services.** Reproducible installs support the verification discipline in §6: "tests pass" means little if the dependency set drifts between runs.
-
-A service, job, or container image should install from a committed, reproducible dependency definition.
-
-**Let reusable libraries declare compatible ranges.** A package others depend on should keep its resolution flexible for consumers. A library may also commit a lockfile for its own CI to get reproducible test runs; that lock constrains the library's development environment rather than its consumers' installs.
-
-Classify the project by checking whether other projects import it as a dependency or whether it gets deployed.
-
-**Evaluate every new dependency as a decision.** Account for supply-chain, licensing, operational, security, and maintenance cost. Prefer the standard library for small needs, and add a library when its value justifies the cost and scope.
-
-**Use APIs you have confirmed exist.** Plausible-looking library functions that do not exist are a recurring AI failure mode. Check an uncertain signature against the installed package or authoritative documentation before using it, and state the verification gap when checking is unavailable (§0).
-
----
+Python-specific mechanics live in `PYTHON.md` — tooling, style, typing, async discipline, errors, packaging, and performance. This section states only the principle: the sections above are language-neutral; Python makes them concrete, and the failure modes are easy to write, hard to see in review, and often invisible until load.
 
 ## §8. Spec-First Workflow (for significant work)
 
@@ -1062,4 +954,4 @@ The goal is the **simplest system whose correctness, authority boundaries, failu
 
 ---
 
-**Version**: 1.2; **Last Updated**: 2026-09-28
+**Version**: 1.3; **Last Updated**: 2026-09-28
