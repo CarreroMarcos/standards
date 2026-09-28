@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "2.0"
+version: "2.1"
 scope: The seven-phase development workflow
 last_reviewed: 2026-09-27
 ---
@@ -41,6 +41,10 @@ Write the implementation plan to `docs/plans/YYYY-MM-DD-slug.md` and get user ap
 
 The plan file is the durable record of implementation detail. Track only the active next steps separately at each session start — do not reload the full plan into context every time.
 
+Spend the reasoning budget on planning, not execution — plan in the strongest mode available; implement in a cheaper one.
+
+End the plan with an acceptance contract: checkable pass/fail criteria, not prose.
+
 **Skip when:** No spec was needed.
 
 ## Phase 3.5 — Independent Plan Review (advisory — not one of the seven counted phases)
@@ -52,6 +56,7 @@ Between Plan and Implement: an advisory review, not a gate. Self-review shares t
 - Findings use the project's review vocabulary — `CODE-REVIEW.md` (`VERIFIED` / `INFERRED` / `SPECULATIVE`, `Severity`, `Blocking`)
 - Any `Blocking: true` finding should be fixed before proceeding; disclose non-blocking findings in the plan's Design Note — never drop them silently
 - If the review agent fails to complete, retry once; still blocked → disclose to the user and get an explicit decision before proceeding without one
+- The reviewer also grills the acceptance contract: it negotiates the definition of done with the author before code starts — what the acceptance checks are, and who runs them
 
 **Recommended for:** any plan with real consequence. Lighter for small or low-risk plans — use judgment.
 
@@ -82,6 +87,12 @@ For each task in the plan:
     5. Commit
 
 Never write implementation before the failing test exists.
+
+**Acceptance tests are external truth.** Agent-written tests are unreliable judges — they test what the code does, not what it should do, and agents dodge their own acceptance criteria. Acceptance tests are authored or grilled by someone other than the implementer (you, or an independent agent), committed as checkpoints, and protected from the implementer — the implementer never edits them. Full re-verification runs before accept.
+
+**If a test looks wrong, stop and fix the test.** Never contort the code to satisfy a flawed test — strict "stop if the tests look flawed" discipline is what separates testing from specification gaming.
+
+**"Tests pass" is not "mergeable."** Roughly half of test-passing benchmark PRs would not survive a real merge review (METR, Mar 2026) — green tests are necessary, not sufficient. The security review and simplify phases still apply.
 
 **Commit frequency:** After each passing test or logical unit. Never accumulate more than one unit of work in a commit.
 
@@ -114,6 +125,10 @@ Scan the diff against these patterns:
 
 Fix all `[CRITICAL]` and `[HIGH]` findings before proceeding to Phase 7. Disclose `[MEDIUM]` and `[LOW]` — never drop them silently.
 
+Agent-generated code gets two extra checks: hallucinated dependencies (verify every suggested package at the registry — `SUPPLY-CHAIN.md`) and over-permissioned tool use (does the code grant the agent more authority than the task needs?).
+
+Write recurring bug classes back into the agent's rules file (`AGENTS.md` / `CLAUDE.md`) so the same class doesn't recur next session.
+
 Full review vocabulary and procedure: `CODE-REVIEW.md`.
 
 ## Phase 7 — Commit
@@ -135,5 +150,7 @@ Trigger a handoff when context reaches ~40% or the user types "Handoff":
 4. Do not continue
 
 Next session: read `handoff.md` first, then continue.
+
+Prefer a fresh session over a compacted one between phases — context reset with a structured handoff beats compaction. After any compaction, re-read the plan before writing code: plan drift sets in as context decays, and the plan is the anchor.
 
 Principle: `ENGINEERING_PRINCIPLES.md` §9 "Make handoffs file-backed".
