@@ -2,6 +2,7 @@
 title: Rules-File Integrity
 version: "2.0"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
+consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills)."
 last_reviewed: 2026-09-27
 ---
 
