@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.1"
+version: "1.2"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-27
 ---
@@ -10,6 +10,8 @@ last_reviewed: 2026-09-27
 > This reference exists because these principles are counterintuitive enough that memory gets them wrong. When a trigger in `AGENTS.md` sends you here, read the named section and apply its reasoning.
 >
 > These are decision principles, not a checklist of fashionable patterns. Use them to reason from requirements, critical flows, state and authority boundaries, failure modes, and evidence toward the simplest system that safely satisfies the need.
+>
+> Where a dedicated standard owns the mechanics, this file states the principle and points at it — one source of truth per topic, so nothing goes stale in two places.
 
 ---
 
@@ -306,6 +308,18 @@ A hand-computed value, a trusted reference implementation, or a pinned fixture f
 
 **The common failure:** testing a slug generator by re-implementing the slugify logic inline in the test. A genuinely wrong algorithm passes its own test every time.
 
+This matters more when an agent writes the test. A tester that reads the builder's implementation inherits its bugs — the "misguidance effect" — so agent-authored tests are spec-sourced, never diff-sourced: expected values from the requirement, not from the code under test.
+
+### Tests Are Evidence, Not the Target
+
+An agent that learns the test suite games the test suite. The dominant failure mode is under-specification, not test editing: the fix passes the shown test and fails an unseen sibling — test-shaped compliance rather than correct behavior.
+
+Countermeasures: red before green, with the failing test committed; lock test paths so the implementer cannot edit them; split writer and reviewer into separate sessions; keep hold-out checks the implementer never saw.
+
+**The common failure:** the implementer "fixes" the test to match the code and calls it green.
+
+Agent-workflow mechanics: `WORKFLOW.md` (Phase 4).
+
 ### Tracer Bullet
 
 For a multi-unit task, write and pass one test exercising the smallest meaningful path end to end before implementing individual units in isolation.
@@ -573,6 +587,10 @@ Ground claims about passing tests, fixed vulnerabilities, correct behavior, comp
 | "The architecture should handle this failure"     | Exercise the failure or state that the recovery path remains unverified.                       |
 | "There is no test suite / it isn't runnable here" | State exactly what is unavailable and which available checks you ran.                          |
 
+An agent's report is a claim, not proof. Verify against the real state — actual files, actual test output — never the implementer's summary. The verification names self-contained commands, shows raw output rather than narrating it, and ends in a clear pass/fail. "I already checked this" is not "here is how you can check this."
+
+Do not mistake developer satisfaction for developer productivity. Measure AI assistance net of verification burden: experienced developers forecast speedups and report feeling faster while measuring slower (METR RCT, July 2025). Count review time, rework, and bug load in the ledger before claiming a speedup.
+
 **When a check genuinely cannot run** — no suite exists, the environment is missing, or the behavior needs live infrastructure — report the limitation directly.
 
 "I couldn't verify X because Y" in the summary satisfies this rule completely.
@@ -592,6 +610,8 @@ Access secrets through centralized, typed accessors or the project's approved se
 Keep secrets out of outputs and source control. Keep authentication and authorization checks enabled. Make security-sensitive telemetry explicitly reviewed.
 
 Do not expose secrets to an AI model, agent context, tool result, log, or trace merely because that surface is internal.
+
+Credential mechanics: `SECRETS.md`.
 
 ### Database Changes
 
@@ -721,6 +741,8 @@ Classify the project by checking whether other projects import it as a dependenc
 
 ## §8. Spec-First Workflow (for significant work)
 
+The development-workflow mechanics live in `WORKFLOW.md` (seven phases); the ticket-to-merge loop lives in `DEV-LOOP.md`. This section states the spec-first principles behind them.
+
 For significant features or ambiguous work, reason in this order:
 
 1. **Specify** — define intent, required outcomes, acceptance criteria, and explicit non-goals.
@@ -738,6 +760,8 @@ This order is deliberate:
 **requirements → critical flows → state and authority boundaries → failure modes → simplest architecture → contracts → implementation → production evidence**
 
 Do not start from a preferred technology and reverse-engineer requirements that justify it.
+
+Spend the reasoning budget where the leverage is: planning and review get the strongest model available; execution gets a cheaper one. Pin the model to the role, not to prestige.
 
 Assign stable requirement IDs and link them to verification where the work is formal enough to benefit from traceability.
 
@@ -799,6 +823,16 @@ Reserve stopping for consequential decisions involving product intent, security,
 
 **For small, well-defined changes:** use the smallest-change rule (§6) and keep process proportional to the work.
 
+### End the Spec with an Acceptance Contract
+
+Acceptance criteria are checkable pass/fail criteria, not prose. Exit codes, golden hashes, schema validation — a verdict backed by a command someone else can re-run.
+
+Fixture realism is a contract duty. A thousand passing tests against fake fixtures can mask a bug that only the real dependency exhibits; the contract names which checks run against the real thing.
+
+**The common failure:** acceptance criteria written as prose nobody can execute, so "done" is whatever the implementer felt.
+
+Plan-level mechanics for agent work: `WORKFLOW.md` (Phase 3).
+
 ### Independent Review for Significant Work
 
 Self-review shares the author's blind spots. For significant work (per the criteria above), have the plan or spec checked by a reviewer with no authorship context — a separately dispatched agent, or a human reader — before implementation begins.
@@ -816,6 +850,8 @@ Agentic systems inherit every principle above. They do not get weaker architectu
 The model adds a probabilistic reasoning component inside the system. It does not become the system's source of truth, authorization service, durable state owner, or proof that an external action succeeded.
 
 Detailed protocol-specific tool, authorization, prompt-injection, and MCP security controls belong in the project's dedicated security standards. The rules here define the enduring architecture boundaries.
+
+Agent-security mechanics have their own sources of truth — `AGENTIC-SAFETY.md` (skill vetting, Rule of Two, exfiltration channels), `TRUST-CLASSIFICATION.md` (what counts as trusted input), `SECRETS.md` (credential handling). This section states the architecture principles and points at them; it does not restate them.
 
 ### Use Autonomy Only Where It Earns Its Cost
 
@@ -846,6 +882,8 @@ A single agent with clear tools and bounded responsibility is easier to evaluate
 Introduce routing, planner/executor separation, evaluator loops, or multiple collaborating agents when measured behavior shows the simpler architecture is insufficient.
 
 Architecture complexity must buy a demonstrated capability, quality, isolation, or scaling benefit.
+
+Multi-agent systems have measured failure modes: system design, inter-agent misalignment, and task verification dominate real traces (MAST, NeurIPS 2025); uncoordinated agents amplify errors an order of magnitude (DeepMind, Dec 2025), and added agents stop paying around three or four. The remedies are typed handoff payloads and orchestrator-run verification gates — coordination machinery, not more agents.
 
 **The common failure:** introducing multiple agents because the conceptual diagram maps neatly onto organizational roles, then paying for coordination, context handoff, duplicated reasoning, and ambiguous ownership without improving the outcome.
 
@@ -882,6 +920,8 @@ Do not depend on the model eventually deciding to stop.
 
 For destructive, irreversible, privilege-expanding, externally visible, financial, security-sensitive, or otherwise high-impact actions, enforce authorization outside the model and require human approval where policy or risk calls for it.
 
+Scope the sandbox to the tool call, not the agent. One sandbox shared across tools grants the union of every tool's permissions — confine each invocation to its declared capabilities so the isolation is real, not nominal.
+
 **The common failure:** encoding a hard business or security rule only in a system prompt and treating model compliance as enforcement.
 
 ### Observe Ground Truth Between Meaningful Actions
@@ -895,6 +935,8 @@ After an action, observe the environment or authoritative system and verify the 
 A tool returning `"success": true` proves only what the tool contract says it proves. It does not automatically prove that the user's intended external outcome occurred.
 
 Keep proposals, observations, authoritative state, and committed effects conceptually separate.
+
+For consequential loops, each stage writes a signed receipt — who acted, what was checked, an evidence hash, a timestamp — with secrets masked. Credentials are per-run and ephemeral; the broker hands out a handle, not the secret. A stage that left no receipt did not happen.
 
 **The common failure:** an agent issues a deployment, receives a successful API response, and reasons from "deployment succeeded" without verifying rollout state, health, or the actual target revision.
 
@@ -988,6 +1030,8 @@ When one agent dispatches others, the orchestrator owns verification. A subagent
 
 **Keep role separation real.** A reviewer that also implemented the change is not an independent reviewer. Adversarial review works only when the reviewer has no stake in the outcome — separate the roles, and treat self-approval as a process failure even when the underlying work is correct.
 
+**Keep the verifier blind.** The verifier receives the task, the rubric, and the evidence — never the maker's reasoning. A verifier that reads the maker's reasoning nods along with it; separation of reasoning is what makes the review independent. Loop mechanics: `DEV-LOOP.md`.
+
 **The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
 ---
@@ -1017,4 +1061,4 @@ The goal is the **simplest system whose correctness, authority boundaries, failu
 
 ---
 
-**Version**: 1.1; **Last Updated**: 2026-09-27
+**Version**: 1.2; **Last Updated**: 2026-09-28
