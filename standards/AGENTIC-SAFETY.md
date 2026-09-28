@@ -2,6 +2,7 @@
 title: Agentic Safety Standard
 version: "2.1"
 scope: Safety constraints for AI agents with execution access
+consult_when: "When giving an agent tools, autonomy, or access to untrusted input."
 last_reviewed: 2026-09-27
 ---
 
