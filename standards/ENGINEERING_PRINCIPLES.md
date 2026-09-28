@@ -2,6 +2,7 @@
 title: Engineering Principles
 version: "1.2"
 scope: Core engineering principles and practices
+consult_when: "When making a judgment call no specific file covers."
 last_reviewed: 2026-09-27
 ---
 
