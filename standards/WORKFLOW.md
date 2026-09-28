@@ -2,6 +2,7 @@
 title: Workflow Standard
 version: "2.1"
 scope: The seven-phase development workflow
+consult_when: "When starting or planning a unit of work, from idea through clean commit."
 last_reviewed: 2026-09-27
 ---
 
