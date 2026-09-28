@@ -1,6 +1,6 @@
 ---
 title: Standards
-version: "1.1"
+version: "1.2"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
 last_reviewed: 2026-09-27
@@ -21,13 +21,14 @@ Route by what you are **doing**, not by what a title sounds like. Find the row w
 | Adding or changing log/telemetry statements, or deciding what belongs in logs | LOGGING.md | Skip when not emitting telemetry. Never log secrets — SECRETS.md owns why. |
 | Reviewing a diff — yours, a bot's, or another agent's | CODE-REVIEW.md | Skip when not reviewing. Advisory — the owning gate defines pass/fail. |
 | Writing or refactoring code and you want the per-task quality rules (proof of completion, file hygiene, error handling) | CODE-QUALITY.md | Skip when a specific standard already answers the question. Design principles live in ENGINEERING_PRINCIPLES. |
+| Writing Python — style, typing, async, errors, tooling, or performance | PYTHON.md | Skip when not writing Python. Language-neutral principles live in ENGINEERING_PRINCIPLES; per-task quality rules in CODE-QUALITY. |
 | Starting or planning a unit of work, from idea through clean commit | WORKFLOW.md | Skip when the work is already ticketed inside the dev loop. Ends at commit — DEV-LOOP owns push to merge. |
 | Operating the ticket → implement → verify → review → gate → merge loop | DEV-LOOP.md | Skip for one-off changes on the verbal go-ahead path. Documents the loop as operated. |
 | Making a judgment call no specific file covers — design trade-offs, colliding principles | ENGINEERING_PRINCIPLES.md | A specific standard always wins over a general principle. Check §0 when two rules seem to conflict. |
 
 ## Conventions
 
-- One topic per file. Files stay tool-agnostic and portable to any repo.
+- One topic per file. Files stay portable to any repo — language-specific files are welcome; coupling to a specific tool is not.
 - Each file's frontmatter `consult_when` is the source of truth for its table row — this table mirrors it. Update both together.
 - To add a standard: drop in a scannable one-topic file and add one row to the table above.
 - When you finish a task, state which standards you consulted and why.
