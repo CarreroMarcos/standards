@@ -1,6 +1,6 @@
 ---
 title: Python Standard
-version: "1.2"
+version: "1.3"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
 last_reviewed: 2026-09-29
@@ -29,7 +29,7 @@ Why this section comes first: every rule below is cheaper when a tool enforces i
 
 ## 2. Style: what the linter can't catch
 
-- **Import modules, not names.** `import os.path`, not `from os.path import join`. Why: the call site says where the name came from, so the reader never hunts the import block to resolve a bare name — and two modules exporting the same name stop colliding silently.
+- **Import modules, not bare colliding names.** Default to `import os.path` over `from os.path import join` — the call site says where the name came from, so the reader never hunts the import block, and two modules exporting the same name stop colliding silently. `from` imports are fine for names that can't collide or confuse (`from dataclasses import dataclass`); the rule bites on generic names (`join`, `get`, `load`) whose origin the reader can't place.
 
 ```python
 # Bad: where did `join` come from — os.path or shlex?
@@ -212,7 +212,7 @@ Handle a narrow, named exception with a defined recovery. Surface a broad failur
 
 **Exceptions carry structured data, not just text.** Follow the httpx pattern: a small hierarchy per domain (`HTTPError → RequestError → TimeoutException → ConnectTimeout`), with the relevant objects attached (`.request`, `.response`) — not just a message string. Callers catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure), and structured attributes beat message-parsing. Put the object on the exception, not just text in the message.
 
-**Retry lives in one wrapper.** All retry logic in a single `_request_with_retry` — never scattered at call sites. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry only what can self-heal: 429 and 5xx (502/503/504). Never retry 400/401/403/404 — client errors don't self-heal; retrying a 401 is at best wasteful, at worst a lockout trigger. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
+**Retry lives in one wrapper per boundary.** All hand-rolled retry logic in a single `_request_with_retry` — never scattered at call sites. If the SDK already retries correctly (boto3's standard mode), configure it instead of wrapping it. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry only what can self-heal: 429 and 5xx (502/503/504). Never retry 400/401/403/404 — client errors don't self-heal; retrying a 401 is at best wasteful, at worst a lockout trigger. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
 
 ## 6. Correctness traps agents repeat
 
