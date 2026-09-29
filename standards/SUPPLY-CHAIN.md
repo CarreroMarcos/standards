@@ -1,6 +1,6 @@
 ---
 title: Supply Chain Security
-version: "2.2"
+version: "2.3"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
 last_reviewed: 2026-09-29
@@ -9,6 +9,18 @@ last_reviewed: 2026-09-29
 # Supply Chain Security
 
 Applies to: adding, upgrading, or regenerating dependencies in AI-assisted development.
+
+## Sections
+
+- **The attack: slopsquatting** — hallucinated package names as the delivery mechanism
+- **The second attack: poisoning the real package** — the 2026 worm wave through legitimate packages
+- **Verify every suggested package at the registry — before installing** — resolve first, install second; release-age gating for new versions too
+- **Make dependency additions explicit and pinned** — manifests and lockfiles, reviewed diffs
+- **The agent never adds a dependency on its own** — propose; human approves
+- **Deny install-time execution by default** — scripts off, sandboxed installs
+- **Treat agent config and skill supply chain as executable** — MCP servers and skills are supply-chain artifacts
+- **Scan what you pull in** — what to scan and when
+- **References**
 
 ## The attack: slopsquatting
 
