@@ -1,6 +1,6 @@
 ---
 title: Standards
-version: "1.4"
+version: "1.5"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
 last_reviewed: 2026-09-29
@@ -9,6 +9,10 @@ last_reviewed: 2026-09-29
 # Standards
 
 Route by what you are **doing**, not by what a title sounds like. Find the row whose "when" matches your current task, read that file, and skip the rest. Each file is the single source of truth for its topic — don't duplicate content across files.
+
+## How to use these
+
+These are best practices, not laws. Context matters — some rules don't fit certain tasks, and a rule applied where it doesn't fit is worse than no rule. When a rule doesn't fit, set it aside explicitly: name the rule, state the reason, record it where the decision lives. Never set one aside silently — a silent deviation is a silent default, and these standards exist to prevent silent defaults.
 
 | When you are… | Read | Skip when / precedence |
 |---|---|---|
