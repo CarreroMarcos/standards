@@ -1,14 +1,23 @@
 ---
 title: Trust Classification
-version: "2.1"
+version: "2.2"
 scope: Trust levels for code, data, and agents
 consult_when: "When deciding whether content can be acted on or only read."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Trust Classification
 
 Classify every input by trust level before acting on it. This standard names the classification; the runtime points below enforce it — a label without an enforcement point is a wish.
+
+## Sections
+
+- **Trust Levels** — TRUSTED / SEMI_TRUSTED / UNTRUSTED / QUARANTINE
+- **Source Classification** — the source table; classify fields, not just sources
+- **Rules** — classify before acting; trust degrades; delegation is intersection
+- **Enforcement points** — hooks, not prose
+- **References**
+- **Relationship to Other Standards** — AGENTIC-SAFETY.md is the hub
 
 ## Trust Levels
 
