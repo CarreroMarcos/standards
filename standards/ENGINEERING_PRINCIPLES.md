@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.5"
+version: "1.6"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
 ---
@@ -429,7 +429,7 @@ Prefer one authoritative owner for a fact. Replicas, caches, indexes, read model
 
 One session per request or task, closed at the boundary — a session that outlives its scope is a stale read or a leak. Transaction boundaries sit at the request/task scope, not inside helpers; a helper that commits decides the caller's atomicity for it.
 
-N+1 is the classic agent blind spot: a loop that touches a relationship fires one query per row. Load what you iterate — `select_related`/`joinedload` for the relationships the loop actually touches. No lazy loading outside the session that opened it.
+N+1 is the classic agent blind spot: a loop that touches a relationship fires one query per row. Load what you iterate — eager-load (`joinedload`/`selectinload` in SQLAlchemy, whatever the ORM calls it) for the relationships the loop actually touches. No lazy loading outside the session that opened it.
 
 Write queries the index can answer: filter on indexed columns, and check the query plan before assuming the ORM generated a sane one. The ORM is a query builder, not a guarantee.
 
@@ -459,11 +459,11 @@ Retry only what can self-heal — 429s and 5xxs. Never retry client errors (400/
 
 ### Worker and Queue Discipline
 
-One consumer, one queue — route work deliberately (a queue per consumer in Django; task-level routing in Celery), so a slow consumer never starves an unrelated workload. Workers are single-process by default; scale concurrency deliberately, never by accident.
+One consumer, one queue — route work deliberately (a queue per consumer, or task-level routing where the broker supports it), so a slow consumer never starves an unrelated workload. Know the worker's concurrency model — prefork, threads, or single-process — and set it deliberately; the default is rarely the right size.
 
-Every job is idempotent or it doesn't ship: workers retry, redeliver, and crash — design for the repeat. Visibility timeout (or its equivalent) exceeds the maximum task duration; a timeout shorter than the work produces phantom duplicates. Poison messages get bounded retries, then a dead-letter queue — never infinite requeue.
+Design every job for repeat delivery: workers retry, redeliver, and crash. Make the handler idempotent where the side effects allow it; where they don't (a charge, a sent email), put an idempotency key at the boundary so the repeat is detected, not re-executed. Visibility timeout (or its equivalent) exceeds the maximum task duration; a timeout shorter than the work produces phantom duplicates. Poison messages get bounded retries, then a dead-letter queue — never infinite requeue.
 
-Close what the framework doesn't: one DB connection scope per worker task (Celery), transactions scoped to one request or one task (Django). The worker process outlives the work — anything leaked per task compounds.
+Close what the framework doesn't: one DB connection scope per worker task; transactions scoped to one request or one task. The worker process outlives the work — anything leaked per task compounds.
 
 **The common failure:** a worker that borrows the request's database session and leaks it across tasks, or a visibility timeout shorter than the job — both produce corruption that only appears under load.
 
@@ -696,7 +696,7 @@ For consequential migrations, correctness takes precedence over making rollback 
 
 ## §7. Python Practice
 
-Python-specific mechanics live in `PYTHON.md` — tooling, style, typing, async discipline, errors, packaging, and performance. This section states only the principle: the sections above are language-neutral; Python makes them concrete, and the failure modes are easy to write, hard to see in review, and often invisible until load.
+Python-specific mechanics live in `PYTHON.md` — tooling, style, typing, async discipline, errors, packaging, and performance. This section states only the principle: the sections above state principles, not implementations — the examples are Python because that is the working language; translate the mechanics when the stack differs. The failure modes are easy to write, hard to see in review, and often invisible until load.
 
 ## §8. Spec-First Workflow (for significant work)
 
