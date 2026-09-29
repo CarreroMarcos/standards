@@ -1,6 +1,6 @@
 ---
 title: Logging Standard
-version: "2.3"
+version: "2.4"
 scope: Logging: what to log, levels, structure, retention
 consult_when: "When adding or changing log/telemetry statements."
 last_reviewed: 2026-09-29
@@ -55,3 +55,5 @@ logger.info(f"User {username} logged in with password {password}")  # Never
 - Verbose per-row database output in production loops
 
 **Debugging a model call without logging the body:** log a bounded, redacted excerpt (explicit redaction step first — never raw), or log a content hash plus the byte range / source IDs needed to recover the exact input from the authoritative API later. Bodies of model calls are never DEBUG-logged in serverless, gated or not — prefer structured INFO fields (ids, counts, durations, content hashes) over DEBUG bodies for LLM pipelines.
+
+**Eval-reproducibility record.** An eval run's record = corpus version + pin sha256 + driver version + model ID + effort/config + wall time, recorded in the tracked manifest. The next eval ticket re-derives nothing from scratch; the record names the exact evidence the gate scored.
