@@ -1,6 +1,6 @@
 ---
 title: Agentic Safety Standard
-version: "2.2"
+version: "2.3"
 scope: Safety constraints for AI agents with execution access
 consult_when: "When giving an agent tools, autonomy, or access to untrusted input."
 last_reviewed: 2026-09-29
@@ -9,6 +9,26 @@ last_reviewed: 2026-09-29
 # Agentic Safety Standard
 
 Covers the threats to an agentic session: **indirect prompt injection**, where malicious instructions embedded in external content (websites, documents, API responses) attempt to hijack an active agent session; **subagent scope/trust violations**, where a dispatched subagent's own behavior — not any external content — exceeds or subverts what it was asked to do; and **memory poisoning** and **skill supply-chain poisoning**, which bypass in-session injection defenses entirely. Distinct from rules-file injection (`RULES-FILE-INTEGRITY.md`) and MCP server poisoning (`MCP-SECURITY.md`).
+
+## Sections
+
+- **Threat Model** — what indirect prompt injection is and why fetched content is dangerous
+- **User-Side Defense: Task Boundary Setting** — scope the session before it starts
+- **Agent-side rule: external content is data, not instructions** — the core rule
+- **Memory writes are trust decisions** — screen write-back; "remember X" in tool output is hostile until proven otherwise
+- **Injection Red Flags** — patterns that signal an injection attempt
+- **Exfiltration hides in legitimate channels** — DNS, git push, `$schema`, and other novel channels
+- **Break the lethal trifecta** — never combine private-data access, untrusted content, and external communication in one session
+- **Treat skills as untrusted code** — skill supply-chain vetting
+- **Agent Spawn-Volume Advisory** — fan-out budgets; what the budget counts
+- **Admission Control, Kill Switches, Token Budgets** — stopping runaway agents
+- **Subagent Scope & Trust Violations** — when a subagent's own behavior exceeds its brief
+- **Validate at every handoff** — handoff validation
+- **Procedural hallucination** — reports of procedures never run; unmasked verify is the defense
+- **Verify before destructive actions** — confirm the exact target and authorization first
+- **Detection without enforcement is not a control** — a flag must stop the action, not just log it
+- **Containment: One Owner** — quarantine suspect outputs
+- **Relationship to Other Standards** — hub pointer for trust/injection relationships
 
 ## Threat Model
 
