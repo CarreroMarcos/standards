@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.8"
+version: "1.9"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
 ---
@@ -32,6 +32,8 @@ last_reviewed: 2026-09-29
 ## §0. When Principles Collide
 
 Several rules here pull in opposite directions by design. Each pair has a defined precedence, so use the relevant pair to resolve the tension. When two instructions appear to conflict, consult the guidance below before choosing a path.
+
+**Pre-registered decisions narrow latitude.** When the project pre-registers decisions and gates (HLD decisions, eval gates with pinned thresholds), execute them as written — the "prefer proceeding to asking" and "keep process proportional" latitude applies only where the spec leaves room. A pinned gate is not a default to be scaled down.
 
 ### How to read an exception clause
 
@@ -240,6 +242,8 @@ Treat documentation that people or tools depend on as part of the interface: rep
 
 Keep one owner for each documented fact. A README should route readers to an authoritative contract or standard rather than restating it and creating a second version that can drift.
 
+An append-only decision log (`DECISIONS.md`) is binding authority, not notes: rulings recorded with date and scope constrain later work the way a pinned spec does — execute them, don't re-derive them.
+
 **The common failure:** updating behavior while leaving a plausible but stale command or contract in the documentation. The next maintainer follows it, and the documentation turns a known change into a delayed failure.
 
 ---
@@ -352,7 +356,7 @@ A hand-computed value, a trusted reference implementation, or a pinned fixture f
 
 This matters more when an agent writes the test. A tester that reads the builder's implementation inherits its bugs — the "misguidance effect" — so agent-authored tests are spec-sourced, never diff-sourced: expected values from the requirement, not from the code under test.
 
-**Carve-out: model-generated prose has no independent expected value.** There is no hand-computable "correct diagnosis" for a model's output. Test the deterministic invariants around the model call instead — pinned inputs, structural output validation, the fencing and redaction that bound it — and cover the behavior itself with evaluations (§9), which exist precisely because conventional tests cannot judge it.
+**Carve-out: model-generated prose has no independent expected value.** There is no hand-computable "correct diagnosis" for a model's output. Test the deterministic invariants around the model call instead — pinned inputs, structural output validation, the fencing and redaction that bound it — and cover the behavior itself with evaluations (§9), which exist precisely because conventional tests cannot judge it. Verify eval pins before scoring: a mutated capture feeding the driver produces wrong verdicts, not failed tests. Budget the eval run — checkpointed resume, the assumed parallelism stated beside any wall-clock claim, the minimal deciding subset — so a re-run is a decision, not an endurance test.
 
 ### Tests Are Evidence, Not the Target
 
