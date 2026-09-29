@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.5"
+version: "1.6"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
 last_reviewed: 2026-09-29
@@ -42,8 +42,9 @@ main. Repo-specific names are marked; the shape is the reusable part.
    check, full test suite in a clean shell, ruff/format, pre-commit. This is
    the "custody law": it exists because PR #114's squash accidentally
    carried in-progress code from a shared worktree's local main. Like the
-   Oracle, the verifier never reads the fixer's reasoning — contract, gate
-   output, and diff only.
+   Oracle, the verifier (the loop's independent pre-push check — not the repo's
+   pipeline stages, which use "verifier" for their own kill/suppress step)
+   never reads the fixer's reasoning — contract, gate output, and diff only.
 4. **Push + PR.** `git push -u origin <branch>`, `gh pr create`.
 5. **Bot rounds.** Wait ~120s (bot latency; +45s if the round is
    absent/errored/unchanged), then fetch the bot's comments. The bot owns
@@ -81,6 +82,8 @@ main. Repo-specific names are marked; the shape is the reusable part.
 ## Loop Contract
 
 Written before iteration 1. The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → stop and escalate), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
+
+Distinguish "escalate because stuck" from "surface a designed ruling request": a pre-registered rule that requires a human decision (e.g. a `needs-mars-ruling` terminal state) is not a stall — it is a terminal state. Stop, write the ledger receipt, wait. The compliant completion is the decision brief (evidence, options, recommendation) recorded in the plan; "blocked" is not a deliverable.
 
 ## Orchestration patterns
 
