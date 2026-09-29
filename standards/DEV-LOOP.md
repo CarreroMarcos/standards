@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.4"
+version: "1.5"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
 last_reviewed: 2026-09-29
@@ -46,9 +46,12 @@ main. Repo-specific names are marked; the shape is the reusable part.
    output, and diff only.
 4. **Push + PR.** `git push -u origin <branch>`, `gh pr create`.
 5. **Bot rounds.** Wait ~120s (bot latency; +45s if the round is
-   absent/errored/unchanged), then fetch the bot's canonical comment
-   (fenced `pr-reviewer:canonical` marker — exactly one per PR, PATCHed in
-   place). Disposition every finding: fix it, or accept it as a documented
+   absent/errored/unchanged), then fetch the bot's comments. The bot owns
+   one PATCH-in-place slot per namespaced fenced marker — `pr-reviewer:canonical`
+   for the review (exactly one per PR), `pr-reviewer:<slot>` for each additional
+   comment type (e.g. `pr-reviewer:ci-diagnosis`). A plan that adds a bot-authored
+   comment type must name its marker; a wrong guess collides with the canonical
+   machinery. Disposition every finding: fix it, or accept it as a documented
    residual. False positives are disproven with file/byte evidence, not
    argued. The bot reads the thread before posting — a dispositioned finding
    is never re-raised (reviewer-side freeze rule). Promote repeated
