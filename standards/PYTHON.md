@@ -1,6 +1,6 @@
 ---
 title: Python Standard
-version: "1.4"
+version: "1.5"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
 last_reviewed: 2026-09-29
@@ -203,7 +203,7 @@ When a call is genuinely unbounded, fix it at layer 1 or 2 before reaching for l
 
 A locally guessed five seconds buried three frames deep is harder to find and fix later than an unwired budget you explicitly identified.
 
-Establish the deadline convention as its own task. Keep it separate from unrelated changes.
+Establish the deadline convention as its own task — prefer it separate from unrelated changes, unless the change is itself the budget-tuning work the plan calls for.
 
 **The common failure:** wrapping every `await` in `asyncio.timeout` with a locally invented number. Nested deadlines disagree, the innermost one wins by accident, the budget becomes fiction, and a slow dependency trips a two-second inner timeout while the caller was willing to wait thirty.
 
@@ -540,7 +540,7 @@ assert svc.balance(u) == 90
 
 **Async tests force interleaving.** Every coroutine under test is awaited; use `asyncio.gather` to force task interleaving and expose missing locks; keep shared fixtures read-only or copy-per-test; put timeouts on tests that can deadlock. Timeouts turn "CI hangs for 6 hours" into a failing test with a name.
 
-**Property-based testing for parsers, serializers, protocols.** Hypothesis where the domain has *properties*: round-trips (`decode(encode(s)) == s`), invariants (sorted output is ordered), equivalence (optimized impl == reference impl). Example tests check the cases you thought of; property tests check the ones you didn't — off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
+**Property-based testing for parsers, serializers, protocols.** Hypothesis where the domain has *properties*: round-trips (`decode(encode(s)) == s`), invariants (sorted output is ordered), equivalence (optimized impl == reference impl). Hypothesis where available — under a stdlib-only constraint, a small deterministic property loop (seeded PRNG over the input space) is the same rule. Example tests check the cases you thought of; property tests check the ones you didn't — off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
 
 **CLI tests: test handlers, not argv strings.** Subcommands map to `_cmd_*` handlers taking parsed args; test handlers directly, the entrypoint thinly (exit codes). Parsing is the framework's job; your logic is the handler.
 
