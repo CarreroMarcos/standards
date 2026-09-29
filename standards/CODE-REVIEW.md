@@ -1,6 +1,6 @@
 ---
 title: Code Review Standard
-version: "2.3"
+version: "2.4"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff - yours, a bot's, or another agent's."
 last_reviewed: 2026-09-29
@@ -57,7 +57,7 @@ The `Basis` field classifies how the reviewer arrived at the finding.
 
 Ground the evidence to the basis. `VERIFIED` requires `file:line` + code excerpt or precise behavioral description. `INFERRED` requires `file:line` + the reasoning chain. `SPECULATIVE` requires `file:line` + the observed trigger (the specific code pattern that raised the concern) + an explicit statement of why the consequence cannot be confirmed. The uncertainty is about the consequence, not the existence of the code. Prose alone ("this may cause...") is not evidence.
 
-**State absence and attribution claims as scope + command + output.** A claim that something does *not* exist — no reference, no test, unreachable — or that one thing cost or caused another is only `VERIFIED` when the finding states the scope actually searched as the command that established it.
+**State absence and attribution claims as scope + mechanism + output.** A claim that something does *not* exist — no reference, no test, unreachable — or that one thing cost or caused another is only `VERIFIED` when the finding states the scope actually searched as the mechanism that established it: shell command, driver invocation, or artifact path.
 
 - Not `VERIFIED` — the conclusion alone: *"no test covers THING"*
 - `VERIFIED` — the conclusion **plus** the command that established it and what it returned: *"no test covers THING — `grep -rl 'PATTERN' PATHS` returned OUTPUT"*
@@ -128,6 +128,8 @@ Review identifies and recommends by default. Remediation (editing files, generat
 ## 10. Scale the ceremony to the diff
 
 Not every diff earns all ten sections. Match the review's weight to the change's blast radius — the trigger is what the change can break, not its line count.
+
+Evidence-only tasks (re-captures, re-runs) get ceremony scaled to the decision they gate, not to a diff that doesn't exist.
 
 - **Trivial (no behavior change — comments, renames, formatting, config value bumps):** one pass confirming the change is purely mechanical; a verdict and one line saying what you checked. No finding schema, no opposition review.
 - **Small (one concern, one file or a focused set):** cover only the domains the diff can affect — §1's conditional logic applies to the whole review, so skip domains the change can't touch. Findings still use the schema, but the report may be a short list. Opposition review is a paragraph answering the four questions briefly, not four essays.
