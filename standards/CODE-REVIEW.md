@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.0"
+version: "2.1"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff - yours, a bot's, or another agent's."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Code Review Standard
@@ -11,6 +11,8 @@ last_reviewed: 2026-09-27
 What a complete code review is and how findings are evidenced. Advisory — owning gates define pass/fail.
 
 A review is complete when every required domain is covered, every finding carries evidence, the opposition review answered its four questions, and a verdict is stated. This standard does not mandate agent topology, model, or phase count.
+
+Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition review.
 
 ## 1. Coverage
 
@@ -109,3 +111,13 @@ The review fails on any of:
 ## 9. Remediation
 
 Review identifies and recommends by default. Remediation (editing files, generating tests, applying fixes) requires explicit user request after findings are presented.
+
+## 10. Scale the ceremony to the diff
+
+Not every diff earns all nine sections. Match the review's weight to the change's blast radius — the trigger is what the change can break, not its line count.
+
+- **Trivial (no behavior change — comments, renames, formatting, config value bumps):** one pass confirming the change is purely mechanical; a verdict and one line saying what you checked. No finding schema, no opposition review.
+- **Small (one concern, one file or a focused set):** cover only the domains the diff can affect — §1's conditional logic applies to the whole review, so skip domains the change can't touch. Findings still use the schema, but the report may be a short list. Opposition review is a paragraph answering the four questions briefly, not four essays.
+- **Large or risky (multi-file, behavior change, or anything touching auth, money, data loss, or security boundaries):** the full standard, no shortcuts.
+
+A 5-line auth change gets the full treatment; a 200-line rename gets the light one. When in doubt, go heavier and say why.
