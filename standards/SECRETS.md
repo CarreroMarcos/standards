@@ -1,9 +1,9 @@
 ---
 title: SECRETS.md — Ephemeral by Default
-version: "2.1"
+version: "2.2"
 scope: Secrets management: storage, rotation, agent exposure
 consult_when: "When handling credentials, API keys, or tokens - storing, passing, logging, or reviewing code that touches them."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # SECRETS.md — Ephemeral by Default
@@ -35,6 +35,12 @@ Pre-commit hooks catch secrets going into git. They miss everything else the age
 - Scan agent-written PR comments, issue comments, summaries, and workflow logs for secret patterns before they publish.
 - Scrub secrets from traces and audit logs: log that a credential was used, never the value. Restore `{{ENV_VAR}}` placeholders in displayed traces.
 - Why: one 2026 incident's root cause was literally "no output filtering" — an agent posted environment contents to a PR comment.
+
+## Validation errors and typed secrets
+
+- **Hide inputs at sensitive boundaries.** Structured validation errors that echo the offending input are a secret-leak vector — passwords land in 422 responses, then in logs. At sensitive boundaries, suppress the input field (`errors(include_input=False)` / `hide_input_in_errors` in pydantic).
+- **Secrets ride as redacted types.** Config values that hold secrets use a secret-string type so they redact in logs, tracebacks, and error payloads by default.
+- **Redaction runs before rendering.** In the logging pipeline, the secret-scrubbing step sits before the formatter — the secret must never reach the string that gets emitted. Full policy: `LOGGING.md`.
 
 ## Storage and lifetime
 
