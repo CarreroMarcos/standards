@@ -1,9 +1,9 @@
 ---
 title: Code Quality
-version: "2.0"
+version: "2.1"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Code Quality
@@ -107,3 +107,13 @@ each action. Vague tasks become testable goals.
 ## 7. Dead Code
 
 Observe freely, remove only with proof: flagging suspected dead code is always safe, deleting it requires deterministic proof or explicit human confirmation. Full policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority".
+
+## 8. Naming, Function Size, and Control-Flow Discipline
+
+**Name for meaning, not mechanics.** Nouns for variables, verbs for functions. `pending_refunds` beats `data2`; `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen — keep names ≥3 letters so the call site reads as a sentence.
+
+**One thing per function, one level of abstraction.** Roughly under 50 lines; files under ~800. The top function reads as an outline; details live one call down. Long functions mix abstraction levels, which makes the bug surface the entire function.
+
+**Guard clauses beat nesting.** Validate inputs and handle edge cases first; keep the happy path at the left margin. Cap nesting at ~4 — past that, extract.
+
+**Boolean parameters are a design smell.** One boolean = caution; two or more = refactor into named functions, a mode enum, or a parameter object. Each flag multiplies the code paths and test cases. `download(url, True)` is unreadable at the call site — a boolean usually hides two functions with different reasons to change. Any surviving flag is keyword-only.
