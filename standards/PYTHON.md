@@ -1,6 +1,6 @@
 ---
 title: Python Standard
-version: "1.3"
+version: "1.4"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
 last_reviewed: 2026-09-29
@@ -11,6 +11,26 @@ last_reviewed: 2026-09-29
 Operational Python rules for agents. Language-neutral principles live in `ENGINEERING_PRINCIPLES.md`; per-task quality rules in `CODE-QUALITY.md`. This file owns the Python-specific how: the tooling contract, style, typing, async, errors, packaging, and performance.
 
 Every rule carries its why. Read the why before the rule — the point is that you understand the decision well enough to own it, not that you skim a checklist.
+
+## Sections
+
+- **1. The tooling contract** — deliberate ruff rule selection; lint is law
+- **2. Style: what the linter can't catch** — imports, naming-adjacent style rules
+- **3. Typing** — strictness as team posture; typed module boundaries
+- **4. Async discipline** — task ownership, cancellation, no fire-and-forget
+- **5. Errors and exceptions** — structured hierarchies; retry in one wrapper per boundary
+- **6. Correctness traps agents repeat** — lru_cache on methods, naive datetimes, un-awaited coroutines
+- **7. Subprocess, environment, and dependencies** — evaluate every new dependency as a decision
+- **8. Performance** — measure first; the standard optimization rules
+- **9. Readability** — naming, one-thing functions, guard clauses, docstrings as contract
+- **10. Functions, classes, and data flow** — functions by default, sentinel values, no taxonomies
+- **11. Control flow** — EAFP-when-exceptional / LBYL-when-routine, comprehension ceiling, match
+- **12. Module and package design** — lazy heavy imports, src layout, feature-organized modules
+- **13. API design** — keyword-only args, progressive disclosure
+- **14. Configuration** — typed settings object, hide inputs at sensitive boundaries
+- **15. Runtimes: Lambda and long-lived servers** — thin handlers, cold-start discipline, batchItemFailures
+- **16. Testing** — hoist I/O, fakes over mocks, Hypothesis, contract tests
+- **17. Evolving code** — 3-phase deprecation, additive compatibility, changelog as contract
 
 ## 1. The tooling contract
 
