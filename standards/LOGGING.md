@@ -1,6 +1,6 @@
 ---
 title: Logging Standard
-version: "2.1"
+version: "2.2"
 scope: Logging: what to log, levels, structure, retention
 consult_when: "When adding or changing log/telemetry statements."
 last_reviewed: 2026-09-29
@@ -9,6 +9,12 @@ last_reviewed: 2026-09-29
 # Logging Standard
 
 Emit structured, queryable logs that never expose secrets.
+
+## Sections
+
+- **Rules** — structured format, honest levels, request-scoped context, redaction before rendering, libraries emit records
+- **Example** — the canonical logging setup
+- **What Never to Log** — secrets and everything adjacent
 
 ## Rules
 
