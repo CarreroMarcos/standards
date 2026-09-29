@@ -1,6 +1,6 @@
 ---
 title: Code Review Standard
-version: "2.1"
+version: "2.2"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff - yours, a bot's, or another agent's."
 last_reviewed: 2026-09-29
@@ -13,6 +13,19 @@ What a complete code review is and how findings are evidenced. Advisory — owni
 A review is complete when every required domain is covered, every finding carries evidence, the opposition review answered its four questions, and a verdict is stated. This standard does not mandate agent topology, model, or phase count.
 
 Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition review.
+
+## Sections
+
+- **1. Coverage** — the five required domains plus conditional ones
+- **2. Finding schema** — Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking
+- **3. Basis classification** — VERIFIED / INFERRED / SPECULATIVE and what each requires
+- **4. Blocking semantics** — what may block and what never does
+- **5. Report sections** — assembly order for the finished report
+- **6. Opposition review** — the four questions, answered explicitly
+- **7. Evidence integrity** — a check that cannot fail does not count; mutation discipline
+- **8. Failure criteria** — what fails the review itself
+- **9. Remediation** — review identifies; remediation needs explicit request
+- **10. Scale the ceremony to the diff** — trivial / small / large tiers; blast radius, not line count
 
 ## 1. Coverage
 
