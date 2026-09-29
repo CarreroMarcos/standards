@@ -1,6 +1,6 @@
 ---
 title: Python Standard
-version: "1.1"
+version: "1.2"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
 last_reviewed: 2026-09-29
@@ -24,6 +24,8 @@ The project names its tools once, in `AGENTS.md`, and every agent uses them. No 
 - **pre-commit gates the commit:** ruff hooks, the type checker via `uv run`, and the uv lock hooks. The gate runs before the commit exists, not after.
 
 Why this section comes first: every rule below is cheaper when a tool enforces it. The contract turns style from advice into a gate.
+
+**Version posture.** 3.15 is the horizon — PEP 661 (`sentinel()`) and PEP 810 (`lazy import`) are Final, first release scheduled 2026-10-01; 3.16 is now the watch. Use version-gated idioms (§10, §12) until the floor moves.
 
 ## 2. Style: what the linter can't catch
 
@@ -94,6 +96,8 @@ if not user_id:
 **Prefer generated models where a schema exists.** When you own or consume a real schema, generate models from it where tooling makes that reliable and verify drift in CI. Where no usable schema exists, use a hand-written narrow adapter: validate at the boundary, convert to your own types, and let contract tests pin the behavior you depend on.
 
 **Annotate public functions.** Where there is no external schema, the annotation is part of the contract. The type checker runs in CI so the contract gets automated verification.
+
+**Typing strictness is a team posture; state it once.** The checker, its strictness level, and what `Any` is allowed to mean are named in the repo's typing config — not renegotiated per file. Strict where the contract matters (boundaries, money, auth); pragmatic where the shape is genuinely open.
 
 ### Choose the model type by cost and job
 
@@ -302,6 +306,8 @@ logger.debug("user %s did %s", user, action)
 
 **Name for meaning, not mechanics.** Nouns for variables, verbs for functions. A good name removes the need for a comment — `pending_refunds` beats `data2`, `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen; keep names ≥3 letters.
 
+**Unpack to name, not to index.** `x, y = point` beats `point[0], point[1]` — the names document what each position *means* at the use site, so the reader never holds the layout in their head. Unpacking is naming; indexing is a memory test.
+
 **One thing per function, one level of abstraction.** A function small enough that its whole idea fits in your head at once — roughly under 50 lines, files under ~800. Long functions mix abstraction levels (policy next to byte-twiddling), which makes the bug surface the entire function. The top function should read as an outline; details live one call down.
 
 **Guard clauses beat nesting.** Validate inputs and handle edge cases first; keep the happy path at the left margin. Each nesting level doubles the reader's mental stack. Cap nesting at ~4 — past that, extract.
@@ -374,13 +380,15 @@ class Greeter:
 def greet(name, greeting): return f"{greeting}, {name}!"
 ```
 
-**Don't build taxonomies; subclass only for code reuse.** Never model real-world categories (`Dog(Animal)`) — the day you need `RobotDog`, the tree breaks. Python is protocol-oriented: duck typing and dunders outlive nominal hierarchies. Composition survives requirement changes; deep hierarchies hide behavior across ancestors.
+**Lambda means "throwaway", not "clever".** `lambda` is for tiny anonymous functions passed as arguments — `key=` sorts, one-expression callbacks. A function whose name the reader will ever need to find gets a `def` and a real name. Multi-line logic, default-arg binding tricks, and nested lambdas are always a `def`.
+
+**Don't build taxonomies; subclass only for code reuse.** Never model real-world categories (`Dog(Animal)`) — the day you need `RobotDog`, the tree breaks. Python is protocol-oriented: duck typing and dunders outlive nominal hierarchies. Composition survives requirement changes; deep hierarchies hide behavior across ancestors. Never subclass builtins to change their behavior — `dict.update` won't call your overridden `__setitem__` (C-level methods bypass it silently). Compose or wrap instead.
 
 **Keep the public surface minimal; underscore the rest.** Everything public is something someone will depend on and you can never refactor. Mark implementation details with a leading underscore — helpers, caches, internal constants. The `_` convention is Python's entire access control; the ecosystem honors it.
 
 **Return values; don't mutate arguments.** Functions speak data in, data out. Mutating a caller's dict or list makes behavior depend on call history — the #1 source of "works in isolation, fails in production." Build and return new values; frozen dataclasses (§3) make this cheap.
 
-**Use a sentinel when `None` is a legitimate value.** `def update(name=None)` can't distinguish "don't touch" from "clear it." A private `_MISSING = object()` gives three states with zero ambiguity. When `None` genuinely means "no value," plain `None` is correct.
+**Use a sentinel when `None` is a legitimate value.** `def update(name=None)` can't distinguish "don't touch" from "clear it." A private `_MISSING = object()` gives three states with zero ambiguity. On 3.15+, `sentinel()` is a builtin — a named, repr-able sentinel built for exactly this; below 3.15, keep the `_MISSING = object()` idiom. When `None` genuinely means "no value," plain `None` is correct.
 
 ```python
 _MISSING = object()
@@ -421,11 +429,23 @@ else:
 
 **Resources live in `with` blocks — always.** Files, sockets, locks, DB sessions: acquired in `with`, never manual `close()`. Manual cleanup has exactly one failure mode — the exception path that skips it — and it's the path you test least. For a *dynamic number* of context managers, `ExitStack` (LIFO unwind cleans up partial setup; `AsyncExitStack` for async). For expected-and-ignorable exceptions, `contextlib.suppress` beats `try/except: pass`. In `@contextmanager` generators, code after `yield` belongs in `finally`.
 
+**Comprehensions: one filter, one transform, one line-ish.** A comprehension is a for-loop in expression form — it inherits the loop's complexity budget. One `for` with one `if` and one expression is the ceiling; past that, write the loop or a generator function. A nested comprehension costs nothing at runtime and everything in review time.
+
+```python
+# Bad: two loops and a filter in one expression
+flat = [y for row in rows if row for y in row if y]
+
+# Good: the loop says what it does
+def flatten(rows):
+    for row in rows:
+        yield from row
+```
+
 ## 12. Module and package design
 
 **`def main() -> int` + `sys.exit(main())`.** Scripts are structured as a `main()` returning an exit code, guarded by `if __name__ == "__main__": sys.exit(main())`. Top level holds definitions and constants only — no work. Importable modules are testable modules; top-level side effects make `import` run your program. `main(argv) -> int` is directly unit-testable without subprocesses. Map exit codes deliberately (0 ok, non-zero failure, 130 on KeyboardInterrupt); handle `BrokenPipeError` for piped output. One real console entrypoint owns arg parsing, logging setup, and the top-level error boundary.
 
-**Do no work at import time; make heavy imports lazy.** Import must be safe and fast: no network, no filesystem mutations, no expensive work, no heavy third-party imports at module top level. Move slow imports (pandas, cloud SDKs, ML libs) into the functions that need them. Import cost is paid on *every* invocation — every CLI run, every Lambda cold start, every test collection — and the wins are measured in the high double digits of percent. Profile with `python -X importtime` before guessing. Manage the trade-off deliberately: ruff PLC0415 gets per-file ignores in CLI modules, not blanket disables; `TYPE_CHECKING` for type-only imports; a regression test asserting heavy modules are absent from `sys.modules` after importing the CLI.
+**Do no work at import time; make heavy imports lazy.** Import must be safe and fast: no network, no filesystem mutations, no expensive work, no heavy third-party imports at module top level. Move slow imports (pandas, cloud SDKs, ML libs) into the functions that need them. Import cost is paid on *every* invocation — every CLI run, every Lambda cold start, every test collection — and the wins are measured in the high double digits of percent. Profile with `python -X importtime` before guessing. Manage the trade-off deliberately: ruff PLC0415 gets per-file ignores in CLI modules, not blanket disables; `TYPE_CHECKING` for type-only imports; a regression test asserting heavy modules are absent from `sys.modules` after importing the CLI. On 3.15+, the `lazy import` statement makes deferral declarative instead of hiding imports inside functions — prefer it where the version allows; keep function-level imports with `noqa: PLC0415` on older versions.
 
 ```python
 # Bad: every `tool --help` pays for pandas + boto3
