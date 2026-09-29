@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.1"
+version: "2.2"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
 last_reviewed: 2026-09-29
@@ -10,7 +10,9 @@ last_reviewed: 2026-09-29
 
 Operational quality rules for AI-generated code. Design principles live in
 `ENGINEERING_PRINCIPLES.md` (cited below as §N); this file holds only what an
-agent must do or report on each task. Deliberately not carried over: per-language
+agent must do or report on each task. Every rule below serves one goal: code a
+stranger — human or agent — can read and safely change. Refactorability is the
+bar; the rules are how you reach it. Deliberately not carried over: per-language
 `extensions/<language>.md` files, metrics tables, and CI/pre-commit enforcement
 boilerplate — nothing in this repo reads them.
 
@@ -65,7 +67,8 @@ except ValueError as e:
 
 **Comment the WHY, not the WHAT.** A comment must trace to observable behavior,
 a documented constraint, or explicit project guidance — otherwise omit it.
-Absence of rationale beats speculative rationale.
+Absence of rationale beats speculative rationale. No comments about code that
+isn't there — don't narrate dead code; flag or remove it (→ §7).
 
 ```python
 # ❌ BAD - Obvious comment
@@ -112,8 +115,39 @@ Observe freely, remove only with proof: flagging suspected dead code is always s
 
 **Name for meaning, not mechanics.** Nouns for variables, verbs for functions. `pending_refunds` beats `data2`; `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen — keep names ≥3 letters so the call site reads as a sentence.
 
+**Mark deliberate escape hatches explicitly.** A leading underscore on a
+function or module signals "I chose this — depend on it at your own risk";
+pair it with a comment naming the reason. A silent workaround is
+indistinguishable from an accident.
+
 **One thing per function, one level of abstraction.** Roughly under 50 lines; files under ~800. The top function reads as an outline; details live one call down. Long functions mix abstraction levels, which makes the bug surface the entire function.
 
-**Guard clauses beat nesting.** Validate inputs and handle edge cases first; keep the happy path at the left margin. Cap nesting at ~4 — past that, extract.
+**Flat structure first; guard clauses beat nesting.** Validate inputs and
+handle edge cases first; keep the happy path at the left margin. Nesting is
+for genuine branching, not formatting — no `if:` inside `if:` that could be a
+guard clause. Cap nesting at ~4 — past that, extract.
+
+```python
+# ❌ BAD - Nesting as formatting
+if order:
+    if order.items:
+        process(order)
+
+# ✅ GOOD - Edge cases first, happy path flat
+if not order: raise ValueError("no order")
+if not order.items: raise ValueError("empty order")
+process(order)
+```
 
 **Boolean parameters are a design smell.** One boolean = caution; two or more = refactor into named functions, a mode enum, or a parameter object. Each flag multiplies the code paths and test cases. `download(url, True)` is unreadable at the call site — a boolean usually hides two functions with different reasons to change. Any surviving flag is keyword-only.
+
+**Duplicate twice, abstract on the third.** Write it three times before
+extracting — premature abstraction locks in the wrong shape. The deliberate
+exception: a shared contract at a published boundary is designed up front,
+→ `ENGINEERING_PRINCIPLES.md` §5.
+
+## 9. Rules Bow to Context
+
+A hot loop, a legacy boundary, or an explicit user instruction can override a
+rule — when it does, say so in the change. An unexplained exception is
+indistinguishable from a mistake.
