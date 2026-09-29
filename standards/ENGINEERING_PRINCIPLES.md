@@ -1,8 +1,8 @@
 ---
 title: Engineering Principles
-version: "1.3"
+version: "1.4"
 scope: Core engineering principles and practices
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Engineering Principles
@@ -157,6 +157,16 @@ Instantiate shared resources — connection pools, clients, clocks — at a comp
 
 **The common failure:** "it's just one logger, I'll make it a singleton." Then every test that touches logging depends on global state, and tests cannot run safely in parallel because they pollute each other's captures. The opposite failure is a Protocol per dependency and an abstract factory to assemble them, which is harder to follow than the globals it replaced.
 
+**DI without frameworks.** A lightweight service registry — register factories at the composition root, acquire instances with automatic cleanup and health checks — gives inversion of control with no decorators, no global state, and no signature mangling. Decorators that rewrite signatures defeat type checkers and confuse readers; explicit parameters keep the dependency graph visible and swappable.
+
+### Functions by Default; Classes Earn Their Keep with State
+
+Default to functions. Reach for a class when there is meaningful internal state, behavior that depends on that evolving state, a clear domain model, or genuine polymorphism. A class with two methods where one is `__init__` is a function in costume — and classes accumulate hidden shared dependencies that every method silently uses, while functions take dependencies as explicit parameters.
+
+Subclass only for code reuse, never for taxonomies. Modeling real-world categories (`Dog(Animal)`) breaks the day the requirements change; protocols and composition survive it.
+
+**The common failure:** stateless classes as ceremony — harder to test, harder to compose — and deep hierarchies that hide behavior across ancestors.
+
 ### Beck's Design Rules (priority order)
 
 Evaluate every change against these four rules, in this order:
@@ -186,7 +196,7 @@ Use names that immediately clarify purpose and let readers understand intent at 
 
 Use different terms for concepts with different authority or semantics. A recommendation is not a decision. A producer is not necessarily the durable writer. A request accepted for processing is not the same as an operation completed.
 
-**The common failure:** choosing a name that's accurate-but-vague. `processData` is accurate for everything and communicates nothing. A longer name that disambiguates (`normalizeAndValidateOrderPayload`) is better than a short name that could mean anything.
+**The common failure:** choosing a name that's accurate-but-vague. `processData` is accurate for everything and communicates nothing. A longer name that disambiguates (`normalizeAndValidateOrderPayload`) is better than a short name that could mean anything. Developers over-abbreviate far more often than they over-lengthen — keep names ≥3 letters so the call site reads as a sentence.
 
 ### Contextual Comments
 
@@ -279,6 +289,20 @@ For critical flows (§5), verify meaningful failure and recovery behavior as wel
 Agentic behavior uses evaluations in addition to conventional tests (§9). Deterministic invariants around the agent still receive normal automated tests.
 
 **The common failure:** testing private methods solely to achieve "coverage." That tests implementation rather than behavior, so safe refactoring breaks the test while behavior remains unchanged. Test behavior through the public seam whenever it provides equivalent confidence.
+
+### Hoist Your I/O
+
+Push I/O — network, filesystem, console, clock — to the top level; keep the decision-making core pure. A pure function needs no mocks, no fixtures, no event loop — just inputs and expected outputs. This is the highest-leverage testability rule: it *removes* the need for most mocking rather than improving it.
+
+### Mock Only External Boundaries; Prefer Fakes
+
+Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Never mock your own internal logic. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring.
+
+**The common failure:** mocks that let generated code "pass" while asserting nothing about outcomes. AI-authored tests over-mock relative to human-authored ones — fakes with real semantics are the antidote.
+
+### Property-Based Testing for Domains with Properties
+
+Where the domain has *properties* — round-trips (encode∘decode == identity), invariants (sorted output is ordered), equivalence (optimized implementation == reference implementation) — use property-based testing (Hypothesis). Example tests check the cases you thought of; property tests check the ones you didn't: off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
 
 ### Clear, Complete, and Concise
 
@@ -419,6 +443,8 @@ Require deduplication safeguards before automatically retrying non-idempotent wr
 
 Use randomized exponential backoff for distributed automatic retries where synchronized retries could amplify an outage. Do not retry permanent failures merely because retry infrastructure exists.
 
+Retry only what can self-heal — 429s and 5xxs. Never retry client errors (400/401/403/404): they don't self-heal, and retrying auth failures is at best wasteful, at worst a lockout trigger. Honor `Retry-After`; jitter spreads retry timing so synchronized clients don't stampede the recovering service.
+
 **The common failure:** adding a retry loop because "the call sometimes fails" while leaving idempotency, capacity, timeout budget, and failure behavior undefined. Contract-free retries amplify load during outages: the recovering service receives the original traffic plus retry traffic, turning a transient problem into a sustained one.
 
 ### Contract-First Boundaries
@@ -426,6 +452,12 @@ Use randomized exponential backoff for distributed automatic retries where synch
 Define API schemas at stable service boundaries — OpenAPI, gRPC proto, GraphQL schema, JSON Schema, or the project's equivalent — as the source of truth. Auto-generate client types and validators where the ecosystem supports it. Verify generated artifacts in CI with a clean-tree or drift check. Treat applied database migrations as the authoritative schema history and verify model/migration alignment in CI where applicable.
 
 Return errors in a consistent machine-readable format so clients can distinguish failure types from structured fields rather than parsing human messages.
+
+### Structured Exception Hierarchies
+
+Define one small hierarchy per domain so callers can catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure). Exceptions carry structured context — the relevant objects (request, response), not just text in the message — because structured attributes beat message-parsing.
+
+**The common failure:** a flat `AppError` with everything in the message, forcing callers to string-match to distinguish conditions.
 
 **Design the contract before the consumers exist.** This is the deliberate exception to the Rule of Three (§3): a shared envelope, event shape, or agent-call format is agreed up front with its known consumers, not discovered after three copies appear in the wild. Two known consumers and a planned third is sufficient reason to define a contract. See §0.
 
@@ -436,6 +468,16 @@ Publish the smallest contract that satisfies known consumers. Every optional fie
 **Fixtures are a legitimate first deliverable.** When a contract is agreed but implementation is blocked, contract-valid static fixtures can unblock downstream consumers without pretending the service exists. Prefer this to building an integration against unconfirmed assumptions.
 
 **The common failure:** hand-writing client types that drift from actual server behavior, with the missing field discovered in production. Keep one authoritative schema and automate alignment where practical.
+
+### Match Resource Lifetime to Scope
+
+Create expensive-to-construct or pooled resources (connection pools, HTTP clients, models) once per process at startup and hand out references; create request-scoped handles (a DB session checked out of the pool) per request; keep pure values as plain functions. Creating a pooled client per request throws away connection pooling; closing a shared client in a per-request teardown breaks every concurrent request.
+
+**The common failure:** a per-request dependency that constructs — or worse, closes — a process-scoped resource.
+
+### Typed Configuration, Validated at Startup
+
+One typed settings object, built once at startup and passed explicitly — never scattered untyped environment reads. Untyped config fails at 3 AM with a key error deep in a code path; a settings object fails once, at startup, with a precise error naming the variable. Secrets ride as redacted types so they never surface in logs or tracebacks. Credential mechanics: `SECRETS.md`.
 
 ### Trace Released Artifacts to Reviewed Source
 
@@ -565,6 +607,10 @@ Preserve backward compatibility by default.
 Version or deprecate published contracts deliberately, with a migration path and a defined compatibility policy. Treat a breaking change to a public API, schema, durable data representation, event, or other cross-team contract as an explicit decision.
 
 Backward compatibility is not an excuse to accumulate accidental behavior forever. Remove obsolete behavior through an intentional migration rather than silently breaking consumers or preserving ambiguity indefinitely.
+
+**Evolve in three phases: warn → document → remove.** (1) Warn — the deprecation message names the replacement and the removal version, and points at the *caller's* code. (2) Document — changelog entry in the same commit. (3) Remove in a major version, after a real warning window. Prefer additive change: new parameters arrive with defaults and keyword-only, so existing callers keep working. Never silently change what an existing argument *means* — changed semantics break downstream silently, which is worse than a loud rename.
+
+**Changelog as contract.** Keep-a-Changelog sections (Added/Changed/Deprecated/Removed/Fixed/Security), one entry per user-visible change, updated in the same commit as the change, curated by hand. Users decide whether to upgrade by reading the changelog, not the diff; auto-generated commit lists are noise, curated entries are a migration guide.
 
 ### Validate Changes
 
