@@ -1,6 +1,6 @@
 ---
 title: SECRETS.md — Ephemeral by Default
-version: "2.3"
+version: "2.4"
 scope: Secrets management: storage, rotation, agent exposure
 consult_when: "When handling credentials, API keys, or tokens - storing, passing, logging, or reviewing code that touches them."
 last_reviewed: 2026-09-29
@@ -31,9 +31,9 @@ Secrets (API keys, tokens, passwords, certificates, connection strings) live in 
 
 Treat every agent session as a potential read of your environment:
 
-1. **Keep long-lived credentials out of the agent's shell.** The shell the agent runs in **must not** export long-lived credentials as environment variables. If the agent reads env, it can re-emit env. An agent that reads untrusted content (issues, logs, error trackers) must not simultaneously hold production credentials — the exfil channel is whatever data the agent is allowed to read.
+1. **Keep long-lived credentials out of the agent's shell.** The shell the agent runs in **must not** export long-lived credentials as environment variables. If the agent reads env, it can re-emit env. An agent that reads untrusted content (issues, logs, error trackers) must not simultaneously hold production credentials — the exfil channel is whatever data the agent is allowed to read. **Scope:** this is about open-ended agents whose model can reach env, shell, or logs. A deterministic pipeline stage (a worker where the model is a subroutine with no tools, receiving only its prompt) may hold a short-lived, least-privilege credential for the same run — compliant when the model never sees the credential value and the prompt is assembled by code, not by the model.
 2. **Inject short-lived tokens for the session only.** Secrets a session needs arrive as tokens that expire within the session window.
-3. **Rotate after every session.** After any agent session that may have read credentials (even inadvertently via a tool call or log inspection), **rotate** them. Do not evaluate whether it was "actually read" — rotation is the default.
+3. **Rotate after every session.** After any agent session that may have read credentials (even inadvertently via a tool call or log inspection), **rotate** them. Do not evaluate whether it was "actually read" — rotation is the default. **"Session" means an interactive agent session** (a human- or orchestrator-driven agent run), not one Lambda invocation or CI job: ephemeral compute rotates on exposure or suspicion (anomalous logs, a leaked excerpt, a failed redaction gate), not per invocation — per-invocation rotation at fleet scale gets ignored, and an ignored rule protects nothing.
 4. **Keep shell history and shell startup clean of credentials.** Never let credential-bearing commands land in `~/.bash_history`, `~/.zsh_history`, `~/.psql_history`, or equivalents. Prefix sensitive commands with a space (where the shell skips such lines) or `unset HISTFILE` for the session. Treat shell startup files (`.bashrc`, `BASH_ENV`) as untrusted-input territory for agent shells — poisoned hook variables (`PAGER`, `LD_PRELOAD`, `BASH_ENV`) turn the next benign command into payload execution; allowlist the hooks an agent shell may run.
 5. **Broker credentials so the agent never holds the real secret.** Prefer a credential-brokering proxy that injects the real secret on the wire server-side — the agent's context holds only a placeholder. Env-var injection is weaker: the secret still lands in the child process env, where `printenv` re-exposes it to a compromised agent. Scope every issued credential to the intersection of the agent's grant and the user's grant, with ttl = task duration.
 
