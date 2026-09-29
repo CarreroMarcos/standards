@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.3"
+version: "2.4"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
 last_reviewed: 2026-09-29
@@ -44,7 +44,7 @@ boilerplate — nothing in this repo reads them.
 
 Run the checks again before reporting — a prior green run does not cover new
 changes. When a check cannot run, report it: "I couldn't verify X because Y."
-→ §6 "Ground Claims in Verification".
+→ ENGINEERING_PRINCIPLES.md §6 "Change Safety & Decision Discipline" (ground claims in verification).
 
 ## 2. Be Conservative with Files
 
@@ -94,20 +94,20 @@ for user in users:
     process(user)
 ```
 
-→ §2 "Provenance of Rationale" and "Contextual Comments".
+→ ENGINEERING_PRINCIPLES.md §2 "Code Readability & Documentation" (provenance of rationale).
 
 ## 5. Keep Changes Surgical and Small
 
 **Every changed line should trace directly to the user's request.** Don't improve
 adjacent code, don't refactor what isn't broken, match existing style.
-→ §6 "Smallest Change".
+→ ENGINEERING_PRINCIPLES.md §6 "Change Safety & Decision Discipline" (smallest change).
 
 If 200 lines could be 50, rewrite it. Minimum code that solves the problem,
 nothing speculative.
-→ §1 "Beck's Design Rules".
+→ ENGINEERING_PRINCIPLES.md §1 "Design Principles" (Beck's design rules).
 
 Work in small incremental changes — easier to review and debug.
-→ §6.
+→ ENGINEERING_PRINCIPLES.md §6 (smallest change).
 
 ## 6. State Assumptions, Verify Goals
 
