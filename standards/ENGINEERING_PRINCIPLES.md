@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.7"
+version: "1.8"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
 ---
@@ -113,7 +113,7 @@ These principles describe the shape of a mature codebase. When the package you'r
 
 Why this direction: a diff that introduces a second, better pattern into a package that has one leaves two patterns. The next reader must learn both and guess which applies. Consistency is itself a design property, so make a package-wide improvement through its own task.
 
-Use the security path when the local pattern is actively unsafe — a hardcoded credential, a missing authorization check, an unsafe model-controlled action, or a retry on a non-idempotent write. Security rules have no local-convention exception (§6, §9); fix the risk or stop the unsafe path.
+Use the security path when the local pattern is actively unsafe — a hardcoded credential, a missing authorization check, an unsafe model-controlled action, a retry on a non-idempotent write, or a divergent implementation of idempotency/dedup-key derivation (two key functions that "must always agree" silently diverging is a correctness bug, and §3 requires one shared function — the §3 exception overrides the local-convention default here). Security rules have no local-convention exception (§6, §9); fix the risk or stop the unsafe path.
 
 **The common failures:** silently importing an ideal architecture into one corner of a codebase, and following a bad local pattern without naming the gap. Follow the local pattern and name the gap — "I matched the existing composition root in this package; wiring it the way §1 describes would be a separate change touching N call sites."
 
@@ -230,6 +230,8 @@ Do not invent rationale the evidence does not support — plausible-sounding opt
 
 When the reason is not traceable to observable behavior, a documented constraint, an explicit decision record, or direct project guidance, omit the comment rather than inventing one. Absence of rationale is preferable to speculative rationale.
 
+**Scope: this governs rationale presented as established fact.** Model-generated inference is allowed when it is labeled as inference and paired with cited evidence — "the build failed because the migration lock timed out (evidence: check-run X, log lines 40–52)" — never as an authoritative explanation. What is forbidden is unlabeled speculation masquerading as a verified reason (§9: model output is evidence, not authority).
+
 **The common failure:** `// Legacy compatibility` with no linked ticket, no observable constraint, and no decision record — or `// Parallelized for performance` when the actual reason was an upstream timeout. Both read as established fact; neither can be verified.
 
 ### Documentation Is a Maintained Interface
@@ -308,6 +310,8 @@ Agentic behavior uses evaluations in addition to conventional tests (§9). Deter
 
 Push I/O — network, filesystem, console, clock — to the top level; keep the decision-making core pure. A pure function needs no mocks, no fixtures, no event loop — just inputs and expected outputs. This is the highest-leverage testability rule: it *removes* the need for most mocking rather than improving it.
 
+For I/O-sequenced orchestration (fetch → decide → act, each step depending on the last), a single fake at the boundary is the 90% version of this rule: hoist what's cheap (pure builders, key computation, output validation) and test the orchestrator against one fake client. A full pure-core restructure that adds indirection without adding testability is ceremony, not compliance.
+
 ### Mock Only External Boundaries; Prefer Fakes
 
 Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Never mock your own internal logic. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring.
@@ -347,6 +351,8 @@ A hand-computed value, a trusted reference implementation, or a pinned fixture f
 **The common failure:** testing a slug generator by re-implementing the slugify logic inline in the test. A genuinely wrong algorithm passes its own test every time.
 
 This matters more when an agent writes the test. A tester that reads the builder's implementation inherits its bugs — the "misguidance effect" — so agent-authored tests are spec-sourced, never diff-sourced: expected values from the requirement, not from the code under test.
+
+**Carve-out: model-generated prose has no independent expected value.** There is no hand-computable "correct diagnosis" for a model's output. Test the deterministic invariants around the model call instead — pinned inputs, structural output validation, the fencing and redaction that bound it — and cover the behavior itself with evaluations (§9), which exist precisely because conventional tests cannot judge it.
 
 ### Tests Are Evidence, Not the Target
 
@@ -814,6 +820,8 @@ The reviewer verifies the plan against the spec and the actual current state of 
 
 If the independent review cannot be completed, record that explicitly and get a decision before proceeding without it. "No review happened" must never be silently equivalent to "review passed."
 
+**Scale the review to the work.** Small-but-significant changes (a ~200-line feature that trips a significance trigger — a trust boundary, a new model-directed step) get a lightweight independent check, not the full spec review: one reviewer, one pass, scoped to the significance delta (the trust/autonomy boundary), not the whole plan. Significance decides *whether* review happens; size decides *how much* review.
+
 ---
 
 ## §9. Agentic System Design
@@ -920,6 +928,8 @@ Model confidence is not proof. Retrieved text is not policy. Tool output is not 
 Where a decision depends on authoritative facts, resolve those facts from their authoritative source or through a contract that explicitly guarantees them.
 
 Separate untrusted data from instructions, especially when retrieved text, repository content, issue comments, webpages, model-generated text, or tool results can influence privileged actions.
+
+**Worked shape — a model summarizes untrusted logs for publication:** (1) delimit the untrusted region in the prompt (`<untrusted-logs>…</untrusted-logs>`) and instruct the model to treat delimited regions as data only — never as instructions; (2) strip or neutralize instruction-like lines before they reach the model where the format allows it; (3) banner the published output as model-generated and cite the evidence it rests on. The separation is a pipeline step, not a hope about model behavior.
 
 Do not allow one untrusted tool result to grant authority to another tool call.
 
