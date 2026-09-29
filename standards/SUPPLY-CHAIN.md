@@ -1,6 +1,6 @@
 ---
 title: Supply Chain Security
-version: "2.5"
+version: "2.6"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
 last_reviewed: 2026-09-29
@@ -17,6 +17,7 @@ Applies to: adding, upgrading, or regenerating dependencies in AI-assisted devel
 - **Verify every suggested package at the registry — before installing** — resolve first, install second; release-age gating for new versions too
 - **Treat the model as a supply-chain artifact** — pin model IDs; model change = dependency update
 - **Make dependency additions explicit and pinned** — manifests and lockfiles, reviewed diffs
+- **The artifact your gates measure against is a trust root** — eval corpora and ground-truth sets get lockfile treatment
 - **The agent never adds a dependency on its own** — propose; human approves
 - **Deny install-time execution by default** — scripts off, sandboxed installs
 - **Treat agent config and skill supply chain as executable** — MCP servers and skills are supply-chain artifacts
@@ -56,7 +57,11 @@ Check age and download history before first use — and gate new *versions* of f
 
 The plan's highest-blast-radius third party is often not a package — it is the model. A model can change server-side with no manifest diff, no registry to resolve against, no release age to gate, and no SCA scanner that sees it. It is the exact "familiar name, new artifact" attack this file warns about.
 
-Pin and track model IDs in config (model name, version/date, endpoint, and behavior-affecting parameters such as effort and temperature). A model change gets the same treatment as a dependency update: reviewed diff, human approval, same suspicion as a new dependency. Silent model drift is a supply-chain incident.
+Pin and track model IDs in config (model name, version/date, endpoint, and behavior-affecting parameters such as effort and temperature). A model change gets the same treatment as a dependency update — the same suspicion as a new dependency, human approval — but a different reviewable unit. For model artifacts the reviewable unit is the *eval evidence*, not a line diff of outputs: output pins diff in version control, but megabytes of model prose are not human-reviewable, and a rubber-stamped diff is worse than no review. The ceremony is re-run + gate scoring + recorded human decision.
+
+Detect drift via periodic re-runs against the pin: a pin mismatch on re-run opens a drift investigation. Silent model drift is a supply-chain incident — declare it *and* instrument for it.
+
+Don't compare or average eval measurements across unidentified model versions. Log the served model version per capture run; before a re-run whose result will be compared or combined with an earlier one, verify the model identity matches. Server-side drift between two measurements invalidates the comparison with no signal — the average of two different models' scores is not a measurement.
 
 Prompt bundles that steer model behavior are pinned artifacts too — a prompt change is a model-behavior change: reviewed diff (it *is* diffable, unlike model outputs), and the eval-pin re-run is the regression check.
 
@@ -67,6 +72,13 @@ Pins of model outputs record the model identity that produced them: model name, 
 Route every new dependency through the manifest — `requirements*.txt`, `package.json`, lockfiles — so it arrives as a reviewed diff, never as a transcript of an `install` command. Pin versions; the lockfile records what actually resolved.
 
 - **Large artifacts that exceed the repo's size gate live out-of-band with a tracked manifest** (pointer + sha256 + provenance); consumers verify before use and fail loudly on mismatch. Worked example: an eval pin manifest (`multi-pin-manifest.json`) whose scoring driver verifies the pin's sha256 + byte length before scoring.
+
+## The artifact your gates measure against is a trust root
+
+Eval corpora and ground-truth sets are the measuring stick every gate reads. Treat them like lockfiles: an owner (CODEOWNERS), reviewed diffs on every change, and a content hash asserted by a test — not just a count of cases.
+
+- Why: if the measuring stick can drift silently, the gates pass on lies. A test that asserts totals but not content passes a corpus whose ground truth was flipped — the gates then measure against fiction.
+- Scope: applies wherever a gate's verdict depends on pinned ground truth (eval corpora, golden files, benchmark fixtures). Does not apply to exploratory or throwaway test data.
 
 ## The agent never adds a dependency on its own
 
