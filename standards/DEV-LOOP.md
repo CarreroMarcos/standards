@@ -1,9 +1,9 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.1"
+version: "1.2"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Dev Loop — the agentic build loop, as operated
@@ -130,6 +130,14 @@ timestamp. The ledger is the audit form of the custody law. Secrets are
 masked in the ledger (`[REDACTED]`) — receipts prove what happened, not what
 the credentials were. Write the receipt before stopping — a stage that
 crashed without a receipt didn't happen.
+
+## Test discipline
+
+- **Tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise.
+- **Async tests force interleaving** — use `asyncio.gather` / task groups to force task interleaving and expose missing locks; keep shared fixtures read-only or copy-per-test; put timeouts on tests that can deadlock. A timeout turns "CI hangs for 6 hours" into a failing test with a name.
+- **CLI tests test handlers, not argv strings** — subcommands map to handler functions taking parsed args; test handlers directly, the entrypoint thinly (exit codes). Parsing is the framework's job.
+- **Lazy imports for startup** — CLI/dev-server startup pays import cost on every invocation; defer heavy imports to the code path that needs them (measure with `python -X importtime` before guessing).
+- **Prefer the framework's test seam** — fixtures over setup/teardown; `dependency_overrides` (FastAPI) to swap a dependency with a fake instead of patching import paths.
 
 ## Environment
 
