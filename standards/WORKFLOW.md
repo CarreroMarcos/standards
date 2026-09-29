@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "2.5"
+version: "2.6"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit."
 last_reviewed: 2026-09-29
@@ -18,6 +18,7 @@ Prevents the most common AI coding failure mode: writing code before understandi
 - **Phase 2 — Spec** — the validated design doc
 - **Phase 3 — Plan** — the implementation plan
 - **Phase 3.5 — Independent Plan Review** — adversarial plan check (advisory)
+- **Recorded decisions** — decisions on framed questions; executed, not re-litigated
 - **Phase 4 — Implement (TDD)** — test-first implementation
 - **Phase 5 — Simplify** — the simplification pass
 - **Phase 6 — Security Review** — the security gate
@@ -61,6 +62,12 @@ End the plan with an acceptance contract: checkable pass/fail criteria, not pros
 
 **Skip when:** No spec was needed.
 
+## Recorded decisions
+
+A recorded decision is a decision on a framed question — the options considered, the recommendation, who decided — written to the decision log with date and scope. It constrains later work but does not replace phase gates: later phases verify compliance with it rather than re-deriving it.
+
+**A pinned decision is executed, not re-litigated.** Reopening one is itself a decision — it needs a new framed question and a new log entry, not a quiet reinterpretation mid-task.
+
 ## Phase 3.5 — Independent Plan Review (advisory — not one of the seven counted phases)
 
 Between Plan and Implement: an advisory review, not a gate. Self-review shares the author's blind spots; an independent check finds what it can't.
@@ -70,7 +77,7 @@ Between Plan and Implement: an advisory review, not a gate. Self-review shares t
 - Findings use the project's review vocabulary — `CODE-REVIEW.md` (`VERIFIED` / `INFERRED` / `SPECULATIVE`, `Severity`, `Blocking`)
 - Any `Blocking: true` finding should be fixed before proceeding; disclose non-blocking findings in the plan's Design Note — never drop them silently
 - If the review agent fails to complete, retry once; still blocked → disclose to the user and get an explicit decision before proceeding without one
-- The reviewer also grills the acceptance contract: it negotiates the definition of done with the author before code starts — what the acceptance checks are, and who runs them
+- The reviewer also grills the acceptance contract. Two modes: when the contract is open, it negotiates the definition of done with the author before code starts — what the acceptance checks are, and who runs them. When the contract is pre-registered and decision-constrained (a recorded decision already fixed the bounds), there is nothing to negotiate — the review verifies the plan *against the decision* instead: does it stay inside the ruled bounds, or does it quietly reopen them?
 
 **Recommended for:** any plan with real consequence. Lighter for small or low-risk plans — use judgment.
 
