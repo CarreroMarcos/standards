@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.2"
+version: "1.3"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
 last_reviewed: 2026-09-29
@@ -63,6 +63,14 @@ main. Repo-specific names are marked; the shape is the reusable part.
 ## Loop Contract
 
 Written before iteration 1. The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → stop and escalate), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
+
+## Orchestration patterns
+
+The loop's shape generalizes beyond this repo:
+
+- **Fan out with bounded parallelism; merge through a verifier.** Independent lanes run in parallel under a fixed cap; one verifier reads the full reports before anything merges. A verifier that reads summaries-of-summaries is a rumor mill — verify from the artifacts, never from hints.
+- **Hold-out verification.** The gate tests what the maker never saw (above: the Oracle's hold-out checks). A verifier iterating against the same suite the maker used is curve-fitting, not verification.
+- **Sequential where dependent, parallel where independent.** Dependent stages run in order with handoff validation at each boundary; independent lanes fan out. Don't parallelize what shares state.
 
 ## Roles
 
