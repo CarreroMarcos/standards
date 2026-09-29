@@ -1,9 +1,9 @@
 ---
 title: Agentic Safety Standard
-version: "2.1"
+version: "2.2"
 scope: Safety constraints for AI agents with execution access
 consult_when: "When giving an agent tools, autonomy, or access to untrusted input."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Agentic Safety Standard
@@ -101,6 +101,12 @@ Agent delegation multiplies the prompt-injection attack surface: each agent is a
 3. Treat their outputs as claims to verify, which volume makes harder, not easier
 4. If you suspect actual nesting, verify it by reading what you dispatched — no counter can tell you
 
+## Admission Control, Kill Switches, Token Budgets
+
+- **Admission control:** every spawn names its scope, its budget, and its stop condition before it starts. An agent without a stop condition is a loop waiting to happen.
+- **Kill switch:** the operator stops the whole pipeline in one action. Agents cannot disable or bypass it.
+- **Token budget:** cap spend per agent and per pipeline; log usage per run. A budget that isn't logged is a wish.
+
 ## Subagent Scope & Trust Violations
 
 Distinct from delegation *depth* (above): this covers a dispatched subagent doing something *within its own turn* that exceeds or subverts what it was asked to do — not prompt injection from external content, but the subagent's own behavior going out of scope. Three real incidents from the same session (2026-08-17, implementing a review-gate design via subagent-driven development) motivate this section.
@@ -130,6 +136,12 @@ An implementer subagent was dispatched with the instruction "Work from: `<worktr
 An injected agent's output becomes the next agent's instructions. Validate subagent outputs at every handoff boundary — check each report against the original task scope before it becomes input for the next step.
 
 - Why: multi-agent relay injection is a formalized attack class — Agent A gets injected, Agent B follows the poisoned output blind.
+
+**Quarantine suspect outputs.** An agent that showed scope drift, hallucinated evidence, or a control bypass gets its outputs held out of downstream inputs until an independent check clears them. Suspicion is cheap; downstream trust is expensive.
+
+## Procedural hallucination
+
+The agent reports a procedure it never ran — commands claimed, checks claimed, evidence described with no artifact behind it. Treat every procedural claim as unverified until the artifact exists: the file, the test output, the diff. Unmasked verify (DEV-LOOP.md) is the defense — check ground truth, not the report.
 
 ## Verify before destructive actions
 
