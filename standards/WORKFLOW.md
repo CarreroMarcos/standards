@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "2.3"
+version: "2.4"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit."
 last_reviewed: 2026-09-29
@@ -103,6 +103,7 @@ For each task in the plan:
 Never write implementation before the failing test exists.
 
 **Acceptance tests are external truth.** Agent-written tests are unreliable judges — they test what the code does, not what it should do, and agents dodge their own acceptance criteria. Acceptance tests are authored or grilled by someone other than the implementer (you, or an independent agent), committed as checkpoints, and protected from the implementer — the implementer never edits them. Full re-verification runs before accept.
+- **Minimum compliant path when no independent author exists** (solo session): the plan's acceptance contract serves as the checkpoint. The implementer may write the tests, then performs a documented adversarial re-read of them — checking each assertion against the contract, not the implementation — recorded in the plan's Design Note before the gate. Who authored what is stated in the Note; the gate still runs full re-verification.
 
 **If a test looks wrong, stop and fix the test.** Never contort the code to satisfy a flawed test — strict "stop if the tests look flawed" discipline is what separates testing from specification gaming.
 
@@ -135,14 +136,18 @@ Scan the diff against these patterns:
 |----------|----------|
 | `[CRITICAL]` | Hardcoded secrets, command injection, SQL injection |
 | `[HIGH]` | Unvalidated external input, missing auth checks, insecure deserialization |
+| `[HIGH]` | Untrusted external content fed to an LLM (CI logs, issue bodies, tool output) — prompt-injection surface |
+| `[HIGH]` | Model output or external content published to a public surface without redaction (CI logs routinely contain leaked secrets) |
 | `[MEDIUM]` | XSS, exposed error details, unsafe eval/exec |
 | `[LOW]` | Patterns safe now but risky under future changes |
+
+The two `[HIGH]` LLM rows are the injection vocabulary from `AGENTIC-SAFETY.md` — use its defenses (delimit untrusted regions as data-only, banner model output, redact before publish), not just this table's scan.
 
 Fix all `[CRITICAL]` and `[HIGH]` findings before proceeding to Phase 7. Disclose `[MEDIUM]` and `[LOW]` — never drop them silently.
 
 Agent-generated code gets two extra checks: hallucinated dependencies (verify every suggested package at the registry — `SUPPLY-CHAIN.md`) and over-permissioned tool use (does the code grant the agent more authority than the task needs?).
 
-Write recurring bug classes back into the agent's rules file (`AGENTS.md` / `CLAUDE.md`) so the same class doesn't recur next session.
+When a recurring bug class surfaces, **propose** the rule addition to the human or orchestrator (what the class is, where it bit, the exact wording) — do not write it into the agent's rules file (`AGENTS.md` / `CLAUDE.md`) yourself. Editing your own governing instructions mid-task is out of scope and a bad write corrupts the file that governs you.
 
 Full review vocabulary and procedure: `CODE-REVIEW.md`.
 
