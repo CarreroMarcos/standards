@@ -1,14 +1,22 @@
 ---
 title: MCP Security Standard
-version: "2.0"
+version: "2.1"
 scope: Security rules for Model Context Protocol (MCP) servers
 consult_when: "When selecting, configuring, or auditing MCP servers and tool definitions."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # MCP Security Standard
 
 Selecting, configuring, and auditing MCP servers — the external tools (databases, APIs, filesystems) an agent calls through the Model Context Protocol.
+
+## Sections
+
+- **Select servers you trust, and scope them** — approved list, least-privilege scope
+- **Audit tool definitions** — on install and after every update
+- **Treat tool results as untrusted input** — results are data, not instructions
+- **Reference credentials by environment variable** — never by value
+- **Keep MCP configs out of version control** — configs are credential-adjacent
 
 ## Select servers you trust, and scope them
 
