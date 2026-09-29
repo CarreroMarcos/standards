@@ -1,6 +1,6 @@
 ---
 title: Supply Chain Security
-version: "2.3"
+version: "2.4"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
 last_reviewed: 2026-09-29
@@ -15,6 +15,7 @@ Applies to: adding, upgrading, or regenerating dependencies in AI-assisted devel
 - **The attack: slopsquatting** — hallucinated package names as the delivery mechanism
 - **The second attack: poisoning the real package** — the 2026 worm wave through legitimate packages
 - **Verify every suggested package at the registry — before installing** — resolve first, install second; release-age gating for new versions too
+- **Treat the model as a supply-chain artifact** — pin model IDs; model change = dependency update
 - **Make dependency additions explicit and pinned** — manifests and lockfiles, reviewed diffs
 - **The agent never adds a dependency on its own** — propose; human approves
 - **Deny install-time execution by default** — scripts off, sandboxed installs
@@ -48,6 +49,14 @@ npm view <package-name> version    # Node
 If the package does not exist on the official registry, do not install it. Resolve first, install second — no exceptions for "it looks legitimate" or a plausible repo URL.
 
 Check age and download history before first use — and gate new *versions* of familiar packages the same way. A fresh release of a trusted name is a new artifact; the version you approved last month says nothing about this one. A package registered yesterday with no dependents is not the same risk as an established one.
+
+**Default gate: 14 days since release with established download history** (a sharp, sustained uptick in downloads on a fresh release is itself a signal — the 2026 worm wave rode exactly that shape). Newer than the default needs explicit human approval with a stated reason (security fix, blocked feature), recorded in the dependency-change commit. The number is a default, not a law — the human overrides it, never the agent alone.
+
+## Treat the model as a supply-chain artifact
+
+The plan's highest-blast-radius third party is often not a package — it is the model. A model can change server-side with no manifest diff, no registry to resolve against, no release age to gate, and no SCA scanner that sees it. It is the exact "familiar name, new artifact" attack this file warns about.
+
+Pin and track model IDs in config (model name, version/date, endpoint). A model change gets the same treatment as a dependency update: reviewed diff, human approval, same suspicion as a new dependency. Silent model drift is a supply-chain incident.
 
 ## Make dependency additions explicit and pinned
 
