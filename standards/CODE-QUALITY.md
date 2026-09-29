@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.4"
+version: "2.5"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
 last_reviewed: 2026-09-29
@@ -44,13 +44,17 @@ boilerplate — nothing in this repo reads them.
 
 Run the checks again before reporting — a prior green run does not cover new
 changes. When a check cannot run, report it: "I couldn't verify X because Y."
+For long-running capture/eval checks, the checkpointed artifact plus
+deterministic re-scoring IS the re-run — do not re-capture to verify a capture.
 → ENGINEERING_PRINCIPLES.md §6 "Change Safety & Decision Discipline" (ground claims in verification).
 
 ## 2. Be Conservative with Files
 
 Prefer editing over creating files. Don't create empty placeholder files. Search
 before creating so you don't produce duplicates. Group related code — avoid
-single-function files. Never generate binary or hash content.
+single-function files. Never generate binary or hash content — except hash content
+a tracked consumer verifies: tamper-evidence pointers (sha256 manifests) for
+artifacts too large for the repo exist precisely so nothing opaque enters unread.
 
 ## 3. Handle Errors Explicitly
 
