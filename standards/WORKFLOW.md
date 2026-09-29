@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "2.4"
+version: "2.5"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit."
 last_reviewed: 2026-09-29
@@ -35,7 +35,7 @@ For any non-trivial feature, bug fix with unclear root cause, or architectural c
 
 **Output:** agreed approach.
 
-**Skip when:** Single-file fix, typo, config value change, renaming, or the change is obvious and < 20 lines.
+**Skip when:** Single-file fix, typo, config value change, renaming, or the change is obvious and < 20 lines — or the spec/HLD already pins the verification design, so there is nothing to design.
 
 ## Phase 2 — Spec
 
@@ -102,6 +102,8 @@ For each task in the plan:
 
 Never write implementation before the failing test exists.
 
+**Eval-shaped work (prompt changes, corpus re-runs) uses a different cycle.** The gate already failed — that is the failing test. Change the prompt, re-run the corpus, compare gate verdicts before/after, commit as one unit. One prompt iteration + one corpus re-run = one logical unit; per-test commits only make sense when the test cycle is seconds, not tens of minutes. Name the train/hold-out split the reported numbers came from — iterate against one split, confirm on the hold-out (e.g. frozen traps), and record which split each number belongs to.
+
 **Acceptance tests are external truth.** Agent-written tests are unreliable judges — they test what the code does, not what it should do, and agents dodge their own acceptance criteria. Acceptance tests are authored or grilled by someone other than the implementer (you, or an independent agent), committed as checkpoints, and protected from the implementer — the implementer never edits them. Full re-verification runs before accept.
 - **Minimum compliant path when no independent author exists** (solo session): the plan's acceptance contract serves as the checkpoint. The implementer may write the tests, then performs a documented adversarial re-read of them — checking each assertion against the contract, not the implementation — recorded in the plan's Design Note before the gate. Who authored what is stated in the Note; the gate still runs full re-verification.
 
@@ -136,7 +138,7 @@ Scan the diff against these patterns:
 |----------|----------|
 | `[CRITICAL]` | Hardcoded secrets, command injection, SQL injection |
 | `[HIGH]` | Unvalidated external input, missing auth checks, insecure deserialization |
-| `[HIGH]` | Untrusted external content fed to an LLM (CI logs, issue bodies, tool output) — prompt-injection surface |
+| `[HIGH]` | Untrusted external content fed to an LLM (CI logs, issue bodies, tool output, PR diffs / code under review) — prompt-injection surface |
 | `[HIGH]` | Model output or external content published to a public surface without redaction (CI logs routinely contain leaked secrets) |
 | `[MEDIUM]` | XSS, exposed error details, unsafe eval/exec |
 | `[LOW]` | Patterns safe now but risky under future changes |
@@ -175,6 +177,6 @@ Trigger a handoff when context reaches ~40% or the user types "Handoff":
 
 Next session: read `handoff.md` first, then continue.
 
-Prefer a fresh session over a compacted one between phases — context reset with a structured handoff beats compaction. After any compaction, re-read the plan before writing code: plan drift sets in as context decays, and the plan is the anchor.
+Prefer a fresh session over a compacted one between interactive coding phases — context reset with a structured handoff beats compaction. For unattended long-running eval captures, the handoff unit is the evidence artifacts + resume command, and session persistence is expected. After any compaction, re-read the plan before writing code: plan drift sets in as context decays, and the plan is the anchor.
 
 Principle: `ENGINEERING_PRINCIPLES.md` §9 "Make handoffs file-backed".
