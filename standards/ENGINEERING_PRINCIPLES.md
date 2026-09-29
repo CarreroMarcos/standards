@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.6"
+version: "1.7"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
 ---
@@ -14,6 +14,20 @@ last_reviewed: 2026-09-29
 > Where a dedicated standard owns the mechanics, this file states the principle and points at it — one source of truth per topic, so nothing goes stale in two places.
 
 ---
+
+## Sections
+
+- **§0. When Principles Collide** — precedence for conflicting rules
+- **§1. Design Principles** — DI without frameworks, functions by default, hoist I/O, fakes over mocks
+- **§2. Code Readability & Documentation** — comment provenance, dead-code removal authority
+- **§3. Refactoring & Modernization** — smallest change, 3-phase deprecation
+- **§4. Testing Philosophy** — independent expected values, tracer bullets, property-based testing
+- **§5. Architecture & Resilience** — worker and queue discipline, data-access discipline
+- **§6. Change Safety & Decision Discipline** — blast radius, decision records
+- **§7. Python Practice** — pointer to PYTHON.md
+- **§8. Spec-First Workflow** — for significant work
+- **§9. Agentic System Design** — multi-agent orchestration discipline
+- **Engineering Decision Flow** — the question sequence for applying all of the above
 
 ## §0. When Principles Collide
 
