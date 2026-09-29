@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.3"
+version: "1.4"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
 last_reviewed: 2026-09-29
@@ -12,6 +12,21 @@ Reconstructed 2026-09-27 from live activity on the pr-reviewer repo (PRs
 #75–#119), the repo's process docs, and the orchestrator's own account of a
 session. This is the loop a unit of work travels from spec task to merged
 main. Repo-specific names are marked; the shape is the reusable part.
+
+## Sections
+
+- **One pass, end to end** — the ticket → spec → PR → Oracle → merge shape
+- **Loop Contract** — written before iteration 1: gates, budgets, blast radius
+- **Orchestration patterns** — bounded fan-out, verifier merge, hold-out verification, sequential vs parallel
+- **Roles** — fixer, bot reviewer, Oracle, orchestrator; who may do what
+- **Platform vs. discipline** — what's repo-specific vs reusable
+- **Human-side exceptions** — verbal approval only, and what it covers
+- **Incidents that wrote the rules** — the history behind the gates
+- **Failure handling** — every failure mode hit in practice
+- **Loop Ledger** — the running record
+- **Test discipline** — what the loop demands of tests
+- **Environment** — where the loop runs
+- **Verification terms** — unmasked verify and the other defined terms
 
 ## One pass, end to end
 
