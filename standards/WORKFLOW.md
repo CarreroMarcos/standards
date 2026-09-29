@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "2.1"
+version: "2.2"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Workflow Standard
@@ -31,6 +31,7 @@ Write the validated design to `docs/specs/YYYY-MM-DD-<topic>.md`: context (why),
 
 - Self-review: no TBDs, no contradictions, no ambiguity
 - Get user approval before proceeding
+- For batch/async sources, define poison-message behavior (fail loudly — route to the dead-letter queue, never swallow) and partial-failure semantics (per-item results so only failed items retry, never the whole batch)
 
 **Output:** the spec, committed to git.
 
@@ -101,6 +102,7 @@ Never write implementation before the failing test exists.
 
 - **One test per observable behavior — write, implement, verify, commit — before starting the next.** Do not write a batch of tests up front and implement them as a batch. *Why:* batching hides which test is driving which code.
 - The remaining design rules live in `ENGINEERING_PRINCIPLES.md` §4: "Test Observable Behavior" (test the seam), "Independent Expected Values" (expected values from a source independent of the code), "Tracer Bullet" (one end-to-end test first).
+- **Property-based tests for domains with properties.** Round-trips, invariants, equivalence (Hypothesis). Example tests check the cases you thought of; property tests check the ones you didn't — off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
 
 ## Phase 5 — Simplify
 
@@ -138,6 +140,10 @@ Full review vocabulary and procedure: `CODE-REVIEW.md`.
     git commit -m "feat: <what was built and why in one line>"
 
 Never commit `.env`, credentials, or unrelated changes. (Credential rules: `SECRETS.md`.)
+
+Update the changelog in the same commit — Keep-a-Changelog sections (Added/Changed/Deprecated/Removed/Fixed/Security), one entry per user-visible change, curated prose. Users decide whether to upgrade by reading the changelog, not the diff.
+
+Deprecating a published contract: three phases — warn (name the replacement and the removal version) → document (changelog entry in the same commit) → remove in a major version after a real warning window. Principle: `ENGINEERING_PRINCIPLES.md` §6 "Preserve Backward Compatibility".
 
 This standard ends at a clean commit. What happens between push and merge — review rounds, gates, merge discipline — is the dev loop (`DEV-LOOP.md`).
 
