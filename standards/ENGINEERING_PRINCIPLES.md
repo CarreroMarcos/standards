@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.4"
+version: "1.5"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
 ---
@@ -425,6 +425,16 @@ Prefer one authoritative owner for a fact. Replicas, caches, indexes, read model
 
 **The common failure:** selecting a datastore because it is already available, then discovering during implementation that the system needed ordering, deduplication, atomicity, stronger consistency, or a single writer that the chosen design does not naturally provide.
 
+### Data-Access Discipline
+
+One session per request or task, closed at the boundary — a session that outlives its scope is a stale read or a leak. Transaction boundaries sit at the request/task scope, not inside helpers; a helper that commits decides the caller's atomicity for it.
+
+N+1 is the classic agent blind spot: a loop that touches a relationship fires one query per row. Load what you iterate — `select_related`/`joinedload` for the relationships the loop actually touches. No lazy loading outside the session that opened it.
+
+Write queries the index can answer: filter on indexed columns, and check the query plan before assuming the ORM generated a sane one. The ORM is a query builder, not a guarantee.
+
+**The common failure:** an agent-written loop over a queryset that looks O(n) and runs O(n) queries — correct on ten rows in dev, a page-load killer in prod.
+
 ### Dependency Contracts First
 
 Before adding retries, circuit breakers, fallbacks, queues, caches, or similar mechanisms, define the dependency contract:
@@ -446,6 +456,16 @@ Use randomized exponential backoff for distributed automatic retries where synch
 Retry only what can self-heal — 429s and 5xxs. Never retry client errors (400/401/403/404): they don't self-heal, and retrying auth failures is at best wasteful, at worst a lockout trigger. Honor `Retry-After`; jitter spreads retry timing so synchronized clients don't stampede the recovering service.
 
 **The common failure:** adding a retry loop because "the call sometimes fails" while leaving idempotency, capacity, timeout budget, and failure behavior undefined. Contract-free retries amplify load during outages: the recovering service receives the original traffic plus retry traffic, turning a transient problem into a sustained one.
+
+### Worker and Queue Discipline
+
+One consumer, one queue — route work deliberately (a queue per consumer in Django; task-level routing in Celery), so a slow consumer never starves an unrelated workload. Workers are single-process by default; scale concurrency deliberately, never by accident.
+
+Every job is idempotent or it doesn't ship: workers retry, redeliver, and crash — design for the repeat. Visibility timeout (or its equivalent) exceeds the maximum task duration; a timeout shorter than the work produces phantom duplicates. Poison messages get bounded retries, then a dead-letter queue — never infinite requeue.
+
+Close what the framework doesn't: one DB connection scope per worker task (Celery), transactions scoped to one request or one task (Django). The worker process outlives the work — anything leaked per task compounds.
+
+**The common failure:** a worker that borrows the request's database session and leaks it across tasks, or a visibility timeout shorter than the job — both produce corruption that only appears under load.
 
 ### Contract-First Boundaries
 
