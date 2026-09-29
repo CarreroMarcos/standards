@@ -1,6 +1,6 @@
 ---
 title: SECRETS.md — Ephemeral by Default
-version: "2.2"
+version: "2.3"
 scope: Secrets management: storage, rotation, agent exposure
 consult_when: "When handling credentials, API keys, or tokens - storing, passing, logging, or reviewing code that touches them."
 last_reviewed: 2026-09-29
@@ -11,6 +11,21 @@ last_reviewed: 2026-09-29
 Secrets (API keys, tokens, passwords, certificates, connection strings) live in a secrets manager, rotate on short schedules, and never touch version control or an agent's environment.
 
 **Why this file exists.** In March 2026, a backdoored `litellm` build (v1.82.7/1.82.8, CVE-2026-33634) auto-executed at Python startup and harvested environment variables, SSH keys, cloud credentials, and shell history from every host it touched. Long-lived credentials sitting in a developer's env or history were in the exfiltration set. This standard keeps yours out of that set.
+
+## Sections
+
+- **Agent-safe posture (read first)** — the five rules for running agents near credentials
+- **Never commit a secret (hard boundary)** — what never touches git
+- **Scan outputs, not just commits** — PR comments, traces, and logs leak too
+- **Validation errors and typed secrets** — hide inputs at sensitive boundaries; secrets ride as redacted types
+- **Storage and lifetime** — managers, short-lived issuance, default lifetimes
+- **`.env`, when unavoidable** — scoping, rotation, and the verification grep
+- **What never belongs near an agent** — root keys, SSH keys, long-lived db passwords
+- **Treat agent memory as credential-adjacent storage** — authenticate, isolate, sanitize
+- **MCP server configs** — env-var references, ephemeral parent env
+- **Workflows** — dev-laptop and CI credential patterns
+- **Incident: secret may have been exposed** — rotate, revoke, preserve, scan, post-mortem
+- **References**
 
 ## Agent-safe posture (read first)
 
