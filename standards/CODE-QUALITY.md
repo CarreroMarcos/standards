@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.2"
+version: "2.3"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
 last_reviewed: 2026-09-29
@@ -15,6 +15,18 @@ stranger — human or agent — can read and safely change. Refactorability is t
 bar; the rules are how you reach it. Deliberately not carried over: per-language
 `extensions/<language>.md` files, metrics tables, and CI/pre-commit enforcement
 boilerplate — nothing in this repo reads them.
+
+## Sections
+
+- **1. Prove Completion, Don't Claim It** — every "done" carries executed evidence, not assertion
+- **2. Be Conservative with Files** — don't create files unasked
+- **3. Handle Errors Explicitly** — no silent swallowing; errors surface with context
+- **4. Comment the WHY, Keep Provenance Honest** — why-not-what; no comments on absent code
+- **5. Keep Changes Surgical and Small** — the smallest diff that does the job
+- **6. State Assumptions, Verify Goals** — say what you assumed, check what you achieved
+- **7. Dead Code** — flagging is always safe; deleting needs proof
+- **8. Naming, Function Size, and Control-Flow Discipline** — naming, guard clauses, rule of three
+- **9. Rules Bow to Context** — when to break a rule and how to say so
 
 ## 1. Prove Completion, Don't Claim It
 
