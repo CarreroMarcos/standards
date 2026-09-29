@@ -1,6 +1,6 @@
 ---
 title: Supply Chain Security
-version: "2.4"
+version: "2.5"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
 last_reviewed: 2026-09-29
@@ -56,17 +56,23 @@ Check age and download history before first use — and gate new *versions* of f
 
 The plan's highest-blast-radius third party is often not a package — it is the model. A model can change server-side with no manifest diff, no registry to resolve against, no release age to gate, and no SCA scanner that sees it. It is the exact "familiar name, new artifact" attack this file warns about.
 
-Pin and track model IDs in config (model name, version/date, endpoint). A model change gets the same treatment as a dependency update: reviewed diff, human approval, same suspicion as a new dependency. Silent model drift is a supply-chain incident.
+Pin and track model IDs in config (model name, version/date, endpoint, and behavior-affecting parameters such as effort and temperature). A model change gets the same treatment as a dependency update: reviewed diff, human approval, same suspicion as a new dependency. Silent model drift is a supply-chain incident.
+
+Prompt bundles that steer model behavior are pinned artifacts too — a prompt change is a model-behavior change: reviewed diff (it *is* diffable, unlike model outputs), and the eval-pin re-run is the regression check.
+
+Pins of model outputs record the model identity that produced them: model name, version/date or served-version marker, endpoint, effort config — alongside the content hash. For models pulled outside package managers (Ollama, direct download), pin the content digest, not just the name.
 
 ## Make dependency additions explicit and pinned
 
 Route every new dependency through the manifest — `requirements*.txt`, `package.json`, lockfiles — so it arrives as a reviewed diff, never as a transcript of an `install` command. Pin versions; the lockfile records what actually resolved.
 
+- **Large artifacts that exceed the repo's size gate live out-of-band with a tracked manifest** (pointer + sha256 + provenance); consumers verify before use and fail loudly on mismatch. Worked example: an eval pin manifest (`multi-pin-manifest.json`) whose scoring driver verifies the pin's sha256 + byte length before scoring.
+
 ## The agent never adds a dependency on its own
 
 - New dependencies require explicit human approval. The agent proposes; the human approves. "Do not install new dependencies without approval" belongs in the agent's guardrails.
 - Dependency changes land as separate commits with a human-readable justification — what the package is, alternatives considered, what the lockfile diff shows. The agent prepares this evidence; it never approves its own addition.
-- Put manifests and lockfiles under CODEOWNERS so the right eyes see every change.
+- Put manifests and lockfiles under CODEOWNERS so the right eyes see every change. Pin manifests for large/eval artifacts (pointer + sha256 + provenance) get the same treatment — they are the trust root for the evidence the gates score.
 
 ## Deny install-time execution by default
 
