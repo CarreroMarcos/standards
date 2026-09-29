@@ -1,9 +1,9 @@
 ---
 title: Supply Chain Security
-version: "2.1"
+version: "2.2"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Supply Chain Security
@@ -18,7 +18,9 @@ An attacker registers a hallucinated name on PyPI/npm, and `pip install <halluci
 
 ## The second attack: poisoning the real package
 
-Slopsquatting is the 2025 threat. The 2026 threat is the real package going bad: maintainer-account compromise, CI/OIDC abuse, and trusted publishing minting malware with valid Sigstore provenance. Registry-existence checks, age/download history, and provenance verification all pass on these artifacts — provenance attests build identity, not source honesty.
+Slopsquatting is the 2025 threat. The 2026 threat is the real package going bad: maintainer-account compromise, CI/OIDC abuse, and trusted publishing minting malware with valid Sigstore provenance — provenance attests build identity, not source honesty.
+
+The 2026 worm wave proved it: ChainDrop (Oct 2025), Mini Shai-Hulud (Aug 2026), and the axios compromise via TanStack (Sep 2026) all shipped hostile code through legitimate packages with valid provenance. Every check in the old playbook passed; the artifact was hostile anyway.
 
 Treat every dependency update with the same suspicion as a new dependency. A familiar name is not evidence of a clean artifact.
 
@@ -33,7 +35,7 @@ npm view <package-name> version    # Node
 
 If the package does not exist on the official registry, do not install it. Resolve first, install second — no exceptions for "it looks legitimate" or a plausible repo URL.
 
-Check age and download history before first use: a package registered yesterday with no dependents is not the same risk as an established one.
+Check age and download history before first use — and gate new *versions* of familiar packages the same way. A fresh release of a trusted name is a new artifact; the version you approved last month says nothing about this one. A package registered yesterday with no dependents is not the same risk as an established one.
 
 ## Make dependency additions explicit and pinned
 
@@ -59,7 +61,7 @@ Most 2026 supply-chain payloads fire at install time (preinstall/postinstall scr
 
 - `.claude/`, `.vscode/`, `SKILL.md`, MCP server configs, and hook definitions are executable surfaces — vet them like code. Supply-chain worms persist via SessionStart hooks and folderOpen tasks; uninstalling the package doesn't remove them.
 - Vet every MCP server before connecting (audit tools exist; pin hashes in a lockfile; keep a hash-pinned allowlist). The first malicious MCP server shipped in September 2025.
-- Skills are untrusted code — see AGENTIC-SAFETY.md for the vetting rules; don't duplicate them here.
+- Skills and MCP servers are supply-chain artifacts — pin them like dependencies and vet them like code. The vetting rules live in AGENTIC-SAFETY.md and MCP-SECURITY.md; don't duplicate them here.
 
 ## Scan what you pull in
 
@@ -78,4 +80,4 @@ Run SCA from a pinned, trusted scanner version — scanners sit in the blast rad
 
 ## References
 
-Shai-Hulud npm worm lineage (2025–2026; TanStack wave carried valid Sigstore provenance on malicious packages — provenance proves build identity, not source honesty). @bitwarden/cli compromise (Apr 2026 — first payload explicitly hunting AI coding-tool credentials). postmark-mcp backdoor (Sep 2025 — first malicious MCP server in the wild). Clinejection (Feb 2026 — prompt injection drove an agent to run a malicious `npm install` in CI).
+Shai-Hulud npm worm lineage (2025–2026, incl. the axios-via-TanStack wave of Sep 2026 — valid Sigstore provenance on malicious packages: provenance proves build identity, not source honesty). @bitwarden/cli compromise (Apr 2026 — first payload explicitly hunting AI coding-tool credentials). postmark-mcp backdoor (Sep 2025 — first malicious MCP server in the wild). Clinejection (Feb 2026 — prompt injection drove an agent to run a malicious `npm install` in CI). ChainDrop worm (Oct 2025). Mini Shai-Hulud worm (Aug 2026).
