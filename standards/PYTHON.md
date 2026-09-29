@@ -1,9 +1,9 @@
 ---
 title: Python Standard
-version: "1.0"
-scope: "Python-specific coding rules for agents: tooling, style, typing, async, errors, packaging, performance"
+version: "1.1"
+scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
-last_reviewed: 2026-09-28
+last_reviewed: 2026-09-29
 ---
 
 # Python Standard
@@ -206,6 +206,10 @@ Handle a narrow, named exception with a defined recovery. Surface a broad failur
 
 **Preserve the exception chain.** Use `raise DomainError(...) from err` so the original traceback remains available to the person debugging at 2 AM.
 
+**Exceptions carry structured data, not just text.** Follow the httpx pattern: a small hierarchy per domain (`HTTPError → RequestError → TimeoutException → ConnectTimeout`), with the relevant objects attached (`.request`, `.response`) — not just a message string. Callers catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure), and structured attributes beat message-parsing. Put the object on the exception, not just text in the message.
+
+**Retry lives in one wrapper.** All retry logic in a single `_request_with_retry` — never scattered at call sites. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry only what can self-heal: 429 and 5xx (502/503/504). Never retry 400/401/403/404 — client errors don't self-heal; retrying a 401 is at best wasteful, at worst a lockout trigger. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
+
 ## 6. Correctness traps agents repeat
 
 Each of these is a known AI-generated-code failure. The linter catches most (`B`, `ASYNC`, `DTZ` rules) — this section is the why behind the flag, so the fix is understood and not just applied.
@@ -292,3 +296,225 @@ logger.debug("user %s did %s", user, action)
 
 - **Serialization fast paths.** stdlib `json` is the default. `orjson` is several times faster when JSON is the bottleneck; `msgspec` decode-plus-validate beats orjson's decode alone on structured payloads; Pydantic's `model_validate_json`/`model_dump_json` skip the intermediate dict. Don't optimize serialization until the profiler says it's the bottleneck.
 - **Profile first.** `py-spy`, `tracemalloc`, `memray` before any performance change. A performance fix without a measurement is a guess wearing a lab coat.
+- **Startup is performance too.** Profile import time with `python -X importtime` — import cost is paid on every CLI run, every Lambda cold start, every test collection. The lazy-import discipline is §12.
+
+## 9. Readability
+
+**Name for meaning, not mechanics.** Nouns for variables, verbs for functions. A good name removes the need for a comment — `pending_refunds` beats `data2`, `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen; keep names ≥3 letters.
+
+**One thing per function, one level of abstraction.** A function small enough that its whole idea fits in your head at once — roughly under 50 lines, files under ~800. Long functions mix abstraction levels (policy next to byte-twiddling), which makes the bug surface the entire function. The top function should read as an outline; details live one call down.
+
+**Guard clauses beat nesting.** Validate inputs and handle edge cases first; keep the happy path at the left margin. Each nesting level doubles the reader's mental stack. Cap nesting at ~4 — past that, extract.
+
+```python
+# Bad: arrow code
+def charge(user, amount):
+    if user:
+        if user.is_active:
+            if amount > 0:
+                ...
+            else: raise ValueError("amount")
+        ...
+
+# Good: guards, then one linear path
+def charge(user, amount):
+    if user is None: raise ValueError("no user")
+    if not user.is_active: raise ValueError("inactive")
+    if amount <= 0: raise ValueError("amount")
+    ...
+```
+
+**Boolean parameters are a design smell.** One boolean = caution; two or more = refactor into named functions, a mode enum, or a parameter object. Each flag multiplies the function's code paths and test cases. `download(url, True)` is unreadable at the call site — a boolean usually hides two functions with different reasons to change. Any surviving flag is keyword-only.
+
+**Comments explain why, never what.** Default to no comment. A comment earns its place only when removing it would leave a future reader confused about a hidden constraint, a surprising decision, or a gotcha:
+
+```python
+# Foo (not Bar): Bar's validation rejects legacy IDs still in prod
+client = Foo(...)
+```
+
+"What" comments rot — code changes, comments don't, and a stale comment is worse than none because readers trust prose over code. "Why" comments capture what the code *cannot* contain: business rationale, external constraints, performance trade-offs. Acceptable uses: non-obvious invariants, workarounds with an issue reference (`# Workaround for GH-123 — remove when fixed`), why this algorithm over the obvious one, hidden coupling to external systems.
+
+**Docstrings state the contract the signature can't show.** Public module/class/function gets a Google-style docstring covering units, invariants, side effects, raised exceptions — what the annotations can't express. Never duplicate the signature (`timeout (float): The timeout` adds nothing). Skip docstrings on trivial private helpers. A docstring that drifts from the signature is worse than absent.
+
+```python
+# Bad: duplicates annotations, adds nothing
+def fetch(url: str, timeout: float) -> Response:
+    """Fetch a URL.
+
+    Args:
+        url (str): The URL.
+        timeout (float): The timeout.
+    """
+
+# Good: adds what the signature can't show
+def fetch(url: str, timeout: float) -> Response:
+    """GET url with a per-operation timeout.
+
+    Args:
+        url: Absolute https:// URL; http:// is rejected.
+        timeout: Seconds per socket operation (not a total deadline).
+
+    Raises:
+        ConnectTimeout: If the TCP handshake exceeds timeout.
+    """
+```
+
+## 10. Functions, classes, and data flow
+
+**Default to functions; earn a class with state.** If a class has two methods and one of them is `__init__`, it's a function in costume — write the function. Reach for a class when there is meaningful internal state, behavior that depends on that evolving state, a clear domain model, or genuine polymorphism. Classes accumulate hidden shared dependencies (`self.db`, `self.cache`) that every method silently uses; functions take dependencies as explicit parameters, so coupling is visible in the signature. Stateless classes are ceremony — harder to test, harder to compose.
+
+```python
+# Bad: ceremony — no state, just a namespace
+class Greeter:
+    def __init__(self, greeting): self.greeting = greeting
+    def greet(self, name): return f"{self.greeting}, {name}!"
+
+# Good: a function; specialize with functools.partial
+def greet(name, greeting): return f"{greeting}, {name}!"
+```
+
+**Don't build taxonomies; subclass only for code reuse.** Never model real-world categories (`Dog(Animal)`) — the day you need `RobotDog`, the tree breaks. Python is protocol-oriented: duck typing and dunders outlive nominal hierarchies. Composition survives requirement changes; deep hierarchies hide behavior across ancestors.
+
+**Keep the public surface minimal; underscore the rest.** Everything public is something someone will depend on and you can never refactor. Mark implementation details with a leading underscore — helpers, caches, internal constants. The `_` convention is Python's entire access control; the ecosystem honors it.
+
+**Return values; don't mutate arguments.** Functions speak data in, data out. Mutating a caller's dict or list makes behavior depend on call history — the #1 source of "works in isolation, fails in production." Build and return new values; frozen dataclasses (§3) make this cheap.
+
+**Use a sentinel when `None` is a legitimate value.** `def update(name=None)` can't distinguish "don't touch" from "clear it." A private `_MISSING = object()` gives three states with zero ambiguity. When `None` genuinely means "no value," plain `None` is correct.
+
+```python
+_MISSING = object()
+
+def update(name=_MISSING):
+    if name is _MISSING: return   # untouched
+    record.name = name            # may be None → clear
+```
+
+**Prefer immutable value objects inside the system.** After the boundary, carry data in frozen dataclasses; transitions return new values (`dataclasses.replace`). Frozen values are safely shareable across async tasks and threads.
+
+## 11. Control flow
+
+**EAFP when failure is exceptional; LBYL when failure is routine.** `try: handler = dispatch[t] except KeyError` does one lookup and avoids a check-then-act race; `if t in dispatch: handler = dispatch[t]` does two, and the world can change between them. But when failure is the common path (user-input validation) or the check is cheap and clear (`if not items: return []`), explicit checks win — exceptions shouldn't steer normal flow. Note: mainstream Python culture is EAFP-by-default; some 2026 agent shops mandate LBYL-by-default for predictability in generated code. Pick per codebase and stay consistent.
+
+**`match` for the structure of one value; `if/elif` for independent conditions.** Match on shape — constants, destructured tuples/dicts/dataclasses — so the dispatch table is visible at once; keep it exhaustive with a `case _` arm (and `assert_never` for truly unreachable arms, §3). Independent conditions get `if/elif` — they aren't alternatives, so don't present them as one.
+
+```python
+# Structure of one value → match
+match event:
+    case {"type": "click", "x": x, "y": y}: handle_click(x, y)
+    case {"type": "key", "key": k}: handle_key(k)
+    case _: raise UnknownEvent(event)
+
+# Independent conditions → if/elif
+if retries_exhausted(job): dead_letter(job)
+elif job.priority > 5: fast_lane(job)
+```
+
+**`for…else` kills flag variables in search loops.** The `else` runs only if the loop completed without `break` — "not found" handling stays attached to the loop that determines it. If the team finds it unreadable, an early-return helper is the consistent alternative.
+
+```python
+for user in users:
+    if user.id == target: break
+else:
+    raise UserNotFound(target)
+```
+
+**Resources live in `with` blocks — always.** Files, sockets, locks, DB sessions: acquired in `with`, never manual `close()`. Manual cleanup has exactly one failure mode — the exception path that skips it — and it's the path you test least. For a *dynamic number* of context managers, `ExitStack` (LIFO unwind cleans up partial setup; `AsyncExitStack` for async). For expected-and-ignorable exceptions, `contextlib.suppress` beats `try/except: pass`. In `@contextmanager` generators, code after `yield` belongs in `finally`.
+
+## 12. Module and package design
+
+**`def main() -> int` + `sys.exit(main())`.** Scripts are structured as a `main()` returning an exit code, guarded by `if __name__ == "__main__": sys.exit(main())`. Top level holds definitions and constants only — no work. Importable modules are testable modules; top-level side effects make `import` run your program. `main(argv) -> int` is directly unit-testable without subprocesses. Map exit codes deliberately (0 ok, non-zero failure, 130 on KeyboardInterrupt); handle `BrokenPipeError` for piped output. One real console entrypoint owns arg parsing, logging setup, and the top-level error boundary.
+
+**Do no work at import time; make heavy imports lazy.** Import must be safe and fast: no network, no filesystem mutations, no expensive work, no heavy third-party imports at module top level. Move slow imports (pandas, cloud SDKs, ML libs) into the functions that need them. Import cost is paid on *every* invocation — every CLI run, every Lambda cold start, every test collection — and the wins are measured in the high double digits of percent. Profile with `python -X importtime` before guessing. Manage the trade-off deliberately: ruff PLC0415 gets per-file ignores in CLI modules, not blanket disables; `TYPE_CHECKING` for type-only imports; a regression test asserting heavy modules are absent from `sys.modules` after importing the CLI.
+
+```python
+# Bad: every `tool --help` pays for pandas + boto3
+import pandas as pd, boto3
+
+# Good: pay only on the code path that needs it
+def cmd_stats(...):
+    import pandas as pd  # noqa: PLC0415 — lazy for startup
+    ...
+```
+
+**src layout so tests hit the installed package.** `src/<package>/`, not flat. Flat layout lets pytest import `./package` from the repo root — silently testing files that were never packaged. `src/` makes the installed artifact the thing under test and kills "works here because CWD shadows site-packages."
+
+**`__init__.py` re-exports the public API; `__all__` declares it.** Users `import package` and find the API — they shouldn't memorize your module tree. Internals stay in submodules. Moved names get a deprecation shim (§17), not a silent break.
+
+**Organize by feature, not by technical layer.** `billing/refunds.py` over `models.py` + `utils.py` + `managers.py`. Many small focused modules, each importable without dragging in the world; dependency direction one-way (no import cycles — cycles are the #1 cause of "restructure the package" refactors). Layer-organized code scatters one feature across N files; feature-organized code is independently testable and deletable.
+
+## 13. API design
+
+**Keyword-only arguments for flags and future growth.** `def get(url, *, timeout=..., follow_redirects=...)`. Positional booleans are unreadable at call sites (§9), and keyword-only lets the signature grow for years without breaking positional callers. New parameters are added keyword-only with defaults — backward-compatible by construction. This is how httpx-style clients keep stable APIs.
+
+**Sensible defaults, explicit overrides.** Defaults cover the common case; overrides are explicit keywords. (And never mutable defaults — §6.)
+
+**Minimal surface, progressive disclosure.** `rich.print()` works with zero config; the `Console` object gives full control. The zero-config path gets adoption; the object path gets power. New users never face a constructor with 12 parameters; power users aren't blocked.
+
+## 14. Configuration
+
+**One typed settings object, built once at startup, passed explicitly.** `pydantic-settings` `BaseSettings`: typed, validated, env-sourced. Scattered `os.environ[...]` reads fail at 3 AM with `KeyError` deep in a code path; a settings object fails once, at startup, with a precise validation error naming the variable. Typing documents every knob in one place. Secrets ride as `SecretStr` so they redact in logs and tracebacks.
+
+**Hide inputs at sensitive boundaries.** pydantic's `ValidationError.errors()` returns structured `{type, loc, msg, input}` — machine-readable, which is good — but at sensitive boundaries use `errors(include_input=False)` so secrets and PII never echo back in error payloads and logs. (Also noted for `SECRETS.md`.)
+
+## 15. Runtimes: Lambda and long-lived servers
+
+**Thin handler: parse → delegate → return.** Zero business logic in the handler body. The handler parses the event, calls domain functions, returns a response. Handlers are untestable without the Lambda runtime harness; plain functions are unit-testable. Expensive clients (boto3, httpx) are constructed at module level — reused across warm invocations, keeping connection pools warm. Same lifetime logic as below: process-scoped things once, invocation-scoped things cheap.
+
+```python
+_client = boto3.client("dynamodb")  # module level: warm reuse
+
+def handler(event, context):
+    cmd = parse_event(event)      # may raise → DLQ/retry
+    result = process(cmd)         # pure, unit-tested
+    return {"statusCode": 200, "body": json.dumps(result)}
+```
+
+**Cold start is import time + init time.** Apply §12 inside the handler module: heavy imports deferred or module-level only if always needed; prune the dependency tree (each transitive package is cold-start milliseconds). Structured JSON to stdout for CloudWatch. Measure cold and warm separately; optimize the p99 that matters.
+
+**Fail loudly on poison; partial-failure semantics for batches.** Malformed input → raise, so the event lands in the DLQ or gets retried by the source. For SQS batches, return `batchItemFailures` so only failed records retry. Swallowing a poison message drops data silently; re-raising the whole batch reprocesses (and re-bills) successes. Timeouts on every outbound call; degrade gracefully on non-critical dependency failure with an explicit degraded signal.
+
+**Long-lived servers: match resource lifetime to scope.** FastAPI `lifespan` owns process-lifetime resources (httpx.AsyncClient, DB engine/pool, ML model) → `app.state`; dependencies *read* from `app.state` — they don't own the resource. `yield` dependencies are for per-request setup/teardown (a DB session checked out of the pool). Creating an `httpx.AsyncClient` per request throws away connection pooling; closing a shared client in a per-request dependency breaks every concurrent request. `Depends`' cache is per-request, not across requests — a frequent misconception. Rule of thumb: expensive-to-construct or pooled → lifespan; request-scoped → dependency; pure value → plain function.
+
+## 16. Testing
+
+**Hoist your I/O: pure core, thin shell.** Push I/O (network, filesystem, console, clock) to the top level; keep the decision-making core pure. A pure function needs no mocks, no fixtures, no event loop — just inputs and expected outputs. This is the highest-leverage testability rule: it *removes* the need for most mocking rather than improving it.
+
+**Explicit dependencies in, not hidden globals.** Pass dependencies as parameters; don't reach for module globals. Hidden globals make tests order-dependent and parallel-unsafe; explicit parameters make the dependency graph visible and swappable.
+
+**Mock only external boundaries; prefer fakes.** Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Never mock your own internal logic. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring. Mocks also let generated code "pass" while asserting nothing about outcomes.
+
+```python
+# Bad: asserts implementation; breaks on any refactor
+repo = Mock(); svc = BillingService(repo); svc.charge(u, 10)
+repo.save.assert_called_once_with(...)
+
+# Good: fake with real semantics; asserts outcome
+svc = BillingService(FakeRepo()); svc.charge(u, 10)
+assert svc.balance(u) == 90
+```
+
+**Contract-test the boundaries.** Test boundary models hard (pydantic validation, Hypothesis round-trips on serializers); test internals against typed values. For HTTP clients, contract-test against a fake transport (httpx's mock transports), not the live API. Live-API tests are flaky, slow, and couple CI to someone else's uptime; transport-level fakes keep the real request-building code under test.
+
+**Tests mirror src; run against the installed package.** `tests/` mirrors `src/<pkg>/`; fast unit tests separated from slow integration tests by markers. A test that passes against CWD files but fails against the wheel is a release-day surprise (§12).
+
+**Async tests force interleaving.** Every coroutine under test is awaited; use `asyncio.gather` to force task interleaving and expose missing locks; keep shared fixtures read-only or copy-per-test; put timeouts on tests that can deadlock. Timeouts turn "CI hangs for 6 hours" into a failing test with a name.
+
+**Property-based testing for parsers, serializers, protocols.** Hypothesis where the domain has *properties*: round-trips (`decode(encode(s)) == s`), invariants (sorted output is ordered), equivalence (optimized impl == reference impl). Example tests check the cases you thought of; property tests check the ones you didn't — off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
+
+**CLI tests: test handlers, not argv strings.** Subcommands map to `_cmd_*` handlers taking parsed args; test handlers directly, the entrypoint thinly (exit codes). Parsing is the framework's job; your logic is the handler.
+
+## 17. Evolving code
+
+**Deprecate in three phases: warn → document → remove.** (1) Warn with `warnings.warn(msg, DeprecationWarning, stacklevel=2)` — `stacklevel=2` points at the *caller's* code, and the message names the replacement and the removal version. (2) Document: changelog entry in the same commit. (3) Remove in a major version, after ≥2 minor versions of warning. `FutureWarning` (visible by default) for user-facing *behavior* changes; `DeprecationWarning` (hidden by default) for developer-facing API removals. Silent removals break downstream with no migration path; warnings without a named replacement leave users stuck; the default `stacklevel=1` blames your library instead of the call site.
+
+```python
+warnings.warn(
+    "fetch_all() is deprecated; use iter_records() — removed in 4.0",
+    DeprecationWarning, stacklevel=2,
+)
+```
+
+**Backward compatibility is additive.** New functions, new parameters with defaults, new keyword-only parameters (backward-compatible by construction). Moving a name? Re-export a shim from the old location for the whole deprecation window. Never silently change what an existing argument *means* — changed semantics break downstream silently, which is worse than a loud rename.
+
+**Changelog as contract.** Keep-a-Changelog sections (Added/Changed/Deprecated/Removed/Fixed/Security), one entry per user-visible change, updated in the same commit. Users decide whether to upgrade by reading the changelog, not your diff; auto-generated commit lists are noise, curated entries are a migration guide.
