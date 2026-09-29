@@ -1,9 +1,9 @@
 ---
 title: Standards
-version: "1.2"
+version: "1.3"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 ---
 
 # Standards
@@ -29,6 +29,7 @@ Route by what you are **doing**, not by what a title sounds like. Find the row w
 ## Conventions
 
 - One topic per file. Files stay portable to any repo — language-specific files are welcome; coupling to a specific tool is not.
+- Project conventions win: these standards are the default, not the law. When the repo you're in has an established local pattern that contradicts a rule here, follow the project and note the deviation.
 - Each file's frontmatter `consult_when` is the source of truth for its table row — this table mirrors it. Update both together.
 - To add a standard: drop in a scannable one-topic file and add one row to the table above.
 - When you finish a task, state which standards you consulted and why.
