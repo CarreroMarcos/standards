@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.6"
+version: "1.7"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
 last_reviewed: 2026-09-29
@@ -16,6 +16,7 @@ main. Repo-specific names are marked; the shape is the reusable part.
 ## Sections
 
 - **One pass, end to end** — the ticket → spec → PR → Oracle → merge shape
+- **Evidence-only tickets** — closing without a diff: recorded evidence + gate verdict + version-bound receipt
 - **Loop Contract** — written before iteration 1: gates, budgets, blast radius
 - **Orchestration patterns** — bounded fan-out, verifier merge, hold-out verification, sequential vs parallel
 - **Roles** — fixer, bot reviewer, Oracle, orchestrator; who may do what
@@ -33,7 +34,8 @@ main. Repo-specific names are marked; the shape is the reusable part.
 1. **Ticket.** Jira tickets are projections of `specs/<n>/tasks.md`
    (`tools/sync_tasks_to_jira.py`, run by the `sync-jira.yml` workflow;
    dry-run on PRs, manual dispatch otherwise). One ticket = one PR (pairs of
-   related tasks can share one). One-off tickets may be created manually.
+   related tasks can share one). Evidence-only tickets close without a PR —
+   see below. One-off tickets may be created manually.
    Jira is progress tracking only — the HLD and the specs are the source of
    truth.
 2. **Implement.** A fixer agent implements on a branch. The fixer never
@@ -78,6 +80,12 @@ main. Repo-specific names are marked; the shape is the reusable part.
    every push, including gate-ordered remediations → focused re-gate
    embedding the fresh round.
 8. **Next.** Move to the next ticket in the JQL queue.
+
+## Evidence-only tickets
+
+Not every ticket ends in a diff. When a ticket's verify clause is an eval run against a pre-registered bar and the run passes with no code change, the closure is evidence-only: recorded evidence + the named gate's verdict + a decision-log entry + a ledger receipt that binds the evidence to the code version it evaluated (commit sha or artifact hash). No branch, no PR, no merge gate — the gate evaluation itself is the judge.
+
+The loop's custody discipline applies to evidence as well as diffs. A receipt that can't prove which code produced the evidence didn't verify anything.
 
 ## Loop Contract
 
