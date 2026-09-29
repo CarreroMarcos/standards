@@ -1,6 +1,6 @@
 ---
 title: Standards
-version: "1.3"
+version: "1.4"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
 last_reviewed: 2026-09-29
@@ -12,7 +12,7 @@ Route by what you are **doing**, not by what a title sounds like. Find the row w
 
 | When you are… | Read | Skip when / precedence |
 |---|---|---|
-| Giving an agent tools, autonomy, or access to untrusted input (webpages, files, uploads, tool results) | AGENTIC-SAFETY.md | Skip when no model is acting. Read first whenever agents are involved — it owns the Rule of Two. |
+| Giving an agent tools, autonomy, or access to untrusted input (webpages, files, uploads, tool results, CI/build logs, PR diffs) — or adding/changing any model-directed step (prompts, LLM calls, agent loops) | AGENTIC-SAFETY.md | Skip when no model is acting. Read first whenever agents are involved — it owns the Rule of Two. |
 | Handling credentials, API keys, or tokens — storing, passing, logging, or reviewing code that touches them | SECRETS.md | Skip when no secret material is involved. Wins over CODE-REVIEW on secret findings. |
 | Deciding whether content can be acted on or only read — classifying a page, tool output, file, or message by trust tier | TRUST-CLASSIFICATION.md | Skip when every input is first-party code you wrote. Classify before acting. |
 | Adding, upgrading, or reviewing a dependency, package, skill, plugin, or any third-party code | SUPPLY-CHAIN.md | Skip when no new external code enters the repo. The agent never adds a dependency on its own — propose, human approves. |
