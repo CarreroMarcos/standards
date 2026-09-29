@@ -1,6 +1,6 @@
 ---
 title: Agentic Safety Standard
-version: "2.5"
+version: "2.6"
 scope: Safety constraints for AI agents with execution access
 consult_when: "When giving an agent tools, autonomy, or access to untrusted input (including CI/build logs and PR diffs) — or when adding/changing any model-directed step (prompts, LLM calls, agent loops)."
 last_reviewed: 2026-09-29
@@ -24,6 +24,7 @@ Covers the threats to an agentic session: **indirect prompt injection**, where m
 - **Admission Control, Kill Switches, Token Budgets** — stopping runaway agents
 - **Subagent Scope & Trust Violations** — when a subagent's own behavior exceeds its brief
 - **Validate at every handoff** — handoff validation
+- **Decision authority for model verdicts** — pre-registered error budgets for suppress/kill authority
 - **Procedural hallucination** — reports of procedures never run; unmasked verify is the defense
 - **Verify before destructive actions** — confirm the exact target and authorization first
 - **Detection without enforcement is not a control** — a flag must stop the action, not just log it
@@ -162,6 +163,15 @@ An injected agent's output becomes the next agent's instructions. Validate subag
 - Why: multi-agent relay injection is a formalized attack class — Agent A gets injected, Agent B follows the poisoned output blind.
 
 **Quarantine suspect outputs.** An agent that showed scope drift, hallucinated evidence, or a control bypass gets its outputs held out of downstream inputs until an independent check clears them. Suspicion is cheap; downstream trust is expensive.
+
+## Decision authority for model verdicts
+
+When a model's output is a *decision* that suppresses downstream work — killing a candidate, dropping a finding, closing a ticket — that authority gets a pre-registered error budget, stated separately from content-trust rules. Scope: applies where model verdicts gate what downstream sees; does not apply to advisory outputs a human or another gate still reviews.
+
+- Why: quarantine and content-trust run the wrong direction here. Their harm model is poisoned content flowing downstream; the harm here is *true* work being suppressed and never reaching downstream. A kill with no error budget is an unmeasured veto.
+- The budget is pre-registered: the tolerable miss rate (or absolute count) is written down before the run, and exceeding it blocks the pipeline the way a failed gate does. "The verifier may wrongly kill at most N true findings per run" is a control; "kill carefully" is a wish.
+- Pair with the verdict-rendering worked shape in `ENGINEERING_PRINCIPLES.md` §9 — the budget says how many misses are tolerable; the worked shape says how each verdict earns its keep.
+- Limits of this rule: this is the newest and least field-tested rule in this file. Its shape comes from observed wrongful-kill failures in multi-agent review loops, not from published research. Where the cost of a miss is trivial, the budget is overhead — set it aside explicitly (§0 of `ENGINEERING_PRINCIPLES.md`).
 
 ## Procedural hallucination
 
