@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "2.2"
+version: "2.3"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit."
 last_reviewed: 2026-09-29
@@ -11,6 +11,18 @@ last_reviewed: 2026-09-29
 Portable feature-development discipline — seven phases: brainstorm → spec → plan → implement (TDD) → simplify → security review → commit.
 
 Prevents the most common AI coding failure mode: writing code before understanding what to build.
+
+## Sections
+
+- **Phase 1 — Brainstorm** — approaches and trade-offs before code; when to skip
+- **Phase 2 — Spec** — the validated design doc
+- **Phase 3 — Plan** — the implementation plan
+- **Phase 3.5 — Independent Plan Review** — adversarial plan check (advisory)
+- **Phase 4 — Implement (TDD)** — test-first implementation
+- **Phase 5 — Simplify** — the simplification pass
+- **Phase 6 — Security Review** — the security gate
+- **Phase 7 — Commit** — changelog, deprecation, commit discipline
+- **Handoff** — passing work between agents
 
 ## Phase 1 — Brainstorm
 
