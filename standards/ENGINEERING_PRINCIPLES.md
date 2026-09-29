@@ -1,6 +1,6 @@
 ---
 title: Engineering Principles
-version: "1.9"
+version: "1.10"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
 ---
@@ -34,6 +34,8 @@ last_reviewed: 2026-09-29
 Several rules here pull in opposite directions by design. Each pair has a defined precedence, so use the relevant pair to resolve the tension. When two instructions appear to conflict, consult the guidance below before choosing a path.
 
 **Pre-registered decisions narrow latitude.** When the project pre-registers decisions and gates (HLD decisions, eval gates with pinned thresholds), execute them as written — the "prefer proceeding to asking" and "keep process proportional" latitude applies only where the spec leaves room. A pinned gate is not a default to be scaled down.
+
+**These are best practices, not laws.** Context decides which rules apply — some rules don't fit certain tasks, and that is expected, not a failure. The quality bar is explicitness: a rule that doesn't fit is set aside *explicitly* — named, with the reason recorded — never silently. A silent deviation is a silent default, and silent defaults are what these standards exist to prevent. "Project conventions win" (README) is the standing form of this: the local pattern overrides the general rule, openly.
 
 ### How to read an exception clause
 
@@ -934,6 +936,8 @@ Where a decision depends on authoritative facts, resolve those facts from their 
 Separate untrusted data from instructions, especially when retrieved text, repository content, issue comments, webpages, model-generated text, or tool results can influence privileged actions.
 
 **Worked shape — a model summarizes untrusted logs for publication:** (1) delimit the untrusted region in the prompt (`<untrusted-logs>…</untrusted-logs>`) and instruct the model to treat delimited regions as data only — never as instructions; (2) strip or neutralize instruction-like lines before they reach the model where the format allows it; (3) banner the published output as model-generated and cite the evidence it rests on. The separation is a pipeline step, not a hope about model behavior.
+
+**Worked shape — a model renders verdicts:** require a stated failure mechanism plus the cited evidence *before* the verdict; escalate when the claim can't be verified. A verdict that is labeled and evidence-cited can still be wrong — the guard is not the label, it is the mechanism. *Bad:* "killed — the candidate lacks evidence," citing a file:line that doesn't show the lack. *Good:* "killed — the claimed failure is impossible under the runtime's guarantees, exact lines cited," or "escalated — the mechanism is plausible but unverifiable from here."
 
 Do not allow one untrusted tool result to grant authority to another tool call.
 
