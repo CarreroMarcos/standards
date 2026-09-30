@@ -48,6 +48,7 @@ Treat every agent session as a potential read of your environment:
 Pre-commit hooks catch secrets going into git. They miss everything else the agent writes.
 
 - Scan agent-written PR comments, issue comments, summaries, and workflow logs for secret patterns before they publish — the check runs independent of the writing agent (hook or separate review step).
+- **Exfil hides in legitimate channels** (AGENTIC-SAFETY.md): pattern-scanning misses secrets encoded in DNS labels, base64 in git pushes, or `$schema` URLs — scan the channels, not just the text.
 - Scrub secrets from traces and audit logs: log that a credential was used, never the value. Restore `{{ENV_VAR}}` placeholders in displayed traces.
 - Why: one 2026 incident's root cause was literally "no output filtering" — an agent posted environment contents to a PR comment.
 
