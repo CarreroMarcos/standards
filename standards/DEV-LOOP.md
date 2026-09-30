@@ -1,8 +1,8 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.7"
+version: "1.8"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
-consult_when: "When operating the ticket to implement to verify to review to gate to merge loop."
+consult_when: "When running the ticket → implement → verify → review → gate → merge loop."
 last_reviewed: 2026-09-29
 ---
 
@@ -37,9 +37,9 @@ main. Repo-specific names are marked; the shape is the reusable part.
    related tasks can share one). Evidence-only tickets close without a PR —
    see below. One-off tickets may be created manually.
    Jira is progress tracking only — the HLD and the specs are the source of
-   truth.
+   truth (conflict precedence: WORKFLOW.md).
 2. **Implement.** A fixer agent implements on a branch. The fixer never
-   pushes and never merges — forbidden in every brief.
+   pushes and never merges.
 3. **Independent verify, pre-push (orchestrator).** Per-commit custody/scope
    check, full test suite in a clean shell, ruff/format, pre-commit. This is
    the "custody law": it exists because PR #114's squash accidentally
@@ -61,7 +61,8 @@ main. Repo-specific names are marked; the shape is the reusable part.
    dispositions into standing rules: a false-positive class disproven twice
    stops being raised. Track the bot's resolution rate (fixed findings ÷
    raised findings), not its finding count — volume is not value. Push →
-   next round. Hard stop when the finding count flattens for two rounds;
+   next round. Hard stop when two consecutive rounds advance no dispositions
+   — same findings re-raised, or no fixes landing;
    watch for oscillation too — a finding that flips state across rounds is
    oscillating, not converging: escalate instead of looping. Frozen residuals
    go into the Oracle gate brief as "open at freeze, rulings demanded."
@@ -85,11 +86,11 @@ main. Repo-specific names are marked; the shape is the reusable part.
 
 Not every ticket ends in a diff. When a ticket's verify clause is an eval run against a pre-registered bar and the run passes with no code change, the closure is evidence-only: recorded evidence + the named gate's verdict + a decision-log entry + a ledger receipt that binds the evidence to the code version it evaluated (commit sha or artifact hash). No branch, no PR, no merge gate — the gate evaluation itself is the judge.
 
-The loop's custody discipline applies to evidence as well as diffs. A receipt that can't prove which code produced the evidence didn't verify anything.
+The loop's custody discipline applies to evidence as well as diffs. A receipt that can't say which code produced the evidence must say so — unverifiable provenance is itself a finding, recorded, not rounded up.
 
 ## Loop Contract
 
-Written before iteration 1. The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → stop and escalate), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
+Written before iteration 1. The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → halt the loop, write the stall record to the state file and ledger, and wait; escalation is a write, not a message), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
 
 Distinguish "escalate because stuck" from "surface a designed ruling request": a pre-registered rule that requires a human decision (e.g. a `needs-mars-ruling` terminal state) is not a stall — it is a terminal state. Stop, write the ledger receipt, wait. The compliant completion is the decision brief (evidence, options, recommendation) recorded in the plan; "blocked" is not a deliverable.
 
@@ -97,7 +98,7 @@ Distinguish "escalate because stuck" from "surface a designed ruling request": a
 
 The loop's shape generalizes beyond this repo:
 
-- **Fan out with bounded parallelism; merge through a verifier.** Independent lanes run in parallel under a fixed cap; one verifier reads the full reports before anything merges. A verifier that reads summaries-of-summaries is a rumor mill — verify from the artifacts, never from hints.
+- **Fan out with bounded parallelism; merge through a verifier.** Independent lanes run in parallel under a fixed cap; one verifier reads the full reports before anything merges. A verifier that reads summaries-of-summaries is a rumor mill — for gate and merge verdicts, verify from the artifacts; summaries are fine for status, never for verdicts.
 - **Hold-out verification.** The gate tests what the maker never saw (above: the Oracle's hold-out checks). A verifier iterating against the same suite the maker used is curve-fitting, not verification.
 - **Sequential where dependent, parallel where independent.** Dependent stages run in order with handoff validation at each boundary; independent lanes fan out. Don't parallelize what shares state.
 
@@ -165,16 +166,11 @@ Each stage writes a receipt before the loop moves on: who ran it, what was
 checked, the evidence hash (diff, test output tail, file:line refs), and a
 timestamp. The ledger is the audit form of the custody law. Secrets are
 masked in the ledger (`[REDACTED]`) — receipts prove what happened, not what
-the credentials were. Write the receipt before stopping — a stage that
-crashed without a receipt didn't happen.
+the credentials were. Write receipts as you go; never reconstruct them after — a stage that crashed without a receipt is recorded as unverified, not rounded up.
 
 ## Test discipline
 
-- **Tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise.
-- **Async tests force interleaving** — use `asyncio.gather` / task groups to force task interleaving and expose missing locks; keep shared fixtures read-only or copy-per-test; put timeouts on tests that can deadlock. A timeout turns "CI hangs for 6 hours" into a failing test with a name.
-- **CLI tests test handlers, not argv strings** — subcommands map to handler functions taking parsed args; test handlers directly, the entrypoint thinly (exit codes). Parsing is the framework's job.
-- **Lazy imports for startup** — CLI/dev-server startup pays import cost on every invocation; defer heavy imports to the code path that needs them (measure with `python -X importtime` before guessing).
-- **Prefer the framework's test seam** — fixtures over setup/teardown; `dependency_overrides` (FastAPI) to swap a dependency with a fake instead of patching import paths.
+Test discipline lives in PYTHON.md §8 — the loop enforces it, doesn't restate it. Loop-specific: **tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise.
 
 ## Environment
 
