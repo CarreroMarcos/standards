@@ -126,7 +126,7 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 
 - **One test per observable behavior — write, implement, verify, commit — before starting the next.** Do not write a batch of tests up front and implement them as a batch. *Why:* batching hides which test is driving which code.
 - The remaining design rules live in `ENGINEERING_PRINCIPLES.md` §4: "Test Observable Behavior" (test the seam), "Independent Expected Values" (expected values from a source independent of the code), "Tracer Bullet" (one end-to-end test first).
-- **Property-based tests for domains with properties** — the worked shape lives in PYTHON.md §8; keep concrete example tests alongside.
+- **Property-based tests for domains with properties** — the worked shape lives in PYTHON.md §16; keep concrete example tests alongside.
 
 ## Phase 5 — Simplify
 
