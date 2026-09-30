@@ -1,13 +1,14 @@
 ---
 title: Engineering Principles
-version: "1.10"
+version: "1.11"
 scope: Core engineering principles and practices
 last_reviewed: 2026-09-29
+consult_when: "When making a judgment call no specific standard covers — design trade-offs, colliding principles."
 ---
 
 # Engineering Principles
 
-> This reference exists because these principles are counterintuitive enough that memory gets them wrong. When a trigger in `AGENTS.md` sends you here, read the named section and apply its reasoning.
+> This reference exists because these principles are counterintuitive enough that memory gets them wrong. When a router sends you here, read the named section and apply its reasoning.
 >
 > These are decision principles, not a checklist of fashionable patterns. Use them to reason from requirements, critical flows, state and authority boundaries, failure modes, and evidence toward the simplest system that safely satisfies the need.
 >
@@ -37,13 +38,15 @@ Several rules here pull in opposite directions by design. Each pair has a define
 
 **These are best practices, not laws.** Context decides which rules apply — some rules don't fit certain tasks, and that is expected, not a failure. The quality bar is explicitness: a rule that doesn't fit is set aside *explicitly* — named, with the reason recorded — never silently. A silent deviation is a silent default, and silent defaults are what these standards exist to prevent. "Project conventions win" (README) is the standing form of this: the local pattern overrides the general rule, openly.
 
+**Ask vs. assume.** Ask when the decision cannot be safely resolved later; otherwise state the assumption and continue.
+
 ### How to read an exception clause
 
 Most rules here are strong defaults with named exceptions rather than absolutes. Apply each rule according to its purpose and scope:
 
-**Use defaults proportionally.** A Protocol wrapping a single class, `asyncio.to_thread` around a 200-byte file read, a rigid model for a payload with no fixed shape, a multi-region deployment for a recoverable internal tool, and a formal spec for a two-line change all add ceremony beyond the rule's purpose.
+**Use defaults proportionally** — proportional to the change's significance (blast radius × irreversibility), not its line count. A Protocol wrapping a single class, `asyncio.to_thread` around a 200-byte file read, a rigid model for a payload with no fixed shape, a multi-region deployment for a recoverable internal tool, and a formal spec for a two-line change all add ceremony beyond the rule's purpose.
 
-**Use named exceptions deliberately.** When invoking one, identify the listed exception and explain why it applies. Rules marked unconditional — protecting security, safeguarding non-idempotent writes with deduplication, preserving authorization boundaries, and grounding claims in executed checks — retain their full force.
+**Use named exceptions deliberately.** When invoking one, identify the listed exception and explain why it applies. The following categories are unconditional — they apply with full force regardless of proportionality: protecting security (hardcoded credentials, missing auth checks, unsafe model-controlled actions), safeguarding non-idempotent writes with deduplication, preserving authorization boundaries, and grounding claims in executed checks.
 
 State the reason whenever you apply an exception. When the reason clearly does not apply, record that reasoning explicitly and choose the proportional alternative.
 
@@ -57,7 +60,7 @@ Remove an abstraction your change made dead. Fix a comment your change falsified
 
 Rename a misleading local variable inside a function you are already rewriting when the rename stays within the touched lines. Give a parameter, method, module-level name, or name with call sites its own task when the rename expands the diff beyond the requirement.
 
-Use the lines in your diff as the boundary rather than your general judgment about quality. A rename that stays within the diff is cleanup of your own work; a rename that expands the diff is a separate change.
+Use the lines in your diff as the boundary for *improvements* rather than your general judgment about quality; required completion — things your change broke or falsified — follows the causal test, not the diff boundary. A rename that stays within the diff is cleanup of your own work; a rename that expands the diff is a separate change.
 
 **The common failures:** leaving behind a comment that now lies or a helper with no callers, and expanding a one-line fix across nine files through opportunistic renaming.
 
@@ -89,19 +92,13 @@ An unavailable recommendation service may return "recommendation unavailable" wh
 
 **Precedence: the failure model decides.** Retries, queues, caches, circuit breakers, replicas, and service decomposition are mechanisms, not architecture goals.
 
-First identify the critical flow, dependency semantics, failure mode, business consequence, and recovery requirement (§5). Add the smallest mechanism that addresses the observed or credible failure.
+First identify the critical flow, dependency semantics, failure mode, business consequence, and recovery requirement (§5). Add the smallest mechanism that addresses the observed or credible failure — credible means observed here, reported in comparable systems, or following from a concrete mechanism, not merely imaginable.
 
 **The common failure:** mechanically adding every resilience pattern to every dependency and creating more failure states than the original dependency had.
 
 ### Deterministic software vs. model autonomy
 
-**Precedence: determinism wins when it is sufficient.** If the correct next action can be reliably derived from typed state and explicit rules, keep that decision in deterministic code or a predefined workflow.
-
-Use model-directed autonomy when the task genuinely requires judgment under uncertainty, interpretation of unstructured information, dynamic planning, or a path that cannot reasonably be enumerated ahead of time.
-
-Autonomy does not replace authorization, invariants, state ownership, or business policy. Those remain deterministic boundaries (§9).
-
-**The common failure:** turning ordinary control flow into an agent because an LLM can perform it, adding nondeterminism, latency, cost, evaluation burden, and new security exposure without adding useful capability.
+**Precedence: determinism wins when it is sufficient** — full rule in §9 "Use Autonomy Only Where It Earns Its Cost."
 
 ### Verify everything vs. unavailable checks
 
@@ -181,7 +178,7 @@ Instantiate shared resources — connection pools, clients, clocks — at a comp
 
 Default to functions. Reach for a class when there is meaningful internal state, behavior that depends on that evolving state, a clear domain model, or genuine polymorphism. A class with two methods where one is `__init__` is a function in costume — and classes accumulate hidden shared dependencies that every method silently uses, while functions take dependencies as explicit parameters.
 
-Subclass only for code reuse, never for taxonomies. Modeling real-world categories (`Dog(Animal)`) breaks the day the requirements change; protocols and composition survive it.
+Subclass only for code reuse, never for volatile taxonomies — stable closed taxonomies (AST nodes) may use inheritance. Modeling real-world categories (`Dog(Animal)`) breaks the day the requirements change; protocols and composition survive it.
 
 **The common failure:** stateless classes as ceremony — harder to test, harder to compose — and deep hierarchies that hide behavior across ancestors.
 
@@ -214,7 +211,7 @@ Use names that immediately clarify purpose and let readers understand intent at 
 
 Use different terms for concepts with different authority or semantics. A recommendation is not a decision. A producer is not necessarily the durable writer. A request accepted for processing is not the same as an operation completed.
 
-**The common failure:** choosing a name that's accurate-but-vague. `processData` is accurate for everything and communicates nothing. A longer name that disambiguates (`normalizeAndValidateOrderPayload`) is better than a short name that could mean anything. Developers over-abbreviate far more often than they over-lengthen — keep names ≥3 letters so the call site reads as a sentence.
+**The common failure:** choosing a name that's accurate-but-vague. `processData` is accurate for everything and communicates nothing. A longer name that disambiguates (`normalizeAndValidateOrderPayload`) is better than a short name that could mean anything. Developers over-abbreviate far more often than they over-lengthen — keep domain-meaning names ≥3 letters so the call site reads as a sentence; conventional shorts (`i`, `x`/`y`, `e`, `id`, `db`) are fine. The rule targets cryptic abbreviations, not established shorthand — judge by whether a new reader can expand the name.
 
 ### Contextual Comments
 
@@ -356,7 +353,7 @@ A hand-computed value, a trusted reference implementation, or a pinned fixture f
 
 **The common failure:** testing a slug generator by re-implementing the slugify logic inline in the test. A genuinely wrong algorithm passes its own test every time.
 
-This matters more when an agent writes the test. A tester that reads the builder's implementation inherits its bugs — the "misguidance effect" — so agent-authored tests are spec-sourced, never diff-sourced: expected values from the requirement, not from the code under test.
+This matters more when an agent writes the test. A tester that reads the builder's implementation inherits its bugs — the "misguidance effect" — so agent-authored tests are spec-sourced, never diff-sourced: expected values from the requirement, not from the code under test. When no independent spec exists, pin observed behavior explicitly as characterization — labeled as observed, not as verified-correct.
 
 **Carve-out: model-generated prose has no independent expected value.** There is no hand-computable "correct diagnosis" for a model's output. Test the deterministic invariants around the model call instead — pinned inputs, structural output validation, the fencing and redaction that bound it — and cover the behavior itself with evaluations (§9), which exist precisely because conventional tests cannot judge it. Verify eval pins before scoring: a mutated capture feeding the driver produces wrong verdicts, not failed tests. Budget the eval run — checkpointed resume, the assumed parallelism stated beside any wall-clock claim, the minimal deciding subset — so a re-run is a decision, not an endurance test.
 
@@ -402,7 +399,7 @@ Then identify important failure modes for those flows. For each meaningful failu
 * **safe behavior** — fail, degrade, queue, reject, retry, or stop;
 * **recovery** — how correct operation is restored.
 
-Prioritize failure modes by business impact and credible likelihood. Do not engineer every hypothetical failure equally.
+Prioritize failure modes by business impact and credible likelihood — credible means observed here, reported in comparable systems, or following from a concrete mechanism, not merely imaginable. Do not engineer every hypothetical failure equally.
 
 Where reliability is consequential, derive measurable objectives such as SLOs and, for durable state where appropriate, RTO and RPO from business consequences rather than inventing infrastructure targets.
 
@@ -479,7 +476,7 @@ Require deduplication safeguards before automatically retrying non-idempotent wr
 
 Use randomized exponential backoff for distributed automatic retries where synchronized retries could amplify an outage. Do not retry permanent failures merely because retry infrastructure exists.
 
-Retry only what can self-heal — 429s and 5xxs. Never retry client errors (400/401/403/404): they don't self-heal, and retrying auth failures is at best wasteful, at worst a lockout trigger. Honor `Retry-After`; jitter spreads retry timing so synchronized clients don't stampede the recovering service.
+Retry what can self-heal; never *blind*-retry 4xx. Retry when the retry changes the condition: 429/5xx/timeouts, one refresh-then-retry on 401, bounded settle on 404-after-write. A 400/403 with no changed condition doesn't self-heal — don't hammer it; retrying auth failures without a changed condition is at best wasteful, at worst a lockout trigger. Honor `Retry-After`; jitter spreads retry timing so synchronized clients don't stampede the recovering service.
 
 **The common failure:** adding a retry loop because "the call sometimes fails" while leaving idempotency, capacity, timeout budget, and failure behavior undefined. Contract-free retries amplify load during outages: the recovering service receives the original traffic plus retry traffic, turning a transient problem into a sustained one.
 
@@ -634,7 +631,7 @@ For irreversible or difficult-to-reverse operations — destructive migrations, 
 
 State assumptions that affect the design.
 
-Ask before consequential product, security, data-migration, compatibility, or infrastructure decisions. "I assumed X because Y — correct me if wrong" gives the decision-maker a chance to correct the path.
+Ask when the decision cannot be safely resolved later; otherwise state the assumption and continue. "I assumed X because Y — correct me if wrong" gives the decision-maker a chance to correct the path.
 
 Do not manufacture certainty from incomplete evidence. Distinguish:
 
@@ -794,7 +791,7 @@ The full workflow is for work with at least one of these properties:
 * It changes persisted state, a schema, consistency semantics, or a migration path.
 * It changes a critical flow's reliability or failure behavior.
 * It touches authentication, authorization, secrets, trust boundaries, or privileged operations.
-* It introduces meaningful model-directed autonomy or expands what an agent may do.
+* The agent takes actions beyond read-only analysis, or the change expands what an agent may do.
 * It is irreversible or expensive to reverse.
 * The requirement is genuinely ambiguous — reasonable engineers would build materially different systems from the description.
 
@@ -1021,7 +1018,7 @@ When one agent dispatches others, the orchestrator owns verification. A subagent
 
 **Keep role separation real.** A reviewer that also implemented the change is not an independent reviewer. Adversarial review works only when the reviewer has no stake in the outcome — separate the roles, and treat self-approval as a process failure even when the underlying work is correct.
 
-**Keep the verifier blind.** The verifier receives the task, the rubric, and the evidence — never the maker's reasoning. A verifier that reads the maker's reasoning nods along with it; separation of reasoning is what makes the review independent. Loop mechanics: `DEV-LOOP.md`.
+**Keep the verifier blind.** The verifier receives the task, the rubric, and the evidence. Blindness applies to verdict passes; diagnostic passes may inspect the maker's reasoning. A verifier that reads the maker's reasoning nods along with it; separation of reasoning is what makes the review independent. Loop mechanics: `DEV-LOOP.md`.
 
 **The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
@@ -1049,7 +1046,3 @@ Do not optimize the diagram before answering those questions.
 The goal is not the most sophisticated architecture.
 
 The goal is the **simplest system whose correctness, authority boundaries, failure behavior, and operational evidence match the consequences of the problem it is solving.**
-
----
-
-**Version**: 1.3; **Last Updated**: 2026-09-28
