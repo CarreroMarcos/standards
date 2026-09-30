@@ -80,7 +80,7 @@ Use the third occurrence to shape an internal helper. Design a contract before i
 
 ### Graceful degradation vs. honest failure
 
-**Precedence: the caller's next decision decides.** Degrade only when the degraded result remains a safe and truthful basis for what the caller does next.
+**Precedence: the caller's next decision decides.** Degrade only when the degraded result remains a safe and truthful basis for what the caller does next. (Full rule: ARCHITECTURE.md §14.)
 
 An unavailable recommendation service may return "recommendation unavailable" while the core transaction continues. Missing authorization, unavailable authoritative state, a failed write, an unverified security decision, or a result whose correctness cannot be established must not become guessed data or apparent success.
 
