@@ -1,6 +1,6 @@
 ---
 title: Code Review Standard
-version: "2.4"
+version: "2.5"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff - yours, a bot's, or another agent's."
 last_reviewed: 2026-09-29
@@ -24,7 +24,7 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 - **6. Opposition review** — the four questions, answered explicitly
 - **7. Evidence integrity** — a check that cannot fail does not count; mutation discipline
 - **8. Failure criteria** — what fails the review itself
-- **9. Remediation** — review identifies; remediation needs explicit request
+- **9. Remediation** — independent reviewers identify and recommend; self-review fixes its own findings
 - **10. Scale the ceremony to the diff** — trivial / small / large tiers; blast radius, not line count
 
 ## 1. Coverage
@@ -39,7 +39,7 @@ Severity scale: `Critical → High → Medium → Low → Info`
 
 ## 2. Finding schema
 
-Give every finding: Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking.
+Give every finding: Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking. Impact is the concrete consequence if the finding is real; Severity is the risk rating.
 
 Value scales: Severity is `Critical | High | Medium | Low | Info`. Blocking is `true | false`. Basis is `VERIFIED | INFERRED | SPECULATIVE`.
 
@@ -76,13 +76,13 @@ Run the command before writing its output. An unrun example is the same defect a
 - Any severity + SPECULATIVE → `Blocking: false`
 - Medium/Low/Info → `Blocking: false` by default
 
-Default every High finding to `Blocking: true` unless you have specific evidence that the risk is contained.
+Default every High finding to `Blocking: true` unless you have specific evidence that the risk is contained — a cited test, a control that mitigates it, or a blast radius bounded in the diff — not a feeling.
 
 ## 5. Report sections
 
 Assemble the report after all findings are collected: gather every finding first, then sort them into these sections in order: Scope, Files reviewed, Domain coverage, Supported Findings, Predicted Risks (omit if empty), Testing gaps, Opposition review, Verdict.
 
-**Supported Findings** — VERIFIED and INFERRED findings, each row prefixed `[VERIFIED]` or `[INFERRED]` in the Basis column.
+**Supported Findings** — VERIFIED and INFERRED findings; each row's Basis column carries the classification.
 
 **Predicted Risks** — SPECULATIVE findings. Omit this section entirely when no SPECULATIVE findings exist.
 
@@ -118,12 +118,12 @@ The review fails on any of:
 - No Testing assessment, or a Testing assessment offering a non-discriminating test as evidence for a guard
 - A completion claim presented as verified with no command and no output behind it
 - An absence or attribution claim stated without the scope actually searched, as the command
-- No Opposition review
+- No Opposition review (where the tier requires one)
 - Repo mutation during review without explicit user request
 
 ## 9. Remediation
 
-Review identifies and recommends by default. Remediation (editing files, generating tests, applying fixes) requires explicit user request after findings are presented.
+An *independent* reviewer identifies and recommends; it doesn't remediate unasked. When you're reviewing your own diff, fixing your own findings is the job.
 
 ## 10. Scale the ceremony to the diff
 
@@ -132,7 +132,7 @@ Not every diff earns all ten sections. Match the review's weight to the change's
 Evidence-only tasks (re-captures, re-runs) get ceremony scaled to the decision they gate, not to a diff that doesn't exist.
 
 - **Trivial (no behavior change — comments, renames, formatting, config value bumps):** one pass confirming the change is purely mechanical; a verdict and one line saying what you checked. No finding schema, no opposition review.
-- **Small (one concern, one file or a focused set):** cover only the domains the diff can affect — §1's conditional logic applies to the whole review, so skip domains the change can't touch. Findings still use the schema, but the report may be a short list. Opposition review is a paragraph answering the four questions briefly, not four essays.
+- **Small (one concern, typically 1–3 files):** cover only the domains the diff can affect — §1's conditional logic applies to the whole review, so skip domains the change can't touch. Findings still use the schema, but the report may be a short list. Opposition review is a paragraph answering the four questions briefly, not four essays.
 - **Large or risky (multi-file, behavior change, or anything touching auth, money, data loss, or security boundaries):** the full standard, no shortcuts.
 
 A 5-line auth change gets the full treatment; a 200-line rename gets the light one. When in doubt, go heavier and say why.
