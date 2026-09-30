@@ -1,6 +1,6 @@
 ---
 title: SECRETS.md — Ephemeral by Default
-version: "2.4"
+version: "2.5"
 scope: Secrets management: storage, rotation, agent exposure
 consult_when: "When handling credentials, API keys, or tokens - storing, passing, logging, or reviewing code that touches them."
 last_reviewed: 2026-09-29
@@ -31,11 +31,11 @@ Secrets (API keys, tokens, passwords, certificates, connection strings) live in 
 
 Treat every agent session as a potential read of your environment:
 
-1. **Keep long-lived credentials out of the agent's shell.** The shell the agent runs in **must not** export long-lived credentials as environment variables. If the agent reads env, it can re-emit env. An agent that reads untrusted content (issues, logs, error trackers) must not simultaneously hold production credentials — the exfil channel is whatever data the agent is allowed to read. **Scope:** this is about open-ended agents whose model can reach env, shell, or logs. A deterministic pipeline stage (a worker where the model is a subroutine with no tools, receiving only its prompt) may hold a short-lived, least-privilege credential for the same run — compliant when the model never sees the credential value and the prompt is assembled by code, not by the model.
+1. **Keep long-lived credentials out of the agent's shell.** The shell the agent runs in **must not** export long-lived credentials as environment variables. If the agent reads env, it can re-emit env. An agent that reads untrusted content (issues, logs, error trackers) must not simultaneously hold production credentials — the exfil channel is whatever data the agent is allowed to read. **Scope:** open-ended agent sessions (definition: AGENTIC-SAFETY.md). A deterministic pipeline stage may hold a short-lived, least-privilege credential for the same run — compliant when the model never sees the credential value and the prompt is assembled by code, not by the model.
 2. **Inject short-lived tokens for the session only.** Secrets a session needs arrive as tokens that expire within the session window.
-3. **Rotate after every session.** After any agent session that may have read credentials (even inadvertently via a tool call or log inspection), **rotate** them. Do not evaluate whether it was "actually read" — rotation is the default. **"Session" means an interactive agent session** (a human- or orchestrator-driven agent run), not one Lambda invocation or CI job: ephemeral compute rotates on exposure or suspicion (anomalous logs, a leaked excerpt, a failed redaction gate), not per invocation — per-invocation rotation at fleet scale gets ignored, and an ignored rule protects nothing.
-4. **Keep shell history and shell startup clean of credentials.** Never let credential-bearing commands land in `~/.bash_history`, `~/.zsh_history`, `~/.psql_history`, or equivalents. Prefix sensitive commands with a space (where the shell skips such lines) or `unset HISTFILE` for the session. Treat shell startup files (`.bashrc`, `BASH_ENV`) as untrusted-input territory for agent shells — poisoned hook variables (`PAGER`, `LD_PRELOAD`, `BASH_ENV`) turn the next benign command into payload execution; allowlist the hooks an agent shell may run.
-5. **Broker credentials so the agent never holds the real secret.** Prefer a credential-brokering proxy that injects the real secret on the wire server-side — the agent's context holds only a placeholder. Env-var injection is weaker: the secret still lands in the child process env, where `printenv` re-exposes it to a compromised agent. Scope every issued credential to the intersection of the agent's grant and the user's grant, with ttl = task duration.
+3. **Rotate on exposure or suspicion.** After any agent session where credentials were present in the agent's environment, tool outputs, or readable files (even inadvertently via a tool call or log inspection), **rotate** them. Do not evaluate whether they were "actually read" — rotation is the default. **"Session"** = the AGENTIC-SAFETY.md definition (a human- or orchestrator-driven agent run, not one Lambda invocation or CI job): ephemeral compute rotates on exposure or suspicion (anomalous logs, a leaked excerpt, a failed redaction gate), not per invocation — per-invocation rotation at fleet scale gets ignored, and an ignored rule protects nothing.
+4. **Keep shell history and shell startup clean of credentials** (operator setup). Never let credential-bearing commands land in `~/.bash_history`, `~/.zsh_history`, `~/.psql_history`, or equivalents. Prefix sensitive commands with a space (where the shell skips such lines) or `unset HISTFILE` for the session. Treat shell startup files (`.bashrc`, `BASH_ENV`) as untrusted-input territory for agent shells — poisoned hook variables (`PAGER`, `LD_PRELOAD`, `BASH_ENV`) turn the next benign command into payload execution; allowlist the hooks an agent shell may run.
+5. **Broker credentials so the agent doesn't *need* the real secret.** Prefer a credential-brokering proxy that injects the real secret on the wire server-side — the agent's context holds only a placeholder. Env-var injection is weaker: the secret still lands in the child process env, where `printenv` re-exposes it to a compromised agent. Scope every issued credential to the intersection of the agent's grant and the user's grant, with ttl = task duration.
 
 ## Never commit a secret (hard boundary)
 
@@ -47,7 +47,7 @@ Treat every agent session as a potential read of your environment:
 
 Pre-commit hooks catch secrets going into git. They miss everything else the agent writes.
 
-- Scan agent-written PR comments, issue comments, summaries, and workflow logs for secret patterns before they publish.
+- Scan agent-written PR comments, issue comments, summaries, and workflow logs for secret patterns before they publish — the check runs independent of the writing agent (hook or separate review step).
 - Scrub secrets from traces and audit logs: log that a credential was used, never the value. Restore `{{ENV_VAR}}` placeholders in displayed traces.
 - Why: one 2026 incident's root cause was literally "no output filtering" — an agent posted environment contents to a PR comment.
 
@@ -69,7 +69,7 @@ Pre-commit hooks catch secrets going into git. They miss everything else the age
 
 - Scope it to the project folder — never `~/.env`.
 - Populate it from the secrets manager at session start; never from a committed template with real values.
-- Rotate its contents on session end or whenever the agent session completes.
+- Rotate its contents on exposure or suspicion — a leaked excerpt, a failed redaction gate, or anomalous logs trigger rotation; a clean session end doesn't.
 - Exclude it from every read path exposed to an agent or tool.
 - Verify after a task: `grep -rE "(API_KEY|SECRET|TOKEN|PASSWORD)\s*=" . --exclude=.env --exclude=.env.example --exclude-dir=.git` — review each match. A hardcoded value is a leak; a read from the environment is fine.
 
