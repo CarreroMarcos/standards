@@ -1,6 +1,6 @@
 ---
 title: Supply Chain Security
-version: "2.6"
+version: "2.7"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
 last_reviewed: 2026-09-29
@@ -47,17 +47,17 @@ pip index versions <package-name>  # Python
 npm view <package-name> version    # Node
 ```
 
-If the package does not exist on the official registry, do not install it. Resolve first, install second — no exceptions for "it looks legitimate" or a plausible repo URL.
+For a package name the agent is introducing: if it does not resolve on the official registry, do not install it. Resolve first, install second — no exceptions for "it looks legitimate" or a plausible repo URL. Dependencies already declared in the repo's manifest (including git, remote, and file deps) and packages on an approved internal mirror are a different case: verify them against the manifest/mirror, don't re-litigate their existence.
 
 Check age and download history before first use — and gate new *versions* of familiar packages the same way. A fresh release of a trusted name is a new artifact; the version you approved last month says nothing about this one. A package registered yesterday with no dependents is not the same risk as an established one.
 
-**Default gate: 14 days since release with established download history** (a sharp, sustained uptick in downloads on a fresh release is itself a signal — the 2026 worm wave rode exactly that shape). Newer than the default needs explicit human approval with a stated reason (security fix, blocked feature), recorded in the dependency-change commit. The number is a default, not a law — the human overrides it, never the agent alone.
+**Default gate: 14 days since release with download history that predates this release** — steady downloads across prior releases, not a day-one spike (a sharp, sustained uptick in downloads on a fresh release is itself a signal — the 2026 worm wave rode exactly that shape). Newer than the default needs explicit human approval with a stated reason (security fix, blocked feature), recorded in the dependency-change commit. "Explicit human approval" = a PR approval, a recorded decision, or a pre-registered policy covering the case (e.g. "critical CVE fixes are pre-approved") — the agent never self-approves. The number is a default, not a law — the human overrides it, never the agent alone.
 
 ## Treat the model as a supply-chain artifact
 
 The plan's highest-blast-radius third party is often not a package — it is the model. A model can change server-side with no manifest diff, no registry to resolve against, no release age to gate, and no SCA scanner that sees it. It is the exact "familiar name, new artifact" attack this file warns about.
 
-Pin and track model IDs in config (model name, version/date, endpoint, and behavior-affecting parameters such as effort and temperature). A model change gets the same treatment as a dependency update — the same suspicion as a new dependency, human approval — but a different reviewable unit. For model artifacts the reviewable unit is the *eval evidence*, not a line diff of outputs: output pins diff in version control, but megabytes of model prose are not human-reviewable, and a rubber-stamped diff is worse than no review. The ceremony is re-run + gate scoring + recorded human decision.
+Pin and track model IDs in config (model name, version/date, endpoint, and behavior-affecting parameters such as effort and temperature). A model change gets a dependency update's suspicion and human approval — but a different reviewable unit. For model artifacts the reviewable unit is the *eval evidence*, not a line diff of outputs: output pins diff in version control, but megabytes of model prose are not human-reviewable, and a rubber-stamped diff is worse than no review. The ceremony is re-run + gate scoring + recorded human decision.
 
 Detect drift via periodic re-runs against the pin: a pin mismatch on re-run opens a drift investigation. Silent model drift is a supply-chain incident — declare it *and* instrument for it.
 
@@ -82,7 +82,7 @@ Eval corpora and ground-truth sets are the measuring stick every gate reads. Tre
 
 ## The agent never adds a dependency on its own
 
-- New dependencies require explicit human approval. The agent proposes; the human approves. "Do not install new dependencies without approval" belongs in the agent's guardrails.
+- New dependencies require explicit human approval — a PR approval, a recorded decision, or a pre-registered policy covering the case. The agent proposes with evidence; it never self-approves. "Do not install new dependencies without approval" belongs in the agent's guardrails.
 - Dependency changes land as separate commits with a human-readable justification — what the package is, alternatives considered, what the lockfile diff shows. The agent prepares this evidence; it never approves its own addition.
 - Put manifests and lockfiles under CODEOWNERS so the right eyes see every change. Pin manifests for large/eval artifacts (pointer + sha256 + provenance) get the same treatment — they are the trust root for the evidence the gates score.
 
@@ -99,19 +99,19 @@ Most 2026 supply-chain payloads fire at install time (preinstall/postinstall scr
 2026 payloads persist in agent config dirs and arrive as skills and MCP servers:
 
 - `.claude/`, `.vscode/`, `SKILL.md`, MCP server configs, and hook definitions are executable surfaces — vet them like code. Supply-chain worms persist via SessionStart hooks and folderOpen tasks; uninstalling the package doesn't remove them.
-- Vet every MCP server before connecting (audit tools exist; pin hashes in a lockfile; keep a hash-pinned allowlist). The first malicious MCP server shipped in September 2025.
+- Vet every MCP server before connecting (audit tools exist); pin per MCP-SECURITY.md. The first malicious MCP server shipped in September 2025.
 - Skills and MCP servers are supply-chain artifacts — pin them like dependencies and vet them like code. The vetting rules live in AGENTIC-SAFETY.md and MCP-SECURITY.md; don't duplicate them here.
 
 ## Scan what you pull in
 
-Run Software Composition Analysis on dependencies, especially after AI-assisted sessions:
+Run Software Composition Analysis on dependencies:
 
 ```bash
 pip-audit  # Python
 npm audit  # Node
 ```
 
-**Minimum CI requirement:** SCA scan (`pip-audit` or `npm audit`) on every merge request that modifies `requirements*.txt`, `package*.json`, or `*.lock` files.
+**Minimum CI requirement:** SCA scan (`pip-audit` or `npm audit`) on every change — merge request or direct push — that modifies `requirements*.txt`, `package*.json`, or `*.lock` files.
 
 Run SCA from a pinned, trusted scanner version — scanners sit in the blast radius too, and a compromised scanner passed malware through in 2026.
 
