@@ -1,6 +1,6 @@
 ---
 title: Standards
-version: "1.5"
+version: "1.6"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
 last_reviewed: 2026-09-29
@@ -12,7 +12,7 @@ Route by what you are **doing**, not by what a title sounds like. Find the row w
 
 ## How to use these
 
-These are best practices, not laws. Context matters — some rules don't fit certain tasks, and a rule applied where it doesn't fit is worse than no rule. When a rule doesn't fit, set it aside explicitly: name the rule, state the reason, record it where the decision lives. Never set one aside silently — a silent deviation is a silent default, and these standards exist to prevent silent defaults.
+These are best practices, not laws. Context matters — some rules don't fit certain tasks, and a rule applied where it doesn't fit is worse than no rule. When a rule doesn't fit, set it aside explicitly: name the rule, state the reason, record it where the decision lives. (Full statement: ENGINEERING_PRINCIPLES.md §0.)
 
 | When you are… | Read | Skip when / precedence |
 |---|---|---|
@@ -36,4 +36,4 @@ These are best practices, not laws. Context matters — some rules don't fit cer
 - Project conventions win: these standards are the default, not the law. When the repo you're in has an established local pattern that contradicts a rule here, follow the project and note the deviation.
 - Each file's frontmatter `consult_when` is the source of truth for its table row — this table mirrors it. Update both together.
 - To add a standard: drop in a scannable one-topic file and add one row to the table above.
-- When you finish a task, state which standards you consulted and why.
+- When you finish a non-trivial task, state which standards you consulted and why.
