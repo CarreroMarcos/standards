@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.5"
+version: "2.6"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
 last_reviewed: 2026-09-29
@@ -51,10 +51,7 @@ deterministic re-scoring IS the re-run — do not re-capture to verify a capture
 ## 2. Be Conservative with Files
 
 Prefer editing over creating files. Don't create empty placeholder files. Search
-before creating so you don't produce duplicates. Group related code — avoid
-single-function files. Never generate binary or hash content — except hash content
-a tracked consumer verifies: tamper-evidence pointers (sha256 manifests) for
-artifacts too large for the repo exist precisely so nothing opaque enters unread.
+before creating so you don't produce duplicates. Group related code — don't create a *new* module for a single small helper. A focused module with one public function is fine. Don't generate binary blobs. Generate hashes only as tamper-evidence a tracked consumer verifies — nothing opaque enters unread.
 
 ## 3. Handle Errors Explicitly
 
@@ -106,7 +103,7 @@ for user in users:
 adjacent code, don't refactor what isn't broken, match existing style.
 → ENGINEERING_PRINCIPLES.md §6 "Change Safety & Decision Discipline" (smallest change).
 
-If 200 lines could be 50, rewrite it. Minimum code that solves the problem,
+If 200 lines could be 50, rewrite it — when the code your task already touches could be much smaller, shrink it as part of the change. Don't go rewriting modules your diff doesn't otherwise need. Minimum code that solves the problem,
 nothing speculative.
 → ENGINEERING_PRINCIPLES.md §1 "Design Principles" (Beck's design rules).
 
@@ -129,12 +126,9 @@ Observe freely, remove only with proof: flagging suspected dead code is always s
 
 ## 8. Naming, Function Size, and Control-Flow Discipline
 
-**Name for meaning, not mechanics.** Nouns for variables, verbs for functions. `pending_refunds` beats `data2`; `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen — keep names ≥3 letters so the call site reads as a sentence.
+**Name for meaning, not mechanics.** Nouns for variables, verbs for functions. `pending_refunds` beats `data2`; `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen — keep domain-meaning names ≥3 letters so the call site reads as a sentence; conventional shorts (`i`, `x`/`y`, `e`, `id`, `db`) are fine. The rule targets cryptic abbreviations (`procData`, `tmpUsr`), not established shorthand — judge by whether a new reader can expand the name.
 
-**Mark deliberate escape hatches explicitly.** A leading underscore on a
-function or module signals "I chose this — depend on it at your own risk";
-pair it with a comment naming the reason. A silent workaround is
-indistinguishable from an accident.
+**Mark deliberate escape hatches explicitly** — a leading underscore signals "I chose this"; the full convention lives in PYTHON.md §10.
 
 **One thing per function, one level of abstraction.** Roughly under 50 lines; files under ~800. The top function reads as an outline; details live one call down. Long functions mix abstraction levels, which makes the bug surface the entire function.
 
