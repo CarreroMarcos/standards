@@ -42,6 +42,8 @@ boilerplate — nothing in this repo reads them.
     - Tested: Created user, verified in database"
 ```
 
+**Completion evidence must discriminate** (CODE-REVIEW.md §7 "Evidence integrity"): a check that cannot fail does not count — a green suite that can't go red proves nothing.
+
 Run the checks again before reporting — a prior green run does not cover new
 changes. When a check cannot run, report it: "I couldn't verify X because Y."
 For long-running capture/eval checks, the checkpointed artifact plus
@@ -75,6 +77,8 @@ except ValueError as e:
     logger.error("Invalid API response", error=str(e))
     raise
 ```
+
+→ PYTHON.md §5 "Errors and exceptions" (structured exception hierarchies, `raise DomainError(...) from err`, one retry wrapper per boundary).
 
 ## 4. Comment the WHY, Keep Provenance Honest
 

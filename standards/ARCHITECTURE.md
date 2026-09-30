@@ -152,7 +152,7 @@ Define one small hierarchy per domain so callers can catch at the precision they
 
 **The common failure:** a flat `AppError` with everything in the message, forcing callers to string-match to distinguish conditions.
 
-**Design the contract before the consumers exist.** This is the deliberate exception to the Rule of Three (CODE-QUALITY.md §8): a shared envelope, event shape, or agent-call format is agreed up front with its known consumers, not discovered after three copies appear in the wild. Two known consumers and a planned third is sufficient reason to define a contract. See ENGINEERING_PRINCIPLES.md §0.
+**Design the contract before the consumers exist.** This is the deliberate exception to the Rule of Three (ENGINEERING_PRINCIPLES.md §3): a shared envelope, event shape, or agent-call format is agreed up front with its known consumers, not discovered after three copies appear in the wild. Two known consumers and a planned third is sufficient reason to define a contract. See ENGINEERING_PRINCIPLES.md §0.
 
 **Publishing a contract is a commitment.** Once another team or independently deployed component depends on it, changing it is a compatibility event (ENGINEERING_PRINCIPLES.md §6), not an internal refactor.
 
