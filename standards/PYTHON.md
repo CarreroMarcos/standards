@@ -1,6 +1,6 @@
 ---
 title: Python Standard
-version: "1.5"
+version: "1.6"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
 last_reviewed: 2026-09-29
@@ -14,7 +14,7 @@ Every rule carries its why. Read the why before the rule — the point is that y
 
 ## Sections
 
-- **1. The tooling contract** — deliberate ruff rule selection; lint is law
+- **1. The tooling contract** — deliberate ruff rule selection; lint is the gate, judgment is the override
 - **2. Style: what the linter can't catch** — imports, naming-adjacent style rules
 - **3. Typing** — strictness as team posture; typed module boundaries
 - **4. Async discipline** — task ownership, cancellation, no fire-and-forget
@@ -34,7 +34,7 @@ Every rule carries its why. Read the why before the rule — the point is that y
 
 ## 1. The tooling contract
 
-The project names its tools once, in `AGENTS.md`, and every agent uses them. No improvising.
+The project names its tools once, in `AGENTS.md`, and every agent uses them. A conflicting project instruction overrides the default; the linter's opinion never does.
 
 - **uv runs everything.** `uv run` for execution, `uv.lock` committed for deployables, CI installs with `--locked`. The lockfile is what makes "tests pass" mean something — without it the dependency set drifts between runs and a green suite proves nothing about the next install. PEP 735 dependency groups replace ad-hoc `requirements-dev.txt`.
 - **Ruff is the linter and the formatter.** One tool replaces black/isort/flake8/pylint — say so explicitly in `AGENTS.md` ("do not call Black, flake8, isort, or pylint") so agents stop reaching for the old stack.
@@ -61,7 +61,7 @@ import os.path
 p = os.path.join(a, b)
 ```
 
-- **No relative imports.** `from .models import User` breaks the moment the file moves or the package runs as a script. Absolute imports survive reorganization.
+- **Prefer absolute imports in new code; match the file's existing convention; never mix the two in one module.** `from .models import User` breaks the moment the file moves or the package runs as a script — but churning a working package's convention for the rule's sake is worse.
 - **No mutable global state.** Module-level *constants* and shared *clients* (a boto3 client, a connection pool) are fine — even good on Lambda, where module scope survives warm invocations. Mutable request-scoped state at module level is the trap: concurrent requests share it, and the bug only appears under load.
 
 ```python
@@ -175,7 +175,7 @@ These failure modes are easy to write, hard to see in review, and often invisibl
 
 Use `asyncio.to_thread` for unavoidable synchronous **I/O-bound** work, such as a blocking library with no async API.
 
-For materially CPU-bound Python work, use an appropriate process pool, worker process, or other off-process execution strategy rather than assuming a thread makes the work parallel. `to_thread` can be appropriate for CPU-heavy extension code only when the implementation releases the GIL or the runtime provides equivalent parallelism.
+For CPU-bound Python work — CPU-bound enough to hold the GIL and starve concurrent tasks at your expected concurrency — see §8 "Performance" for the threads-vs-processes rule. In async code, `to_thread` is only appropriate for CPU-heavy extension code that releases the GIL (or a runtime with equivalent parallelism).
 
 **The common failures:** using a sync DB driver inside an async handler because it worked in a single-request test; moving heavy Python CPU work to a thread and assuming the GIL disappeared; and adding `to_thread` around a 200-byte config read. The first blocks concurrency, the second may only move the blockage, and the third adds overhead without meaningful benefit.
 
@@ -199,11 +199,7 @@ A call inheriting the request deadline and its client's configured timeout is al
 
 When a call is genuinely unbounded, fix it at layer 1 or 2 before reaching for layer 3.
 
-**When layer 1 is not available yet.** This layering assumes the codebase has somewhere to carry a request deadline. When request context or a deadline object is absent, configure the bound on the client — layer 2 — where it belongs, and note that the budget needs end-to-end wiring.
-
-A locally guessed five seconds buried three frames deep is harder to find and fix later than an unwired budget you explicitly identified.
-
-Establish the deadline convention as its own task — prefer it separate from unrelated changes, unless the change is itself the budget-tuning work the plan calls for.
+**When layer 1 is not available yet** — no request context or deadline object — configure the bound on the client (layer 2) and note the budget needs end-to-end wiring; a locally guessed five seconds buried three frames deep is harder to find and fix later than an unwired budget you explicitly identified. Establish the deadline convention as its own task, separate from unrelated changes, unless the change is itself the budget-tuning work the plan calls for.
 
 **The common failure:** wrapping every `await` in `asyncio.timeout` with a locally invented number. Nested deadlines disagree, the innermost one wins by accident, the budget becomes fiction, and a slow dependency trips a two-second inner timeout while the caller was willing to wait thirty.
 
@@ -232,7 +228,7 @@ Handle a narrow, named exception with a defined recovery. Surface a broad failur
 
 **Exceptions carry structured data, not just text.** Follow the httpx pattern: a small hierarchy per domain (`HTTPError → RequestError → TimeoutException → ConnectTimeout`), with the relevant objects attached (`.request`, `.response`) — not just a message string. Callers catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure), and structured attributes beat message-parsing. Put the object on the exception, not just text in the message.
 
-**Retry lives in one wrapper per boundary.** All hand-rolled retry logic in a single `_request_with_retry` — never scattered at call sites. If the SDK already retries correctly (boto3's standard mode), configure it instead of wrapping it. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry only what can self-heal: 429 and 5xx (502/503/504). Never retry 400/401/403/404 — client errors don't self-heal; retrying a 401 is at best wasteful, at worst a lockout trigger. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
+**Retry lives in one wrapper per boundary.** All hand-rolled retry logic in a single `_request_with_retry` — never scattered at call sites. If the SDK already retries correctly (boto3's standard mode), configure it instead of wrapping it. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry policy: ENGINEERING_PRINCIPLES.md §5 — retry what can self-heal, never blind-retry 4xx. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
 
 ## 6. Correctness traps agents repeat
 
@@ -324,7 +320,9 @@ logger.debug("user %s did %s", user, action)
 
 ## 9. Readability
 
-**Name for meaning, not mechanics.** Nouns for variables, verbs for functions. A good name removes the need for a comment — `pending_refunds` beats `data2`, `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen; keep names ≥3 letters.
+The readability rules are Python's rendering of CODE-QUALITY.md §8 (canonical) — the examples here are Python-specific.
+
+**Name for meaning, not mechanics.** Nouns for variables, verbs for functions. A good name removes the need for a comment — `pending_refunds` beats `data2`, `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen; keep domain-meaning names ≥3 letters, conventional shorts (`i`, `x`/`y`, `e`, `id`, `db`) are fine. The rule targets cryptic abbreviations (`procData`, `tmpUsr`), not established shorthand — judge by whether a new reader can expand the name.
 
 **Unpack to name, not to index.** `x, y = point` beats `point[0], point[1]` — the names document what each position *means* at the use site, so the reader never holds the layout in their head. Unpacking is naming; indexing is a memory test.
 
@@ -359,7 +357,7 @@ def charge(user, amount):
 client = Foo(...)
 ```
 
-"What" comments rot — code changes, comments don't, and a stale comment is worse than none because readers trust prose over code. "Why" comments capture what the code *cannot* contain: business rationale, external constraints, performance trade-offs. Acceptable uses: non-obvious invariants, workarounds with an issue reference (`# Workaround for GH-123 — remove when fixed`), why this algorithm over the obvious one, hidden coupling to external systems.
+"What" comments rot — code changes, comments don't, and a stale comment is worse than none because readers trust prose over code. "Why" comments capture what the code *cannot* contain: business rationale, external constraints, performance trade-offs. Acceptable uses: non-obvious invariants, workarounds with an issue reference (`# Workaround for GH-123 — remove when fixed`), why this algorithm over the obvious one, hidden coupling to external systems. Canonical rule: CODE-QUALITY.md §4.
 
 **Docstrings state the contract the signature can't show.** Public module/class/function gets a Google-style docstring covering units, invariants, side effects, raised exceptions — what the annotations can't express. Never duplicate the signature (`timeout (float): The timeout` adds nothing). Skip docstrings on trivial private helpers. A docstring that drifts from the signature is worse than absent.
 
@@ -447,7 +445,7 @@ else:
     raise UserNotFound(target)
 ```
 
-**Resources live in `with` blocks — always.** Files, sockets, locks, DB sessions: acquired in `with`, never manual `close()`. Manual cleanup has exactly one failure mode — the exception path that skips it — and it's the path you test least. For a *dynamic number* of context managers, `ExitStack` (LIFO unwind cleans up partial setup; `AsyncExitStack` for async). For expected-and-ignorable exceptions, `contextlib.suppress` beats `try/except: pass`. In `@contextmanager` generators, code after `yield` belongs in `finally`.
+**Resources live in `with` blocks — by default.** Files, sockets, locks, DB sessions: acquired in `with`, never manual `close()`. When a resource must outlive its creator, document the ownership transfer at the handoff. Manual cleanup has exactly one failure mode — the exception path that skips it — and it's the path you test least. For a *dynamic number* of context managers, `ExitStack` (LIFO unwind cleans up partial setup; `AsyncExitStack` for async). For expected-and-ignorable exceptions, `contextlib.suppress` beats `try/except: pass`. In `@contextmanager` generators, code after `yield` belongs in `finally`.
 
 **Comprehensions: one filter, one transform, one line-ish.** A comprehension is a for-loop in expression form — it inherits the loop's complexity budget. One `for` with one `if` and one expression is the ceiling; past that, write the loop or a generator function. A nested comprehension costs nothing at runtime and everything in review time.
 
@@ -479,7 +477,7 @@ def cmd_stats(...):
 
 **src layout so tests hit the installed package.** `src/<package>/`, not flat. Flat layout lets pytest import `./package` from the repo root — silently testing files that were never packaged. `src/` makes the installed artifact the thing under test and kills "works here because CWD shadows site-packages."
 
-**`__init__.py` re-exports the public API; `__all__` declares it.** Users `import package` and find the API — they shouldn't memorize your module tree. Internals stay in submodules. Moved names get a deprecation shim (§17), not a silent break.
+**`__init__.py` re-exports the stable public API — but keep it light.** Users `import package` and find the API — they shouldn't memorize your module tree. If re-exports create cycles or drag in heavy imports, expose submodules instead. Moved names get a deprecation shim (§17), not a silent break.
 
 **Organize by feature, not by technical layer.** `billing/refunds.py` over `models.py` + `utils.py` + `managers.py`. Many small focused modules, each importable without dragging in the world; dependency direction one-way (no import cycles — cycles are the #1 cause of "restructure the package" refactors). Layer-organized code scatters one feature across N files; feature-organized code is independently testable and deletable.
 
@@ -522,7 +520,7 @@ def handler(event, context):
 
 **Explicit dependencies in, not hidden globals.** Pass dependencies as parameters; don't reach for module globals. Hidden globals make tests order-dependent and parallel-unsafe; explicit parameters make the dependency graph visible and swappable.
 
-**Mock only external boundaries; prefer fakes.** Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Never mock your own internal logic. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring. Mocks also let generated code "pass" while asserting nothing about outcomes.
+**Mock only external boundaries; prefer fakes.** Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Don't mock internals to test behavior a fake could cover — but mocking is legitimate when the unit under test *is* the interaction: retry wrappers, decorators, middleware. Assert the outcome, not the call choreography. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring. Mocks also let generated code "pass" while asserting nothing about outcomes.
 
 ```python
 # Bad: asserts implementation; breaks on any refactor
