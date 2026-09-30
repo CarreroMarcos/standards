@@ -170,7 +170,7 @@ the credentials were. Write receipts as you go; never reconstruct them after —
 
 ## Test discipline
 
-Test discipline lives in PYTHON.md §8 — the loop enforces it, doesn't restate it. Loop-specific: **tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise.
+Test discipline lives in PYTHON.md §16 — the loop enforces it, doesn't restate it. Loop-specific: **tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise.
 
 ## Environment
 
