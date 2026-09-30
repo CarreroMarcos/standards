@@ -1,9 +1,9 @@
 ---
 title: Standards
-version: "1.6"
+version: "1.7"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
-last_reviewed: 2026-09-29
+last_reviewed: 2026-09-30
 ---
 
 # Standards
@@ -28,6 +28,8 @@ These are best practices, not laws. Context matters — some rules don't fit cer
 | Writing Python — style, typing, async, errors, tooling, or performance | PYTHON.md | Skip when not writing Python. Language-neutral principles live in ENGINEERING_PRINCIPLES; per-task quality rules in CODE-QUALITY. |
 | Starting or planning a unit of work, from idea through clean commit | WORKFLOW.md | Skip when the work is already ticketed inside the dev loop. Ends at commit — DEV-LOOP owns push to merge. |
 | Operating the ticket → implement → verify → review → gate → merge loop | DEV-LOOP.md | Skip for one-off changes on the verbal go-ahead path. Documents the loop as operated. |
+| Designing a system or choosing architecture — boundaries, state ownership, failure handling, resilience | ARCHITECTURE.md | Skip when not making architectural decisions. |
+| Designing agent systems or multi-agent orchestration — autonomy boundaries, architecture choice, evaluation | AGENTIC-DESIGN.md | Skip when no model is acting. AGENTIC-SAFETY owns the safety controls; this file owns the design. |
 | Making a judgment call no specific file covers — design trade-offs, colliding principles | ENGINEERING_PRINCIPLES.md | A specific standard always wins over a general principle. Check §0 when two rules seem to conflict. |
 
 ## Conventions

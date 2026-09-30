@@ -1,8 +1,8 @@
 ---
 title: Engineering Principles
-version: "1.11"
+version: "1.12"
 scope: Core engineering principles and practices
-last_reviewed: 2026-09-29
+last_reviewed: 2026-09-30
 consult_when: "When making a judgment call no specific standard covers — design trade-offs, colliding principles."
 ---
 
@@ -23,11 +23,9 @@ consult_when: "When making a judgment call no specific standard covers — desig
 - **§2. Code Readability & Documentation** — comment provenance, dead-code removal authority
 - **§3. Refactoring & Modernization** — smallest change, 3-phase deprecation
 - **§4. Testing Philosophy** — independent expected values, tracer bullets, property-based testing
-- **§5. Architecture & Resilience** — worker and queue discipline, data-access discipline
 - **§6. Change Safety & Decision Discipline** — blast radius, decision records
 - **§7. Python Practice** — pointer to PYTHON.md
 - **§8. Spec-First Workflow** — for significant work
-- **§9. Agentic System Design** — multi-agent orchestration discipline
 - **Engineering Decision Flow** — the question sequence for applying all of the above
 
 ## §0. When Principles Collide
@@ -66,7 +64,7 @@ Use the lines in your diff as the boundary for *improvements* rather than your g
 
 ### Rule of Three vs. Contract-First Boundaries
 
-**Precedence: the boundary decides.** The Rule of Three (§3) governs *internal* extraction — noticing similar code and pulling out a shared helper. Contract-First (§5) governs *published* seams — a schema, envelope, event, or API that separate consumers depend on.
+**Precedence: the boundary decides.** The Rule of Three (§3) governs *internal* extraction — noticing similar code and pulling out a shared helper. Contract-First (ARCHITECTURE.md §8) governs *published* seams — a schema, envelope, event, or API that separate consumers depend on.
 
 Use the third occurrence to shape an internal helper. Design a contract before its consumers exist, because a contract's purpose is agreement across consumers rather than discovery from duplicated code. A shared envelope with two known consumers and a third planned is contract design.
 
@@ -92,13 +90,13 @@ An unavailable recommendation service may return "recommendation unavailable" wh
 
 **Precedence: the failure model decides.** Retries, queues, caches, circuit breakers, replicas, and service decomposition are mechanisms, not architecture goals.
 
-First identify the critical flow, dependency semantics, failure mode, business consequence, and recovery requirement (§5). Add the smallest mechanism that addresses the observed or credible failure — credible means observed here, reported in comparable systems, or following from a concrete mechanism, not merely imaginable.
+First identify the critical flow, dependency semantics, failure mode, business consequence, and recovery requirement (ARCHITECTURE.md §1). Add the smallest mechanism that addresses the observed or credible failure — credible means observed here, reported in comparable systems, or following from a concrete mechanism, not merely imaginable.
 
 **The common failure:** mechanically adding every resilience pattern to every dependency and creating more failure states than the original dependency had.
 
 ### Deterministic software vs. model autonomy
 
-**Precedence: determinism wins when it is sufficient** — full rule in §9 "Use Autonomy Only Where It Earns Its Cost."
+**Precedence: determinism wins when it is sufficient** — full rule in AGENTIC-DESIGN.md §1 "Use Autonomy Only Where It Earns Its Cost."
 
 ### Verify everything vs. unavailable checks
 
@@ -114,7 +112,7 @@ These principles describe the shape of a mature codebase. When the package you'r
 
 Why this direction: a diff that introduces a second, better pattern into a package that has one leaves two patterns. The next reader must learn both and guess which applies. Consistency is itself a design property, so make a package-wide improvement through its own task.
 
-Use the security path when the local pattern is actively unsafe — a hardcoded credential, a missing authorization check, an unsafe model-controlled action, a retry on a non-idempotent write, or a divergent implementation of idempotency/dedup-key derivation (two key functions that "must always agree" silently diverging is a correctness bug, and §3 requires one shared function — the §3 exception overrides the local-convention default here). Security rules have no local-convention exception (§6, §9); fix the risk or stop the unsafe path.
+Use the security path when the local pattern is actively unsafe — a hardcoded credential, a missing authorization check, an unsafe model-controlled action, a retry on a non-idempotent write, or a divergent implementation of idempotency/dedup-key derivation (two key functions that "must always agree" silently diverging is a correctness bug, and §3 requires one shared function — the §3 exception overrides the local-convention default here). Security rules have no local-convention exception (§6, AGENTIC-DESIGN.md §3); fix the risk or stop the unsafe path.
 
 **The common failures:** silently importing an ideal architecture into one corner of a codebase, and following a bad local pattern without naming the gap. Follow the local pattern and name the gap — "I matched the existing composition root in this package; wiring it the way §1 describes would be a separate change touching N call sites."
 
@@ -231,7 +229,7 @@ Do not invent rationale the evidence does not support — plausible-sounding opt
 
 When the reason is not traceable to observable behavior, a documented constraint, an explicit decision record, or direct project guidance, omit the comment rather than inventing one. Absence of rationale is preferable to speculative rationale.
 
-**Scope: this governs rationale presented as established fact.** Model-generated inference is allowed when it is labeled as inference and paired with cited evidence — "the build failed because the migration lock timed out (evidence: check-run X, log lines 40–52)" — never as an authoritative explanation. What is forbidden is unlabeled speculation masquerading as a verified reason (§9: model output is evidence, not authority).
+**Scope: this governs rationale presented as established fact.** Model-generated inference is allowed when it is labeled as inference and paired with cited evidence — "the build failed because the migration lock timed out (evidence: check-run X, log lines 40–52)" — never as an authoritative explanation. What is forbidden is unlabeled speculation masquerading as a verified reason (AGENTIC-DESIGN.md §5: model output is evidence, not authority).
 
 **The common failure:** `// Legacy compatibility` with no linked ticket, no observable constraint, and no decision record — or `// Parallelized for performance` when the actual reason was an upstream timeout. Both read as established fact; neither can be verified.
 
@@ -261,7 +259,7 @@ Use three concrete instances as the default evidence threshold. When you have tw
 
 **Scope for this rule.** The Rule of Three trades a maintenance cost — duplication — against a design risk — the wrong shape. Use an earlier abstraction when duplication threatens correctness or security:
 
-* **Published contracts** — a schema, message envelope, event shape, or API consumed by another team or service. Designed before consumers exist, by agreement rather than observation; Contract-First (§5) governs instead. See §0.
+* **Published contracts** — a schema, message envelope, event shape, or API consumed by another team or service. Designed before consumers exist, by agreement rather than observation; Contract-First (ARCHITECTURE.md §8) governs instead. See §0.
 * **Security-sensitive logic** — authentication, authorization checks, signing, secret redaction, input sanitization. A second copy is a second thing to get wrong and a second thing to forget when patching. One implementation, from the first duplication.
 * **Logic that must stay behaviorally identical** — idempotency-key derivation, fingerprint and dedup hashing, serialization formats, anything where two implementations silently diverging is a correctness bug rather than an inconsistency. If "these must always agree" is a requirement, express it as one function.
 
@@ -303,9 +301,9 @@ Test through stable public interfaces where practical. Keep tests coupled to imp
 
 For pure, complex, or security-sensitive internal logic, focused unit tests of internal components are acceptable when they improve confidence without locking in structure.
 
-For critical flows (§5), verify meaningful failure and recovery behavior as well as the happy path. A fallback, retry policy, recovery mechanism, or degraded path that has never been exercised is an assumption, not evidence.
+For critical flows (ARCHITECTURE.md §1), verify meaningful failure and recovery behavior as well as the happy path. A fallback, retry policy, recovery mechanism, or degraded path that has never been exercised is an assumption, not evidence.
 
-Agentic behavior uses evaluations in addition to conventional tests (§9). Deterministic invariants around the agent still receive normal automated tests.
+Agentic behavior uses evaluations in addition to conventional tests (AGENTIC-DESIGN.md §7). Deterministic invariants around the agent still receive normal automated tests.
 
 **The common failure:** testing private methods solely to achieve "coverage." That tests implementation rather than behavior, so safe refactoring breaks the test while behavior remains unchanged. Test behavior through the public seam whenever it provides equivalent confidence.
 
@@ -355,7 +353,7 @@ A hand-computed value, a trusted reference implementation, or a pinned fixture f
 
 This matters more when an agent writes the test. A tester that reads the builder's implementation inherits its bugs — the "misguidance effect" — so agent-authored tests are spec-sourced, never diff-sourced: expected values from the requirement, not from the code under test. When no independent spec exists, pin observed behavior explicitly as characterization — labeled as observed, not as verified-correct.
 
-**Carve-out: model-generated prose has no independent expected value.** There is no hand-computable "correct diagnosis" for a model's output. Test the deterministic invariants around the model call instead — pinned inputs, structural output validation, the fencing and redaction that bound it — and cover the behavior itself with evaluations (§9), which exist precisely because conventional tests cannot judge it. Verify eval pins before scoring: a mutated capture feeding the driver produces wrong verdicts, not failed tests. Budget the eval run — checkpointed resume, the assumed parallelism stated beside any wall-clock claim, the minimal deciding subset — so a re-run is a decision, not an endurance test.
+**Carve-out: model-generated prose has no independent expected value.** There is no hand-computable "correct diagnosis" for a model's output. Test the deterministic invariants around the model call instead — pinned inputs, structural output validation, the fencing and redaction that bound it — and cover the behavior itself with evaluations (AGENTIC-DESIGN.md §7), which exist precisely because conventional tests cannot judge it. Verify eval pins before scoring: a mutated capture feeding the driver produces wrong verdicts, not failed tests. Budget the eval run — checkpointed resume, the assumed parallelism stated beside any wall-clock claim, the minimal deciding subset — so a re-run is a decision, not an endurance test.
 
 ### Tests Are Evidence, Not the Target
 
@@ -372,234 +370,6 @@ Agent-workflow mechanics: `WORKFLOW.md` (Phase 4).
 For a multi-unit task, write and pass one test exercising the smallest meaningful path end to end before implementing individual units in isolation.
 
 Integration and wiring problems — imports, plumbing, environment, configuration — surface immediately instead of after N isolated units turn out not to connect.
-
----
-
-## §5. Architecture & Resilience
-
-### Start With Critical Flows and Failure Modes
-
-Design from what the system must preserve, not from a diagram of components.
-
-For significant systems, identify the business-critical flows first:
-
-* what outcome the flow exists to produce;
-* what authoritative state it reads or changes;
-* which dependencies participate;
-* what must remain available;
-* what may degrade;
-* what failure would be unacceptable.
-
-Then identify important failure modes for those flows. For each meaningful failure, understand:
-
-* **cause or dependency** — what can fail;
-* **impact** — what outcome becomes incorrect or unavailable;
-* **blast radius** — what else is affected;
-* **detection** — how the failure becomes observable;
-* **safe behavior** — fail, degrade, queue, reject, retry, or stop;
-* **recovery** — how correct operation is restored.
-
-Prioritize failure modes by business impact and credible likelihood — credible means observed here, reported in comparable systems, or following from a concrete mechanism, not merely imaginable. Do not engineer every hypothetical failure equally.
-
-Where reliability is consequential, derive measurable objectives such as SLOs and, for durable state where appropriate, RTO and RPO from business consequences rather than inventing infrastructure targets.
-
-**The common failure:** drawing services, queues, and databases first, then retrofitting the actual reliability requirement onto the topology. Architecture starts with the flow and its invariants; components are the implementation.
-
-### Minimize Blast Radius
-
-Design so failures stay contained and preserve unrelated capabilities.
-
-Keep one dependency's outage from taking down unrelated flows. Isolate one module's state from another module's bugs. Keep resource exhaustion, bad deployments, privileged credentials, and expensive workloads from automatically becoming system-wide failure domains.
-
-Blast radius is a design property, not only an infrastructure property. A shared database, shared queue, shared credential, shared agent context, or shared retry policy can couple otherwise separate components.
-
-### Simplest Sufficient Isolation
-
-Start with the simplest architecture that provides the isolation the requirements actually need.
-
-Default toward a modular monolith when one deployment can satisfy ownership, scaling, security, reliability, and release needs. Within a process or deployment, use resource bulkheads where failure coupling is real — for example separate pools, bounded queues, concurrency limits, or worker groups for workloads that should not exhaust each other's capacity.
-
-Feature flags and progressive rollout controls reduce change blast radius; they are rollout mechanisms, not resource-isolation bulkheads.
-
-Introduce separately deployable services when independent scaling, ownership, security boundaries, reliability requirements, technology constraints, or release cadence justify the operational cost of distribution.
-
-**The common failure:** splitting a monolith into microservices for "scalability" before measuring the bottleneck. Distributed systems add network failure modes, partial failure, compatibility obligations, state consistency problems, deployment coordination, and operational overhead. Start modular and split when evidence identifies the need.
-
-### State Has Semantics
-
-Define what state *means* before choosing where to store it.
-
-For shared or durable state, explicitly identify:
-
-* **source of truth** — which representation is authoritative;
-* **ownership** — who may make the authoritative decision or write;
-* **durability** — what must survive process, host, zone, or regional failure;
-* **consistency** — when readers must observe a write and where eventual consistency is acceptable;
-* **concurrency** — what happens when multiple actors act on the same state;
-* **ordering** — whether event or mutation order is meaningful;
-* **retry and replay** — what happens when work is repeated;
-* **identity and deduplication** — how the same logical operation is recognized;
-* **retention** — how long the state remains valid;
-* **recovery** — how authoritative state is reconstructed after failure.
-
-Choose a database, queue, cache, event stream, object store, or workflow engine only after the required semantics are understood.
-
-Prefer one authoritative owner for a fact. Replicas, caches, indexes, read models, recommendations, and derived views must be distinguishable from the authoritative value when the difference affects a decision.
-
-**The common failure:** selecting a datastore because it is already available, then discovering during implementation that the system needed ordering, deduplication, atomicity, stronger consistency, or a single writer that the chosen design does not naturally provide.
-
-### Data-Access Discipline
-
-One session per request or task, closed at the boundary — a session that outlives its scope is a stale read or a leak. Transaction boundaries sit at the request/task scope, not inside helpers; a helper that commits decides the caller's atomicity for it.
-
-N+1 is the classic agent blind spot: a loop that touches a relationship fires one query per row. Load what you iterate — eager-load (`joinedload`/`selectinload` in SQLAlchemy, whatever the ORM calls it) for the relationships the loop actually touches. No lazy loading outside the session that opened it.
-
-Write queries the index can answer: filter on indexed columns, and check the query plan before assuming the ORM generated a sane one. The ORM is a query builder, not a guarantee.
-
-**The common failure:** an agent-written loop over a queryset that looks O(n) and runs O(n) queries — correct on ten rows in dev, a page-load killer in prod.
-
-### Dependency Contracts First
-
-Before adding retries, circuit breakers, fallbacks, queues, caches, or similar mechanisms, define the dependency contract:
-
-* **Timeout budget:** set the total time the caller is willing to wait, including retries, rather than the dependency's response time alone.
-* **Retryability and idempotency:** classify which failures are retryable and whether repeating the operation can duplicate side effects.
-* **Retry ownership:** avoid uncontrolled retries at multiple layers; identify which layer owns retry behavior.
-* **Retry budget:** bound the total attempts or retry volume so a distressed dependency does not receive an expanding wave of retries.
-* **Capacity and overload behavior:** define useful concurrency limits, queue bounds, admission control, backpressure, or load shedding where the dependency can be saturated.
-* **Cancellation:** define whether abandoned work can and should be stopped.
-* **Fallback correctness:** define the fallback's return value and whether it gives the caller a safe basis to proceed.
-* **Observability:** emit enough telemetry to show when retries fire, queues grow, admission rejects, circuits open, or fallbacks engage.
-* **User-visible failure behavior:** define the user's experience when attempts fail and make the result actionable.
-
-Require deduplication safeguards before automatically retrying non-idempotent writes.
-
-Use randomized exponential backoff for distributed automatic retries where synchronized retries could amplify an outage. Do not retry permanent failures merely because retry infrastructure exists.
-
-Retry what can self-heal; never *blind*-retry 4xx. Retry when the retry changes the condition: 429/5xx/timeouts, one refresh-then-retry on 401, bounded settle on 404-after-write. A 400/403 with no changed condition doesn't self-heal — don't hammer it; retrying auth failures without a changed condition is at best wasteful, at worst a lockout trigger. Honor `Retry-After`; jitter spreads retry timing so synchronized clients don't stampede the recovering service.
-
-**The common failure:** adding a retry loop because "the call sometimes fails" while leaving idempotency, capacity, timeout budget, and failure behavior undefined. Contract-free retries amplify load during outages: the recovering service receives the original traffic plus retry traffic, turning a transient problem into a sustained one.
-
-### Worker and Queue Discipline
-
-One consumer, one queue — route work deliberately (a queue per consumer, or task-level routing where the broker supports it), so a slow consumer never starves an unrelated workload. Know the worker's concurrency model — prefork, threads, or single-process — and set it deliberately; the default is rarely the right size.
-
-Design every job for repeat delivery: workers retry, redeliver, and crash. Make the handler idempotent where the side effects allow it; where they don't (a charge, a sent email), put an idempotency key at the boundary so the repeat is detected, not re-executed. Visibility timeout (or its equivalent) exceeds the maximum task duration; a timeout shorter than the work produces phantom duplicates. Poison messages get bounded retries, then a dead-letter queue — never infinite requeue.
-
-Close what the framework doesn't: one DB connection scope per worker task; transactions scoped to one request or one task. The worker process outlives the work — anything leaked per task compounds.
-
-**The common failure:** a worker that borrows the request's database session and leaks it across tasks, or a visibility timeout shorter than the job — both produce corruption that only appears under load.
-
-### Contract-First Boundaries
-
-Define API schemas at stable service boundaries — OpenAPI, gRPC proto, GraphQL schema, JSON Schema, or the project's equivalent — as the source of truth. Auto-generate client types and validators where the ecosystem supports it. Verify generated artifacts in CI with a clean-tree or drift check. Treat applied database migrations as the authoritative schema history and verify model/migration alignment in CI where applicable.
-
-Return errors in a consistent machine-readable format so clients can distinguish failure types from structured fields rather than parsing human messages.
-
-### Structured Exception Hierarchies
-
-Define one small hierarchy per domain so callers can catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure). Exceptions carry structured context — the relevant objects (request, response), not just text in the message — because structured attributes beat message-parsing.
-
-**The common failure:** a flat `AppError` with everything in the message, forcing callers to string-match to distinguish conditions.
-
-**Design the contract before the consumers exist.** This is the deliberate exception to the Rule of Three (§3): a shared envelope, event shape, or agent-call format is agreed up front with its known consumers, not discovered after three copies appear in the wild. Two known consumers and a planned third is sufficient reason to define a contract. See §0.
-
-**Publishing a contract is a commitment.** Once another team or independently deployed component depends on it, changing it is a compatibility event (§6), not an internal refactor.
-
-Publish the smallest contract that satisfies known consumers. Every optional field added "just in case" is a field someone may eventually depend on. Confirm required behavior with consumers before freezing rather than discovering omissions after implementation.
-
-**Fixtures are a legitimate first deliverable.** When a contract is agreed but implementation is blocked, contract-valid static fixtures can unblock downstream consumers without pretending the service exists. Prefer this to building an integration against unconfirmed assumptions.
-
-**The common failure:** hand-writing client types that drift from actual server behavior, with the missing field discovered in production. Keep one authoritative schema and automate alignment where practical.
-
-### Match Resource Lifetime to Scope
-
-Create expensive-to-construct or pooled resources (connection pools, HTTP clients, models) once per process at startup and hand out references; create request-scoped handles (a DB session checked out of the pool) per request; keep pure values as plain functions. Creating a pooled client per request throws away connection pooling; closing a shared client in a per-request teardown breaks every concurrent request.
-
-**The common failure:** a per-request dependency that constructs — or worse, closes — a process-scoped resource.
-
-### Typed Configuration, Validated at Startup
-
-One typed settings object, built once at startup and passed explicitly — never scattered untyped environment reads. Untyped config fails at 3 AM with a key error deep in a code path; a settings object fails once, at startup, with a precise error naming the variable. Secrets ride as redacted types so they never surface in logs or tracebacks. Credential mechanics: `SECRETS.md`.
-
-### Trace Released Artifacts to Reviewed Source
-
-For software that is packaged or deployed, preserve evidence connecting each released artifact to the reviewed source revision, declared build process, and verification that produced it. Prefer a consistent hosted build and provenance that identifies outputs by digest; strengthen signing and build isolation in proportion to the artifact's threat model. The [SLSA specification](https://slsa.dev/spec/v1.2/) provides a staged model for these guarantees.
-
-A local scratch or documentation repository that produces no released artifact does not need release provenance. It still must not present a locally generated file as an attested or reproducible release.
-
-**The common failure:** treating a successful build on one workstation as proof that the distributed artifact came from the reviewed revision or was produced without unrecorded inputs.
-
-### Design for Operability
-
-A system is not production-ready if its operators cannot determine:
-
-1. what it is doing;
-2. whether it is healthy;
-3. why an important flow failed;
-4. what scope is affected;
-5. what action should be taken next.
-
-Critical flows should expose the telemetry required to answer those questions. Depending on the system, that includes:
-
-* meaningful health and readiness signals;
-* structured logs;
-* metrics tied to user or business outcomes as well as infrastructure;
-* distributed traces where a request crosses meaningful boundaries;
-* correlation or request identifiers that reconstruct one flow;
-* queue depth, retry, rejection, saturation, and degraded-mode signals;
-* actionable error classification;
-* discoverable ownership and recovery guidance.
-
-Observe outcomes, not only machinery. CPU at 40% does not prove releases are progressing, orders are completing, or an agent is producing valid decisions.
-
-Do not log everything merely because observability matters. Telemetry has privacy, security, cost, and signal-to-noise consequences. Instrument the decisions and flows operators actually need to understand.
-
-**The common failure:** adding logs after the first production incident. If a load-bearing failure can occur without leaving enough evidence to reconstruct it, observability is part of the missing design.
-
-### Graceful Degradation
-
-Preserve useful core behavior when an auxiliary capability fails, but only when the degraded result remains a safe basis for the caller's next decision.
-
-A search outage may leave checkout available. An analytics failure should not normally prevent login. A recommendation engine may return "recommendation unavailable" while the authoritative transaction continues.
-
-Do **not** convert any of the following into stale, guessed, or apparently successful results merely to keep the flow moving:
-
-* missing or failed authorization;
-* unavailable authoritative state required for correctness;
-* failed writes whose outcome is uncertain;
-* schema or contract uncertainty;
-* security or policy checks that could not be completed;
-* safety-critical or otherwise consequential decisions whose basis is unavailable.
-
-Make degraded mode observable and exercise it periodically when it is important enough to depend on. Rarely used fallback code is still production code.
-
-**The common failure:** returning a plausible fallback that looks authoritative. The user or caller continues with an incorrect assumption, and the original failure becomes detached from the later consequence.
-
-### Overload Protection, Rate Limiting & Circuit Breakers
-
-Protect the system's ability to perform useful work under saturation.
-
-Depending on the actual failure mode, mechanisms may include:
-
-* bounded concurrency;
-* bounded queues;
-* admission control;
-* load shedding;
-* rate limits and quotas;
-* randomized exponential backoff;
-* retry budgets;
-* timeouts;
-* circuit breakers;
-* degraded responses.
-
-Choose the mechanism from the dependency contract and capacity model rather than applying the entire catalog.
-
-Prefer rejecting excess work early and cheaply over accepting an unbounded amount of work that cannot finish. A system that returns some explicit overload errors while preserving healthy throughput is usually safer than one that accepts everything until latency, memory, and retries collapse the service.
-
-Circuit-breaker thresholds, rate limits, queue bounds, and concurrency settings must be based on the dependency's observed behavior or a documented initial assumption that can be measured and revised.
-
-**The common failure:** allowing every layer to queue and retry independently. One user request fans out, queues accumulate, timeouts fire, each layer retries, and protection mechanisms amplify the outage they were intended to prevent.
 
 ---
 
@@ -641,7 +411,7 @@ Do not manufacture certainty from incomplete evidence. Distinguish:
 * reasonable working assumption;
 * unresolved dependency.
 
-This distinction matters particularly when an AI agent is doing the analysis (§9).
+This distinction matters particularly when an AI agent is doing the analysis (AGENTIC-DESIGN.md §5).
 
 ### Preserve Backward Compatibility
 
@@ -824,203 +594,6 @@ The reviewer verifies the plan against the spec and the actual current state of 
 If the independent review cannot be completed, record that explicitly and get a decision before proceeding without it. "No review happened" must never be silently equivalent to "review passed."
 
 **Scale the review to the work.** Small-but-significant changes (a ~200-line feature that trips a significance trigger — a trust boundary, a new model-directed step) get a lightweight independent check, not the full spec review: one reviewer, one pass, scoped to the significance delta (the trust/autonomy boundary), not the whole plan. Significance decides *whether* review happens; size decides *how much* review.
-
----
-
-## §9. Agentic System Design
-
-Agentic systems inherit every principle above. They do not get weaker architecture, testing, state, security, or operational requirements because a model is involved.
-
-The model adds a probabilistic reasoning component inside the system. It does not become the system's source of truth, authorization service, durable state owner, or proof that an external action succeeded.
-
-Detailed protocol-specific tool, authorization, prompt-injection, and MCP security controls belong in the project's dedicated security standards. The rules here define the enduring architecture boundaries.
-
-Agent-security mechanics have their own sources of truth — `AGENTIC-SAFETY.md` (skill vetting, Rule of Two, exfiltration channels), `TRUST-CLASSIFICATION.md` (what counts as trusted input), `SECRETS.md` (credential handling). This section states the architecture principles and points at them; it does not restate them.
-
-### Use Autonomy Only Where It Earns Its Cost
-
-Prefer deterministic code for deterministic decisions and predefined workflows for well-defined sequences.
-
-Use model-directed autonomy when the work genuinely requires one or more of:
-
-* judgment under uncertainty;
-* interpretation of unstructured information;
-* dynamic planning;
-* choosing among tools based on context;
-* adapting a path that cannot reasonably be enumerated ahead of time.
-
-Do not convert ordinary application logic into an agent merely because a model can perform it.
-
-Autonomy adds nondeterminism, latency, cost, evaluation burden, security exposure, and the possibility of errors compounding across multiple steps.
-
-**The test:** if the correct next step can be reliably determined from typed state and explicit business rules, keep that decision in code.
-
-**The common failure:** asking a model whether a state transition is allowed when the actual rule is a deterministic comparison already available to the application.
-
-### Use the Least Complex Agent Architecture That Works
-
-Start with the smallest useful agentic unit.
-
-A single agent with clear tools and bounded responsibility is easier to evaluate, authorize, observe, and debug than a network of agents.
-
-Introduce routing, planner/executor separation, evaluator loops, or multiple collaborating agents when measured behavior shows the simpler architecture is insufficient.
-
-Architecture complexity must buy a demonstrated capability, quality, isolation, or scaling benefit.
-
-Multi-agent systems have measured failure modes: system design, inter-agent misalignment, and task verification dominate real traces (MAST, NeurIPS 2025); uncoordinated agents amplify errors an order of magnitude (DeepMind, Dec 2025), and added agents stop paying around three or four. The remedies are typed handoff payloads and orchestrator-run verification gates — coordination machinery, not more agents.
-
-**The common failure:** introducing multiple agents because the conceptual diagram maps neatly onto organizational roles, then paying for coordination, context handoff, duplicated reasoning, and ambiguous ownership without improving the outcome.
-
-### Bound Autonomy; Keep Authority Outside the Model
-
-A model may propose what should happen. Deterministic policy decides what is allowed to happen.
-
-Keep outside the model:
-
-* authentication and authorization;
-* tenant and environment boundaries;
-* irreversible invariants;
-* state ownership;
-* permission checks;
-* financial and quota limits;
-* data-classification rules;
-* approval requirements;
-* tool availability;
-* destructive-operation safeguards.
-
-Every autonomous loop needs explicit stopping conditions appropriate to the workflow, such as:
-
-* task completed;
-* bounded attempts;
-* bounded tool calls;
-* deadline reached;
-* cost or resource budget reached;
-* repeated failure;
-* required information unavailable;
-* escalation or human approval required;
-* cancellation.
-
-Do not depend on the model eventually deciding to stop.
-
-For destructive, irreversible, privilege-expanding, externally visible, financial, security-sensitive, or otherwise high-impact actions, enforce authorization outside the model and require human approval where policy or risk calls for it.
-
-Scope the sandbox to the tool call, not the agent. One sandbox shared across tools grants the union of every tool's permissions — confine each invocation to its declared capabilities so the isolation is real, not nominal.
-
-**The common failure:** encoding a hard business or security rule only in a system prompt and treating model compliance as enforcement.
-
-### Observe Ground Truth Between Meaningful Actions
-
-An agent works in a changing environment. Do not let it plan indefinitely from stale assumptions.
-
-Before consequential actions, validate current authoritative state and applicable policy.
-
-After an action, observe the environment or authoritative system and verify the effect that matters before treating the step as complete.
-
-A tool returning `"success": true` proves only what the tool contract says it proves. It does not automatically prove that the user's intended external outcome occurred.
-
-Keep proposals, observations, authoritative state, and committed effects conceptually separate.
-
-For consequential loops, each stage writes a signed receipt — who acted, what was checked, an evidence hash, a timestamp — with secrets masked. Credentials are per-run and ephemeral; the broker hands out a handle, not the secret. A stage that left no receipt did not happen.
-
-**The common failure:** an agent issues a deployment, receives a successful API response, and reasons from "deployment succeeded" without verifying rollout state, health, or the actual target revision.
-
-### Treat Model and Tool Outputs as Evidence, Not Authority
-
-Model confidence is not proof. Retrieved text is not policy. Tool output is not automatically trusted simply because it came through a typed protocol.
-
-Where a decision depends on authoritative facts, resolve those facts from their authoritative source or through a contract that explicitly guarantees them.
-
-Separate untrusted data from instructions, especially when retrieved text, repository content, issue comments, webpages, model-generated text, or tool results can influence privileged actions.
-
-**Worked shape — a model summarizes untrusted logs for publication:** (1) delimit the untrusted region in the prompt (`<untrusted-logs>…</untrusted-logs>`) and instruct the model to treat delimited regions as data only — never as instructions; (2) strip or neutralize instruction-like lines before they reach the model where the format allows it; (3) banner the published output as model-generated and cite the evidence it rests on. The separation is a pipeline step, not a hope about model behavior.
-
-**Worked shape — a model renders verdicts:** require a stated failure mechanism plus the cited evidence *before* the verdict; escalate when the claim can't be verified. A verdict that is labeled and evidence-cited can still be wrong — the guard is not the label, it is the mechanism. *Bad:* "killed — the candidate lacks evidence," citing a file:line that doesn't show the lack. *Good:* "killed — the claimed failure is impossible under the runtime's guarantees, exact lines cited," or "escalated — the mechanism is plausible but unverifiable from here."
-
-Do not allow one untrusted tool result to grant authority to another tool call.
-
-**The common failure:** a retrieved document states that an action is approved, and the agent treats the statement itself as authorization rather than checking the actual approval system.
-
-### Context Is a Budget and a Trust Boundary
-
-More context is not automatically better context.
-
-Provide the model with the information needed for the current decision while preserving enough provenance to distinguish:
-
-* instructions;
-* authoritative state;
-* retrieved evidence;
-* prior model output;
-* tool results;
-* assumptions.
-
-Long-running agents should curate or compact context deliberately rather than accumulating every historical token indefinitely. Preserve load-bearing decisions and evidence; discard irrelevant mechanics.
-
-Do not solve an information-architecture problem by dumping an entire repository, ticket history, database record, or conversation into the model context.
-
-**The common failure:** increasing context until the needed fact is technically present but buried among stale, duplicated, conflicting, or untrusted information.
-
-### Evaluate Agent Behavior, Not Just Agent Code
-
-Conventional unit and integration tests verify deterministic machinery around the model. They do not prove the agent behaves reliably across realistic inputs.
-
-For load-bearing agent behavior, maintain evaluations that exercise representative tasks, important edge cases, and known failure modes.
-
-Define what success means before comparing models or prompts.
-
-Where relevant, evaluate:
-
-* task completion;
-* factual or contract faithfulness;
-* correct tool selection;
-* correct tool arguments;
-* policy compliance;
-* unnecessary actions;
-* state-handling correctness;
-* recovery from tool failure;
-* escalation behavior;
-* cost and latency;
-* regression against previously solved cases.
-
-Use evaluation results to choose the simplest model and architecture that satisfy the requirement. Do not choose complexity first and construct an evaluation that merely confirms it.
-
-When an agent or model changes, rerun the relevant evaluation set. Model behavior is a dependency and can change independently of application code.
-
-**The common failure:** shipping because the deterministic test suite passes while the actual model behavior was assessed through a handful of successful manual examples.
-
-### Preserve Human Control at Consequential Boundaries
-
-Human involvement should be purposeful, not ceremonial.
-
-Do not require approval for every harmless read simply to claim a "human in the loop." Place approval where it changes risk: before a consequential action whose target, scope, or effect the human can meaningfully review.
-
-Escalate when:
-
-* failure or retry thresholds are exceeded;
-* the agent lacks required information;
-* user intent remains materially ambiguous;
-* policy requires approval;
-* an action crosses a defined risk threshold;
-* the system cannot establish a safe basis to continue.
-
-Approval should describe the actual operation being authorized. If the target, scope, environment, cost, or impact materially changes afterward, re-evaluate the approval rather than treating the earlier consent as universal.
-
-**The common failure:** asking for broad approval at workflow start and then allowing the agent to choose a materially different destructive action several steps later.
-
-### Orchestrating Multiple Agents
-
-When one agent dispatches others, the orchestrator owns verification. A subagent's report is a claim, not a fact.
-
-**Verify independently, in-band.** After a worker completes, check the resulting state directly — the files changed, the tests run, the artifacts produced — rather than trusting the worker's summary. A worker that reports success from the wrong directory, or self-certifies its own review, is caught only by checking ground truth.
-
-**Make handoffs file-backed.** Do not rely on transcript inheritance between stages: each stage writes its output to a named file, and the next stage is pointed at that file. A verifier that cannot see the evidence must refuse to fabricate findings from hints.
-
-**Pin context; do not describe it.** Give a worker the literal absolute paths it should touch, not a "work from this directory" instruction it must translate. Where location matters, require the worker's first action to confirm its actual location before touching anything.
-
-**Keep role separation real.** A reviewer that also implemented the change is not an independent reviewer. Adversarial review works only when the reviewer has no stake in the outcome — separate the roles, and treat self-approval as a process failure even when the underlying work is correct.
-
-**Keep the verifier blind.** The verifier receives the task, the rubric, and the evidence. Blindness applies to verdict passes; diagnostic passes may inspect the maker's reasoning. A verifier that reads the maker's reasoning nods along with it; separation of reasoning is what makes the review independent. Loop mechanics: `DEV-LOOP.md`.
-
-**The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
 ---
 

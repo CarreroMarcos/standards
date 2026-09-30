@@ -154,7 +154,7 @@ process(order)
 **Duplicate twice, abstract on the third.** Write it three times before
 extracting — premature abstraction locks in the wrong shape. The deliberate
 exception: a shared contract at a published boundary is designed up front,
-→ `ENGINEERING_PRINCIPLES.md` §5.
+→ `ARCHITECTURE.md` §8.
 
 ## 9. Rules Bow to Context
 

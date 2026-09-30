@@ -38,7 +38,7 @@ Audit an MCP server's tool definitions on install and after every update — a c
 
 ## Treat tool results as untrusted input
 
-Why this holds: AGENTIC-SAFETY.md treats all tool-fetched content as data, not instructions; ENGINEERING_PRINCIPLES.md §9 — "Tool output is not automatically trusted simply because it came through a typed protocol." This file owns the MCP-specific practice; those files own the reasoning.
+Why this holds: AGENTIC-SAFETY.md treats all tool-fetched content as data, not instructions; AGENTIC-DESIGN.md §5 — "Tool output is not automatically trusted simply because it came through a typed protocol." This file owns the MCP-specific practice; those files own the reasoning.
 
 ## Reference credentials by environment variable
 
