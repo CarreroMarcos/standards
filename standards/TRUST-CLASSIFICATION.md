@@ -67,7 +67,6 @@ Classify fields, not just sources: an MCP tool description is more dangerous tha
 - Deny-by-default per-tool permissions; PreToolUse/PostToolUse hooks that enforce the classification at call time.
 - Network approval gates and isolated context windows for untrusted content.
 - Session-scoped credentials so a trust violation can't outlive the session.
-  - Session-scoped credentials, done right (SECRETS.md, "Agent-safe posture"): short-lived tokens only, brokered so the model never sees the value — a long-lived credential in the agent's env re-emits.
 - Agent-aware audit logging that records the trust level of every input the agent acted on.
 
 ## References

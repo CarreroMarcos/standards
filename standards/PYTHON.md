@@ -287,7 +287,7 @@ cursor.execute("SELECT * FROM orders WHERE id = %s", (user_id,))
 
 **Use argv lists and explicit environments.** `subprocess.run([cmd, arg], shell=False)` keeps arguments structured. Keep interpolated values out of shell execution, and pass an explicit `env` dict rather than mutating process-global `os.environ`.
 
-**Log only the environment values needed for diagnosis.** The environment contains secrets by construction (`ENGINEERING_PRINCIPLES.md` §6). Environment values are secret-adjacent (SECRETS.md; LOGGING.md rule 3): log only what diagnosis needs, never the value.
+**Log only the environment values needed for diagnosis.** The environment contains secrets by construction (`ENGINEERING_PRINCIPLES.md` §6).
 
 **Pin and commit the lockfile for deployable applications and services.** A service, job, or container image installs from a committed, reproducible dependency definition — `uv.lock`, installed with `--locked` in CI. Reproducible installs support the verification discipline: "tests pass" means little if the dependency set drifts between runs.
 
@@ -510,7 +510,7 @@ def handler(event, context):
 
 **Cold start is import time + init time.** Apply §12 inside the handler module: heavy imports deferred or module-level only if always needed; prune the dependency tree (each transitive package is cold-start milliseconds). Structured JSON to stdout for CloudWatch. Measure cold and warm separately; optimize the p99 that matters.
 
-**Fail loudly on poison; partial-failure semantics for batches.** Malformed input → raise, so the event lands in the DLQ or gets retried by the source. For SQS batches, return `batchItemFailures` so only failed records retry. Bind log context per message, not per invocation (LOGGING.md, Rules §5) — one invocation processes a batch; invocation-scoped IDs leak across messages. Swallowing a poison message drops data silently; re-raising the whole batch reprocesses (and re-bills) successes. Timeouts on every outbound call; degrade gracefully on non-critical dependency failure with an explicit degraded signal.
+**Fail loudly on poison; partial-failure semantics for batches.** Malformed input → raise, so the event lands in the DLQ or gets retried by the source. For SQS batches, return `batchItemFailures` so only failed records retry. Swallowing a poison message drops data silently; re-raising the whole batch reprocesses (and re-bills) successes. Timeouts on every outbound call; degrade gracefully on non-critical dependency failure with an explicit degraded signal.
 
 **Long-lived servers: match resource lifetime to scope.** FastAPI `lifespan` owns process-lifetime resources (httpx.AsyncClient, DB engine/pool, ML model) → `app.state`; dependencies *read* from `app.state` — they don't own the resource. `yield` dependencies are for per-request setup/teardown (a DB session checked out of the pool). Creating an `httpx.AsyncClient` per request throws away connection pooling; closing a shared client in a per-request dependency breaks every concurrent request. `Depends`' cache is per-request, not across requests — a frequent misconception. Rule of thumb: expensive-to-construct or pooled → lifespan; request-scoped → dependency; pure value → plain function.
 
@@ -520,7 +520,7 @@ def handler(event, context):
 
 **Explicit dependencies in, not hidden globals.** Pass dependencies as parameters; don't reach for module globals. Hidden globals make tests order-dependent and parallel-unsafe; explicit parameters make the dependency graph visible and swappable.
 
-**Mock only external boundaries; prefer fakes.** Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Don't mock internals to test behavior a fake could cover — but mocking is legitimate when the unit under test *is* the interaction: retry wrappers, decorators, middleware. Assert the outcome, not the call choreography. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring. Mocks also let generated code "pass" while asserting nothing about outcomes. A check that cannot fail does not count as a check (CODE-REVIEW.md §7): break the guard and confirm the test goes red before offering it as evidence.
+**Mock only external boundaries; prefer fakes.** Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Don't mock internals to test behavior a fake could cover — but mocking is legitimate when the unit under test *is* the interaction: retry wrappers, decorators, middleware. Assert the outcome, not the call choreography. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring. Mocks also let generated code "pass" while asserting nothing about outcomes.
 
 ```python
 # Bad: asserts implementation; breaks on any refactor

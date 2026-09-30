@@ -29,7 +29,7 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 
 ## 1. Coverage
 
-Cover every change for: Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
+Cover every change for: Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project.
 
 Activate conditional domains when the change triggers them:
 - Performance — runtime-sensitive changes (tight loops, DB queries, I/O paths)
@@ -39,7 +39,7 @@ Severity scale: `Critical → High → Medium → Low → Info`
 
 ## 2. Finding schema
 
-Give every finding: Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking. Impact is the concrete consequence if the finding is real; Severity is the risk rating. Cite the trust level in security findings (TRUST-CLASSIFICATION.md): `Issue: SQL injection via UNTRUSTED user input` — the level gates how the finding is handled.
+Give every finding: Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking. Impact is the concrete consequence if the finding is real; Severity is the risk rating.
 
 Value scales: Severity is `Critical | High | Medium | Low | Info`. Blocking is `true | false`. Basis is `VERIFIED | INFERRED | SPECULATIVE`.
 
@@ -54,8 +54,6 @@ The `Basis` field classifies how the reviewer arrived at the finding.
 | `VERIFIED` | Agent directly observed the defect at the cited location |
 | `INFERRED` | Agent reasoned from a code pattern; behavior not directly confirmed |
 | `SPECULATIVE` | Suspected risk; consequence is uncertain |
-
-Unmasked verify (DEV-LOOP.md, Verification terms): ground `VERIFIED` in the real file and real output — never in a diff hunk, a summary, or another agent's report.
 
 Ground the evidence to the basis. `VERIFIED` requires `file:line` + code excerpt or precise behavioral description. `INFERRED` requires `file:line` + the reasoning chain. `SPECULATIVE` requires `file:line` + the observed trigger (the specific code pattern that raised the concern) + an explicit statement of why the consequence cannot be confirmed. The uncertainty is about the consequence, not the existence of the code. Prose alone ("this may cause...") is not evidence.
 

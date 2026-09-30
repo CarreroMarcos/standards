@@ -507,8 +507,6 @@ For significant features or ambiguous work, reason in this order:
 8. **Implement** — Red-Green-Refactor or the project's equivalent verified development loop.
 9. **Validate** — verify acceptance criteria, contracts, important failure paths, migration/recovery behavior, and operational evidence appropriate to the risk.
 
-**State semantics** (ARCHITECTURE.md §4 "State Has Semantics"): source of truth, ownership, durability, consistency, concurrency, ordering, retry and replay, identity and deduplication, retention, recovery.
-
 This order is deliberate:
 
 **requirements → critical flows → state and authority boundaries → failure modes → simplest architecture → contracts → implementation → production evidence**

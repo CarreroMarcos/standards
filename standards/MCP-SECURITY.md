@@ -30,8 +30,6 @@ Maintain an approved list of MCP servers. A new server requires, before it conne
 
 Scale the review to the trust basis: first-party/official servers with signed releases — verify provenance + scope (steps 2–3). Third-party or novel servers — all three steps, source review included.
 
-Open-time executable configs are QUARANTINE (TRUST-CLASSIFICATION.md, "Source Classification"): `.mcp.json` executes before review — review the config itself, not just the server it points at.
-
 Scope each MCP server to the minimum directory or resource it needs. A filesystem server granted `~/` can read SSH keys, `.env` files, and credential stores.
 
 ## Audit tool definitions

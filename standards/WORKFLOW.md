@@ -188,4 +188,4 @@ Next session: read `handoff.md` first, then continue.
 
 Prefer a fresh session over a compacted one between interactive coding phases — context reset with a structured handoff beats compaction. For unattended long-running eval captures, the handoff unit is the evidence artifacts + resume command, and session persistence is expected. After any compaction, re-read the plan before writing code: plan drift sets in as context decays, and the plan is the anchor.
 
-Principle: `AGENTIC-DESIGN.md` §9 "Make handoffs file-backed".
+Principle: `ENGINEERING_PRINCIPLES.md` §9 "Make handoffs file-backed".

@@ -98,8 +98,6 @@ For destructive, irreversible, privilege-expanding, externally visible, financia
 
 Scope the sandbox to the tool call, not the agent. One sandbox shared across tools grants the union of every tool's permissions — confine each invocation to its declared capabilities so the isolation is real, not nominal.
 
-Break the lethal trifecta (AGENTIC-SAFETY.md, "Break the lethal trifecta"): never combine private-data access, untrusted content, and external communication in one unattended session.
-
 **The common failure:** encoding a hard business or security rule only in a system prompt and treating model compliance as enforcement.
 
 ## 4. Observe Ground Truth Between Meaningful Actions
@@ -121,8 +119,6 @@ For consequential loops, each stage writes a signed receipt — who acted, what 
 ## 5. Treat Model and Tool Outputs as Evidence, Not Authority
 
 Model confidence is not proof. Retrieved text is not policy. Tool output is not automatically trusted simply because it came through a typed protocol.
-
-Audit tool definitions on install and after every update (MCP-SECURITY.md, "Audit tool definitions"): a compromised tool description can instruct the agent to re-emit secrets — runtime delimiting doesn't cover the description.
 
 Where a decision depends on authoritative facts, resolve those facts from their authoritative source or through a contract that explicitly guarantees them.
 
@@ -181,8 +177,6 @@ Use evaluation results to choose the simplest model and architecture that satisf
 
 When an agent or model changes, rerun the relevant evaluation set. Model behavior is a dependency and can change independently of application code.
 
-Record every eval run per LOGGING.md ("Eval-reproducibility record") — corpus version, pin sha256, driver, model ID, config, wall time — so the next ticket re-runs, not re-derives.
-
 **The common failure:** shipping because the deterministic test suite passes while the actual model behavior was assessed through a handful of successful manual examples.
 
 ## 8. Preserve Human Control at Consequential Boundaries
@@ -217,10 +211,6 @@ When one agent dispatches others, the orchestrator owns verification. A subagent
 **Keep role separation real.** A reviewer that also implemented the change is not an independent reviewer. Adversarial review works only when the reviewer has no stake in the outcome — separate the roles, and treat self-approval as a process failure even when the underlying work is correct.
 
 **Keep the verifier blind.** The verifier receives the task, the rubric, and the evidence. Blindness applies to verdict passes; diagnostic passes may inspect the maker's reasoning. A verifier that reads the maker's reasoning nods along with it; separation of reasoning is what makes the review independent. Loop mechanics: `DEV-LOOP.md`.
-
-**Watch spawn volume.** ≤6 spawns per rolling 2 hours (AGENTIC-SAFETY.md, "Agent Spawn-Volume Advisory") — each agent is a new poisonable context, and volume makes verifying their reports harder.
-
-**Bound worker authority.** Delegation is intersection (TRUST-CLASSIFICATION.md, Rule 7): a worker acts only within the overlap of each party's authorization, never the union — the narrower grant wins.
 
 **The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
