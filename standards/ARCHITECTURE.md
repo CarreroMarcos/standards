@@ -1,12 +1,14 @@
 ---
 title: Architecture
-version: "1.0"
+version: "1.1"
 scope: Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation
-consult_when: "When designing a system or choosing architecture — boundaries, state ownership, failure handling, resilience."
-last_reviewed: 2026-09-30
+consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
+last_reviewed: 2026-10-03
 ---
 
 # Architecture
+
+**Core principle:** reason from what the system must survive, not from a diagram of components — the simplest architecture whose failure behavior matches the consequences of the problem.
 
 ## Sections
 
@@ -29,7 +31,7 @@ last_reviewed: 2026-09-30
 
 ## 1. Start With Critical Flows and Failure Modes
 
-Design from what the system must preserve, not from a diagram of components.
+**Design from what the system must preserve, not from a diagram of components.**
 
 For significant systems, identify the business-critical flows first:
 
@@ -57,7 +59,7 @@ Where reliability is consequential, derive measurable objectives such as SLOs an
 
 ## 2. Minimize Blast Radius
 
-Design so failures stay contained and preserve unrelated capabilities.
+**Design so failures stay contained and preserve unrelated capabilities.**
 
 Keep one dependency's outage from taking down unrelated flows. Isolate one module's state from another module's bugs. Keep resource exhaustion, bad deployments, privileged credentials, and expensive workloads from automatically becoming system-wide failure domains.
 
@@ -65,9 +67,9 @@ Blast radius is a design property, not only an infrastructure property. A shared
 
 ## 3. Simplest Sufficient Isolation
 
-Start with the simplest architecture that provides the isolation the requirements actually need.
+**Start with the simplest architecture that provides the isolation the requirements actually need.**
 
-Default toward a modular monolith when one deployment can satisfy ownership, scaling, security, reliability, and release needs. Within a process or deployment, use resource bulkheads where failure coupling is real — for example separate pools, bounded queues, concurrency limits, or worker groups for workloads that should not exhaust each other's capacity.
+Default toward a modular monolith when one deployment can satisfy ownership, scaling, security, reliability, and release needs. Within a process or deployment, use resource bulkheads where failure coupling is real — for example separate pools, bounded queues, concurrency limits, or worker groups for workloads that must not exhaust each other's capacity.
 
 Feature flags and progressive rollout controls reduce change blast radius; they are rollout mechanisms, not resource-isolation bulkheads.
 
@@ -77,7 +79,7 @@ Introduce separately deployable services when independent scaling, ownership, se
 
 ## 4. State Has Semantics
 
-Define what state *means* before choosing where to store it.
+**Define what state *means* before choosing where to store it.**
 
 For shared or durable state, explicitly identify:
 
@@ -100,7 +102,7 @@ Prefer one authoritative owner for a fact. Replicas, caches, indexes, read model
 
 ## 5. Data-Access Discipline
 
-One session per request or task, closed at the boundary — a session that outlives its scope is a stale read or a leak. Transaction boundaries sit at the request/task scope, not inside helpers; a helper that commits decides the caller's atomicity for it.
+**One session per request or task, closed at the boundary** — a session that outlives its scope is a stale read or a leak. Transaction boundaries sit at the request/task scope, not inside helpers; a helper that commits decides the caller's atomicity for it.
 
 N+1 is the classic agent blind spot: a loop that touches a relationship fires one query per row. Load what you iterate — eager-load (`joinedload`/`selectinload` in SQLAlchemy, whatever the ORM calls it) for the relationships the loop actually touches. No lazy loading outside the session that opened it.
 
@@ -110,14 +112,14 @@ Write queries the index can answer: filter on indexed columns, and check the que
 
 ## 6. Dependency Contracts First
 
-Before adding retries, circuit breakers, fallbacks, queues, caches, or similar mechanisms, define the dependency contract:
+**Before adding retries, circuit breakers, fallbacks, queues, caches, or similar mechanisms, define the dependency contract:**
 
 * **Timeout budget:** set the total time the caller is willing to wait, including retries, rather than the dependency's response time alone.
 * **Retryability and idempotency:** classify which failures are retryable and whether repeating the operation can duplicate side effects.
 * **Retry ownership:** avoid uncontrolled retries at multiple layers; identify which layer owns retry behavior.
 * **Retry budget:** bound the total attempts or retry volume so a distressed dependency does not receive an expanding wave of retries.
 * **Capacity and overload behavior:** define useful concurrency limits, queue bounds, admission control, backpressure, or load shedding where the dependency can be saturated.
-* **Cancellation:** define whether abandoned work can and should be stopped.
+* **Cancellation:** define whether abandoned work can be stopped, and whether it must be.
 * **Fallback correctness:** define the fallback's return value and whether it gives the caller a safe basis to proceed.
 * **Observability:** emit enough telemetry to show when retries fire, queues grow, admission rejects, circuits open, or fallbacks engage.
 * **User-visible failure behavior:** define the user's experience when attempts fail and make the result actionable.
@@ -132,7 +134,7 @@ Retry what can self-heal; never *blind*-retry 4xx. Retry when the retry changes 
 
 ## 7. Worker and Queue Discipline
 
-One consumer, one queue — route work deliberately (a queue per consumer, or task-level routing where the broker supports it), so a slow consumer never starves an unrelated workload. Know the worker's concurrency model — prefork, threads, or single-process — and set it deliberately; the default is rarely the right size.
+**One consumer, one queue** — route work deliberately (a queue per consumer, or task-level routing where the broker supports it), so a slow consumer never starves an unrelated workload. Know the worker's concurrency model — prefork, threads, or single-process — and set it deliberately; the default is rarely the right size.
 
 Design every job for repeat delivery: workers retry, redeliver, and crash. Make the handler idempotent where the side effects allow it; where they don't (a charge, a sent email), put an idempotency key at the boundary so the repeat is detected, not re-executed. Visibility timeout (or its equivalent) exceeds the maximum task duration; a timeout shorter than the work produces phantom duplicates. Poison messages get bounded retries, then a dead-letter queue — never infinite requeue.
 
@@ -142,39 +144,39 @@ Close what the framework doesn't: one DB connection scope per worker task; trans
 
 ## 8. Contract-First Boundaries
 
-Define API schemas at stable service boundaries — OpenAPI, gRPC proto, GraphQL schema, JSON Schema, or the project's equivalent — as the source of truth. Auto-generate client types and validators where the ecosystem supports it. Verify generated artifacts in CI with a clean-tree or drift check. Treat applied database migrations as the authoritative schema history and verify model/migration alignment in CI where applicable.
+**Define API schemas at stable service boundaries** — OpenAPI, gRPC proto, GraphQL schema, JSON Schema, or the project's equivalent — as the source of truth. Auto-generate client types and validators where the ecosystem supports it. Verify generated artifacts in CI with a clean-tree or drift check. Treat applied database migrations as the authoritative schema history and verify model/migration alignment in CI where applicable.
 
 Return errors in a consistent machine-readable format so clients can distinguish failure types from structured fields rather than parsing human messages.
-
-## 9. Structured Exception Hierarchies
-
-Define one small hierarchy per domain so callers can catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure). Exceptions carry structured context — the relevant objects (request, response), not just text in the message — because structured attributes beat message-parsing.
-
-**The common failure:** a flat `AppError` with everything in the message, forcing callers to string-match to distinguish conditions.
 
 **Design the contract before the consumers exist.** This is the deliberate exception to the Rule of Three (ENGINEERING_PRINCIPLES.md §3): a shared envelope, event shape, or agent-call format is agreed up front with its known consumers, not discovered after three copies appear in the wild. Two known consumers and a planned third is sufficient reason to define a contract. See ENGINEERING_PRINCIPLES.md §0.
 
 **Publishing a contract is a commitment.** Once another team or independently deployed component depends on it, changing it is a compatibility event (ENGINEERING_PRINCIPLES.md §6), not an internal refactor.
 
-Publish the smallest contract that satisfies known consumers. Every optional field added "just in case" is a field someone may eventually depend on. Confirm required behavior with consumers before freezing rather than discovering omissions after implementation.
+**Publish the smallest contract that satisfies known consumers.** Every optional field added "just in case" is a field someone may eventually depend on. Confirm required behavior with consumers before freezing rather than discovering omissions after implementation.
 
 **Fixtures are a legitimate first deliverable.** When a contract is agreed but implementation is blocked, contract-valid static fixtures can unblock downstream consumers without pretending the service exists. Prefer this to building an integration against unconfirmed assumptions.
 
 **The common failure:** hand-writing client types that drift from actual server behavior, with the missing field discovered in production. Keep one authoritative schema and automate alignment where practical.
 
+## 9. Structured Exception Hierarchies
+
+**Define one small hierarchy per domain** so callers can catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure). Exceptions carry structured context — the relevant objects (request, response), not just text in the message — because structured attributes beat message-parsing.
+
+**The common failure:** a flat `AppError` with everything in the message, forcing callers to string-match to distinguish conditions.
+
 ## 10. Match Resource Lifetime to Scope
 
-Create expensive-to-construct or pooled resources (connection pools, HTTP clients, models) once per process at startup and hand out references; create request-scoped handles (a DB session checked out of the pool) per request; keep pure values as plain functions. Creating a pooled client per request throws away connection pooling; closing a shared client in a per-request teardown breaks every concurrent request.
+**Create expensive-to-construct or pooled resources once per process at startup** and hand out references; create request-scoped handles (a DB session checked out of the pool) per request; keep pure values as plain functions. Creating a pooled client per request throws away connection pooling; closing a shared client in a per-request teardown breaks every concurrent request.
 
 **The common failure:** a per-request dependency that constructs — or worse, closes — a process-scoped resource.
 
 ## 11. Typed Configuration, Validated at Startup
 
-One typed settings object, built once at startup and passed explicitly — never scattered untyped environment reads. Untyped config fails at 3 AM with a key error deep in a code path; a settings object fails once, at startup, with a precise error naming the variable. Secrets ride as redacted types so they never surface in logs or tracebacks. Credential mechanics: `SECRETS.md`.
+**One typed settings object, built once at startup and passed explicitly** — never scattered untyped environment reads. Untyped config fails at 3 AM with a key error deep in a code path; a settings object fails once, at startup, with a precise error naming the variable. Secrets ride as redacted types so they never surface in logs or tracebacks. Credential mechanics: `SECRETS.md`.
 
 ## 12. Trace Released Artifacts to Reviewed Source
 
-For software that is packaged or deployed, preserve evidence connecting each released artifact to the reviewed source revision, declared build process, and verification that produced it. Prefer a consistent hosted build and provenance that identifies outputs by digest; strengthen signing and build isolation in proportion to the artifact's threat model. The [SLSA specification](https://slsa.dev/spec/v1.2/) provides a staged model for these guarantees.
+**For software that is packaged or deployed, preserve evidence connecting each released artifact to the reviewed source revision**, declared build process, and verification that produced it. Prefer a consistent hosted build and provenance that identifies outputs by digest; strengthen signing and build isolation in proportion to the artifact's threat model. The [SLSA specification](https://slsa.dev/spec/v1.2/) provides a staged model for these guarantees.
 
 A local scratch or documentation repository that produces no released artifact does not need release provenance. It still must not present a locally generated file as an attested or reproducible release.
 
@@ -182,15 +184,15 @@ A local scratch or documentation repository that produces no released artifact d
 
 ## 13. Design for Operability
 
-A system is not production-ready if its operators cannot determine:
+**A system is not production-ready if its operators cannot determine:**
 
 1. what it is doing;
 2. whether it is healthy;
 3. why an important flow failed;
 4. what scope is affected;
-5. what action should be taken next.
+5. what action to take next.
 
-Critical flows should expose the telemetry required to answer those questions. Depending on the system, that includes:
+Critical flows expose the telemetry required to answer those questions. Depending on the system, that includes:
 
 * meaningful health and readiness signals;
 * structured logs;
@@ -209,9 +211,9 @@ Do not log everything merely because observability matters. Telemetry has privac
 
 ## 14. Graceful Degradation
 
-Preserve useful core behavior when an auxiliary capability fails, but only when the degraded result remains a safe basis for the caller's next decision.
+**Preserve useful core behavior when an auxiliary capability fails** — but only when the degraded result remains a safe basis for the caller's next decision.
 
-A search outage may leave checkout available. An analytics failure should not normally prevent login. A recommendation engine may return "recommendation unavailable" while the authoritative transaction continues.
+A search outage may leave checkout available. An analytics failure does not normally prevent login. A recommendation engine may return "recommendation unavailable" while the authoritative transaction continues.
 
 Do **not** convert any of the following into stale, guessed, or apparently successful results merely to keep the flow moving:
 
@@ -228,7 +230,7 @@ Make degraded mode observable and exercise it periodically when it is important 
 
 ## 15. Overload Protection, Rate Limiting & Circuit Breakers
 
-Protect the system's ability to perform useful work under saturation.
+**Protect the system's ability to perform useful work under saturation.**
 
 Depending on the actual failure mode, mechanisms may include:
 
