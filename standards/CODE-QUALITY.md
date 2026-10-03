@@ -1,18 +1,21 @@
 ---
 title: Code Quality
-version: "2.7"
+version: "2.8"
 scope: Code quality rules: comments, dead code, testing, verification
-consult_when: "When writing or refactoring code and you want the per-task quality rules."
-last_reviewed: 2026-10-02
+consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
+last_reviewed: 2026-10-03
 ---
 
 # Code Quality
 
 Operational quality rules for AI-generated code. Design principles live in
 `ENGINEERING_PRINCIPLES.md` (cited below as §N); this file holds only what an
-agent must do or report on each task. Every rule below serves one goal: code a
-stranger — human or agent — can read and safely change. Refactorability is the
-bar; the rules are how you reach it. Deliberately not carried over: per-language
+agent must do or report on each task.
+
+**Core principle:** code a stranger — human or agent — can read and safely
+change. Refactorability is the bar; the rules below are how you reach it.
+
+Deliberately not carried over: per-language
 `extensions/<language>.md` files, metrics tables, and CI/pre-commit enforcement
 boilerplate — nothing in this repo reads them.
 
@@ -29,6 +32,12 @@ boilerplate — nothing in this repo reads them.
 - **9. Rules Bow to Context** — when to break a rule and how to say so
 
 ## 1. Prove Completion, Don't Claim It
+
+```
+NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE
+```
+
+No verification run in this session? You cannot claim it passes.
 
 **Never claim "done" without evidence.** Every completion report carries executed results:
 
@@ -48,16 +57,28 @@ Run the checks again before reporting — a prior green run does not cover new
 changes. When a check cannot run, report it: "I couldn't verify X because Y."
 For long-running capture/eval checks, the checkpointed artifact plus
 deterministic re-scoring IS the re-run — do not re-capture to verify a capture.
+
+| Thought | Reality |
+|---|---|
+| "Tests passed earlier this session" | A green run only proves the tree it ran on. Re-run on the final diff. |
+| "The change is too small to break anything" | Size doesn't predict breakage. The check is the proof. |
+| "I'll verify after I report" | After never comes. No evidence, no "done". |
+
 → ENGINEERING_PRINCIPLES.md §6 "Change Safety & Decision Discipline" (ground claims in verification).
+
+**The law, restated:** no fresh evidence, no "done".
 
 ## 2. Be Conservative with Files
 
-Prefer editing over creating files. Don't create empty placeholder files. Search
-before creating so you don't produce duplicates. Group related code — don't create a *new* module for a single small helper. A focused module with one public function is fine. Don't generate binary blobs. Generate hashes only as tamper-evidence a tracked consumer verifies — nothing opaque enters unread.
+**Prefer editing over creating files.** Don't create empty placeholder files.
+**Search before creating** so you don't produce duplicates. Group related code
+— don't create a *new* module for a single small helper. A focused module with
+one public function is fine. Don't generate binary blobs. Generate hashes only
+as tamper-evidence a tracked consumer verifies — nothing opaque enters unread.
 
 ## 3. Handle Errors Explicitly
 
-Swallow nothing silently. Give every failure path an explicit decision: log,
+**Swallow nothing silently.** Give every failure path an explicit decision: log,
 recover, or raise.
 
 ```python
@@ -106,6 +127,12 @@ total = sum(items)              # deterministic from here: no armor needed
 A failure worth handling is a *credible* one: observed here, reported in
 comparable systems, or following from a concrete mechanism — not merely
 imaginable.
+
+| Thought | Reality |
+|---|---|
+| "Better safe than sorry" | A `try/except` around code that cannot fail hides real bugs — safety theater, not safety. |
+| "What if something unexpected comes in" | Handle it at the boundary where it's credible, not three layers deep where it isn't. |
+
 → ENGINEERING_PRINCIPLES.md §1 "Simplicity vs. resilience mechanisms" (credible failures).
 
 ## 4. Comment the WHY, Keep Provenance Honest
@@ -131,7 +158,7 @@ for user in users:
 
 ## 5. Keep Changes Surgical and Small
 
-**Every changed line should trace directly to the user's request.** Don't improve
+**Every changed line traces directly to the user's request.** Don't improve
 adjacent code, don't refactor what isn't broken, match existing style.
 → ENGINEERING_PRINCIPLES.md §6 "Change Safety & Decision Discipline" (smallest change).
 
@@ -155,6 +182,11 @@ class PdfReportStrategy(ReportStrategy): ...   # the only strategy that will eve
 def render_pdf_report(data): ...
 ```
 
+| Thought | Reality |
+|---|---|
+| "I'll clean up the neighboring code while I'm here" | That's a separate task with its own diff. Every changed line traces to the request. |
+| "This might need to scale later" | Generalize for the second caller that exists, not the one you imagine. |
+
 **Standard library before packages.** Reach for the standard library — and
 native platform APIs (`fetch`, DOM methods) — before adding an external
 package. A new dependency is a supply-chain, upgrade, and audit cost: it must
@@ -167,17 +199,21 @@ Work in small incremental changes — easier to review and debug.
 
 ## 6. State Assumptions, Verify Goals
 
-State assumptions that affect the design before coding, and push back when a
-simpler approach exists.
+**State assumptions before coding.** Say what you assumed when it affects the
+design, and push back when a simpler approach exists — in plain words: "A
+simpler approach exists: <one-sentence sketch>. I'll proceed with it — say the
+word if you want the original plan."
 → §6 "State Assumptions Explicitly".
 
-Define success criteria up front and loop until verified, with a verify step for
+**Define success criteria up front.** Loop until verified, with a verify step for
 each action. Vague tasks become testable goals.
 → §6 "Ground Claims in Verification".
 
 ## 7. Dead Code
 
-Observe freely, remove only with proof: flagging suspected dead code is always safe, deleting it requires deterministic proof or explicit human confirmation. Full policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority".
+**Flag freely; delete only with proof.** Flagging suspected dead code is always
+safe — when in doubt, flag. Deleting it requires deterministic proof or explicit
+human confirmation. Full policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority".
 
 ## 8. Naming, Function Size, and Control-Flow Discipline
 
