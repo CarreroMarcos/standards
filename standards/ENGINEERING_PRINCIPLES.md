@@ -1,16 +1,16 @@
 ---
 title: Engineering Principles
-version: "1.12"
+version: "1.13"
 scope: Core engineering principles and practices
-last_reviewed: 2026-09-30
-consult_when: "When making a judgment call no specific standard covers — design trade-offs, colliding principles."
+last_reviewed: 2026-10-03
+consult_when: "When making a judgment call no specific standard covers — 'the rules point both ways', 'this feels over-engineered but I can't say why', 'which principle wins here'."
 ---
 
 # Engineering Principles
 
 > This reference exists because these principles are counterintuitive enough that memory gets them wrong. When a router sends you here, read the named section and apply its reasoning.
 >
-> These are decision principles, not a checklist of fashionable patterns. Use them to reason from requirements, critical flows, state and authority boundaries, failure modes, and evidence toward the simplest system that safely satisfies the need.
+> These are decision principles, not a checklist of fashionable patterns. **Core principle:** reason from requirements, critical flows, state and authority boundaries, failure modes, and evidence toward the simplest system that safely satisfies the need.
 >
 > Where a dedicated standard owns the mechanics, this file states the principle and points at it — one source of truth per topic, so nothing goes stale in two places.
 
@@ -132,7 +132,7 @@ When behavior changed and an existing test does not cover it, state the gap and 
 
 ### Deep Modules
 
-Give modules a smaller interface than their implementation. A shallow module forces every caller to learn the internals, because its interface adds a layer without hiding complexity.
+**Give modules a smaller interface than their implementation.** A shallow module forces every caller to learn the internals, because its interface adds a layer without hiding complexity.
 
 **The test:** can the caller use the module correctly without understanding its internals? Deep modules hide significant complexity behind a small, minimal surface (Ousterhout). Favor meaningful responsibility over a module that does one trivial thing or exposes every internal knob.
 
@@ -140,7 +140,7 @@ Give modules a smaller interface than their implementation. A shallow module for
 
 ### Information Hiding
 
-Encapsulate design decisions likely to change — data structures, external-service interactions, persistence mechanics, policy implementation, and format details (Parnas). Give each module ownership of one design decision so callers depend on the decision rather than its implementation.
+**Encapsulate design decisions likely to change** — data structures, external-service interactions, persistence mechanics, policy implementation, and format details (Parnas). Give each module ownership of one design decision so callers depend on the decision rather than its implementation.
 
 Where a fact has one authoritative owner, make that ownership visible in the design. Other modules may consume or derive views of the fact without independently redefining its meaning.
 
@@ -148,13 +148,13 @@ Where a fact has one authoritative owner, make that ownership visible in the des
 
 ### Pull Complexity Downward
 
-Handle edge cases inside the module when the module has the context to resolve them. Every edge case handled by N callers multiplies into N implementations with varying quality. Centralize the decision where its context is strongest.
+**Handle edge cases inside the module when the module has the context to resolve them.** Every edge case handled by N callers multiplies into N implementations with varying quality. Centralize the decision where its context is strongest.
 
 Provide sensible defaults so the 90% case works with zero configuration. Expose behavior the caller legitimately needs to observe or control, including logging, error classification, cancellation, policy outcomes, and compatibility decisions. Hide mechanics while exposing decisions.
 
 ### Define Errors Out of Existence (bounded)
 
-Eliminate an error state through API semantics when valid intent remains clear. An idempotent delete that succeeds whether or not the item exists removes a branch from every caller. A `getOrCreate` that handles the race internally removes a retry loop from every caller.
+**Eliminate an error state through API semantics when valid intent remains clear.** An idempotent delete that succeeds whether or not the item exists removes a branch from every caller. A `getOrCreate` that handles the race internally removes a retry loop from every caller.
 
 **The boundary:** surface invalid input, authorization failures, conflicts, potentially destructive operations, and uncertain outcomes. Let idempotent operations on valid requests absorb "already done." Preserve enough information for the caller to determine whether its intent was satisfied.
 
@@ -162,7 +162,7 @@ Eliminate an error state through API semantics when valid intent remains clear. 
 
 ### Dependency Injection over Singletons
 
-Instantiate shared resources — connection pools, clients, clocks — at a composition root and inject them into the code that needs them. Global singletons couple every module to the same concrete implementation and make tests order-dependent and non-parallelizable.
+**Instantiate shared resources at a composition root and inject them** — connection pools, clients, clocks — into the code that needs them. Global singletons couple every module to the same concrete implementation and make tests order-dependent and non-parallelizable.
 
 **Scope: inject state, not functions.** Apply this to dependencies that are stateful, externally observable, or need substituting in tests — pools, HTTP and message clients, clocks, random sources, and feature-flag readers. Keep pure stateless helpers as module-level functions; wrapping one in a class solely for injection adds the ceremony this principle is meant to prevent.
 
@@ -174,7 +174,7 @@ Instantiate shared resources — connection pools, clients, clocks — at a comp
 
 ### Functions by Default; Classes Earn Their Keep with State
 
-Default to functions. Reach for a class when there is meaningful internal state, behavior that depends on that evolving state, a clear domain model, or genuine polymorphism. A class with two methods where one is `__init__` is a function in costume — and classes accumulate hidden shared dependencies that every method silently uses, while functions take dependencies as explicit parameters.
+**Default to functions.** Reach for a class when there is meaningful internal state, behavior that depends on that evolving state, a clear domain model, or genuine polymorphism. A class with two methods where one is `__init__` is a function in costume — and classes accumulate hidden shared dependencies that every method silently uses, while functions take dependencies as explicit parameters.
 
 Subclass only for code reuse, never for volatile taxonomies — stable closed taxonomies (AST nodes) may use inheritance. Modeling real-world categories (`Dog(Animal)`) breaks the day the requirements change; protocols and composition survive it.
 
@@ -182,7 +182,7 @@ Subclass only for code reuse, never for volatile taxonomies — stable closed ta
 
 ### Beck's Design Rules (priority order)
 
-Evaluate every change against these four rules, in this order:
+**Evaluate every change against these four rules, in this order:**
 
 1. **Passes the tests** — it works as intended. Without this, nothing else matters.
 2. **Reveals intention** — the code communicates its purpose to a reader who's never seen it before. Naming, structure, and comments — the why, not the what — serve this rule.
@@ -199,13 +199,13 @@ Evaluate every change against these four rules, in this order:
 
 ### Optimize for Human Readability
 
-Code is how you tell another programmer what you want the computer to do. The computer doesn't need readability — the next human does.
+**Code is how you tell another programmer what you want the computer to do.** The computer doesn't need readability — the next human does.
 
 Optimize for the reader who arrives at 2 AM with a pager alert and five minutes to determine what the system intended, what actually happened, and where the relevant decision lives.
 
 ### Naming Conventions
 
-Use names that immediately clarify purpose and let readers understand intent at the call site. Choose domain-accurate, consistent terms. Distinguish similar operations explicitly: `getOrderById` vs. `getOrderByReference`; give `fetch` and `retrieve` a precise qualifier when the key matters.
+**Use names that immediately clarify purpose and let readers understand intent at the call site.** Choose domain-accurate, consistent terms. Distinguish similar operations explicitly: `getOrderById` vs. `getOrderByReference`; give `fetch` and `retrieve` a precise qualifier when the key matters.
 
 Use different terms for concepts with different authority or semantics. A recommendation is not a decision. A producer is not necessarily the durable writer. A request accepted for processing is not the same as an operation completed.
 
@@ -213,7 +213,7 @@ Use different terms for concepts with different authority or semantics. A recomm
 
 ### Contextual Comments
 
-Let code express the obvious behavior. Use comments for the **why**: context, design decisions, constraints, invariants, and non-obvious trade-offs.
+**Let code express the obvious behavior.** Use comments for the **why**: context, design decisions, constraints, invariants, and non-obvious trade-offs.
 
 When you write a comment, ask: "What would a reader learn from this line?" Keep comments that add context and remove comments that add none.
 
@@ -223,7 +223,7 @@ When you change the code, update any affected comment. A current comment gives t
 
 ### Provenance of Rationale
 
-A comment explaining *why* is only as trustworthy as the source of the explanation.
+**A comment explaining *why* is only as trustworthy as the source of the explanation.**
 
 Do not invent rationale the evidence does not support — plausible-sounding optimization claims, speculative architectural history, or authoritative explanations with no traceable basis. AI-assisted authorship amplifies this failure mode: the explanation reads confidently and cites nothing checkable.
 
@@ -235,9 +235,9 @@ When the reason is not traceable to observable behavior, a documented constraint
 
 ### Documentation Is a Maintained Interface
 
-Treat documentation that people or tools depend on as part of the interface: repository entry points, setup and verification commands, public contracts, compatibility notes, and consequential design decisions must remain aligned with the system they describe.
+**Treat documentation that people or tools depend on as part of the interface:** repository entry points, setup and verification commands, public contracts, compatibility notes, and consequential design decisions must remain aligned with the system they describe.
 
-Keep one owner for each documented fact. A README should route readers to an authoritative contract or standard rather than restating it and creating a second version that can drift.
+Keep one owner for each documented fact. A README routes readers to an authoritative contract or standard rather than restating it and creating a second version that can drift.
 
 An append-only decision log (`DECISIONS.md`) is binding authority, not notes: rulings recorded with date and scope constrain later work the way a pinned spec does — execute them, don't re-derive them.
 
@@ -297,7 +297,7 @@ When flagging suspected dead code, state what signals suggest it is dead, what r
 
 ### Test Observable Behavior
 
-Test through stable public interfaces where practical. Keep tests coupled to implementation details only when the coupling protects a deliberate invariant; private methods, internal state, and call-order assumptions otherwise lock in incidental structure.
+**Test through stable public interfaces where practical.** Keep tests coupled to implementation details only when the coupling protects a deliberate invariant; private methods, internal state, and call-order assumptions otherwise lock in incidental structure.
 
 For pure, complex, or security-sensitive internal logic, focused unit tests of internal components are acceptable when they improve confidence without locking in structure.
 
@@ -309,27 +309,27 @@ Agentic behavior uses evaluations in addition to conventional tests (AGENTIC-DES
 
 ### Hoist Your I/O
 
-Push I/O — network, filesystem, console, clock — to the top level; keep the decision-making core pure. A pure function needs no mocks, no fixtures, no event loop — just inputs and expected outputs. This is the highest-leverage testability rule: it *removes* the need for most mocking rather than improving it.
+**Push I/O to the top level; keep the decision-making core pure** — network, filesystem, console, clock. A pure function needs no mocks, no fixtures, no event loop — just inputs and expected outputs. This is the highest-leverage testability rule: it *removes* the need for most mocking rather than improving it.
 
 For I/O-sequenced orchestration (fetch → decide → act, each step depending on the last), a single fake at the boundary is the 90% version of this rule: hoist what's cheap (pure builders, key computation, output validation) and test the orchestrator against one fake client. A full pure-core restructure that adds indirection without adding testability is ceremony, not compliance.
 
 ### Mock Only External Boundaries; Prefer Fakes
 
-Mock (or fake) only at the boundary — network, database, clock, filesystem, third-party APIs. Never mock your own internal logic. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring.
+**Mock (or fake) only at the boundary** — network, database, clock, filesystem, third-party APIs. Never mock your own internal logic. Prefer in-memory fakes with real semantics and assert outcomes, not interactions. Mocking internals couples the test to the implementation: every refactor breaks tests without breaking behavior, which trains the team to stop refactoring.
 
 **The common failure:** mocks that let generated code "pass" while asserting nothing about outcomes. AI-authored tests over-mock relative to human-authored ones — fakes with real semantics are the antidote.
 
 ### Property-Based Testing for Domains with Properties
 
-Where the domain has *properties* — round-trips (encode∘decode == identity), invariants (sorted output is ordered), equivalence (optimized implementation == reference implementation) — use property-based testing (Hypothesis). Example tests check the cases you thought of; property tests check the ones you didn't: off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
+**Where the domain has *properties*, use property-based testing** (Hypothesis) — round-trips (encode∘decode == identity), invariants (sorted output is ordered), equivalence (optimized implementation == reference implementation). Example tests check the cases you thought of; property tests check the ones you didn't: off-by-ones, empty inputs, unicode, boundary lengths. Keep concrete example tests alongside; don't use it where the assertion would re-implement the function.
 
 ### Clear, Complete, and Concise
 
-A test body contains everything needed to understand the test — setup, action, assertion — without irrelevant distractions. A reader should understand what behavior is being verified without opening any other file.
+**A test body contains everything needed to understand the test** — setup, action, assertion — without irrelevant distractions. A reader understands what behavior is being verified without opening any other file.
 
 ### Structure
 
-Make setup, action, and assertion unmistakably clear. Use explicit Given-When-Then labels when they improve readability. Let a three-line test that reads top-to-bottom speak for itself.
+**Make setup, action, and assertion unmistakably clear.** Use explicit Given-When-Then labels when they improve readability. Let a three-line test that reads top-to-bottom speak for itself.
 
 **Prefer organizing by behavior over organizing by method.** A grouping named for a situation — `class TestWhenReleaseIsAwaitingApproval` — is usually more useful than one named for a function, because the situation is what a reader is looking for when a test fails. In pytest this is a preference about naming and grouping, and module-per-component with behavior-descriptive test names achieves the same thing. Let fixture scoping influence layout when appropriate.
 
@@ -337,7 +337,7 @@ The test that matters: does the test's name tell you what broke, without opening
 
 ### DAMP over DRY (with limits)
 
-In tests, favor Descriptive And Meaningful Phrases over aggressive deduplication. Use purposeful duplication when it keeps a test readable top-to-bottom, because tests are read when they fail and the reader needs to understand the full scenario quickly.
+**In tests, favor Descriptive And Meaningful Phrases over aggressive deduplication.** Use purposeful duplication when it keeps a test readable top-to-bottom, because tests are read when they fail and the reader needs to understand the full scenario quickly.
 
 Extract helpers when they express stable domain concepts (`createTestUser`, `seedOrderFixture`) or centralize risky setup — credentials, database connections, complex environment. Centralize opaque fixtures, credentials, and complex environment setup.
 
@@ -345,7 +345,7 @@ Extract helpers when they express stable domain concepts (`createTestUser`, `see
 
 ### Independent Expected Values
 
-Compute a test's expected result from a source independent of the implementation under test. Deriving the expected value from the same logic being tested proves only that the code agrees with itself.
+**Compute a test's expected result from a source independent of the implementation under test.** Deriving the expected value from the same logic being tested proves only that the code agrees with itself.
 
 A hand-computed value, a trusted reference implementation, or a pinned fixture from an independent source establishes correctness; restating the algorithm inside the test does not.
 
@@ -357,7 +357,7 @@ This matters more when an agent writes the test. A tester that reads the builder
 
 ### Tests Are Evidence, Not the Target
 
-An agent that learns the test suite games the test suite. The dominant failure mode is under-specification, not test editing: the fix passes the shown test and fails an unseen sibling — test-shaped compliance rather than correct behavior.
+**An agent that learns the test suite games the test suite.** The dominant failure mode is under-specification, not test editing: the fix passes the shown test and fails an unseen sibling — test-shaped compliance rather than correct behavior.
 
 Countermeasures: red before green, with the failing test committed; lock test paths so the implementer cannot edit them; split writer and reviewer into separate sessions; keep hold-out checks the implementer never saw.
 
@@ -367,7 +367,7 @@ Agent-workflow mechanics: `WORKFLOW.md` (Phase 4).
 
 ### Tracer Bullet
 
-For a multi-unit task, write and pass one test exercising the smallest meaningful path end to end before implementing individual units in isolation.
+**For a multi-unit task, write and pass one test exercising the smallest meaningful path end to end** before implementing individual units in isolation.
 
 Integration and wiring problems — imports, plumbing, environment, configuration — surface immediately instead of after N isolated units turn out not to connect.
 
@@ -377,7 +377,7 @@ Integration and wiring problems — imports, plumbing, environment, configuratio
 
 ### Smallest Change
 
-Make the smallest change that meets the stated requirement. Keep rewrites, broad renames, reformatting, dependency upgrades, and public API changes as separately scoped work unless the requirement calls for them.
+Make the smallest change that meets the stated requirement. Keep rewrites, broad renames, reformatting, dependency upgrades, and public API changes as separately scoped work. When the requirement itself calls for the broader change, that scope is the task — not an exception to this rule.
 
 Give meaningful cleanup its own task, review, and diff. Mixed-purpose diffs hide regressions and make review difficult; a reviewer seeing "fix bug + rename variables + upgrade dependency" cannot identify which change caused a failure.
 
@@ -483,7 +483,7 @@ For database changes, document:
 * **Compatibility window:** when applicable, how old and new readers/writers coexist.
 * **Verification:** how the migrated data and application behavior are proven correct.
 
-For consequential migrations, correctness takes precedence over making rollback artificially easy. Some data transformations should move forward through a verified repair rather than reverse through a lossy migration.
+For consequential migrations, correctness takes precedence over making rollback artificially easy. Some data transformations move forward through a verified repair rather than reversing through a lossy migration.
 
 ---
 
