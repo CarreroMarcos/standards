@@ -1,9 +1,9 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.8"
+version: "1.9"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
-consult_when: "When running the ticket → implement → verify → review → gate → merge loop."
-last_reviewed: 2026-09-29
+consult_when: "When running the ticket → implement → verify → review → gate → merge loop — especially when tempted to treat a bot verdict or green CI as the merge decision."
+last_reviewed: 2026-10-03
 ---
 
 # Dev Loop — the agentic build loop, as operated
@@ -12,6 +12,8 @@ Reconstructed 2026-09-27 from live activity on the pr-reviewer repo (PRs
 #75–#119), the repo's process docs, and the orchestrator's own account of a
 session. This is the loop a unit of work travels from spec task to merged
 main. Repo-specific names are marked; the shape is the reusable part.
+
+**Core principle:** verify from the artifacts — summaries are fine for status, never for verdicts.
 
 ## Sections
 
@@ -84,13 +86,13 @@ main. Repo-specific names are marked; the shape is the reusable part.
 
 ## Evidence-only tickets
 
-Not every ticket ends in a diff. When a ticket's verify clause is an eval run against a pre-registered bar and the run passes with no code change, the closure is evidence-only: recorded evidence + the named gate's verdict + a decision-log entry + a ledger receipt that binds the evidence to the code version it evaluated (commit sha or artifact hash). Eval-reproducibility record (LOGGING.md): the receipt names corpus version, pin sha256, driver version, model ID + effort/config, and wall time — not just the code version. No branch, no PR, no merge gate — the gate evaluation itself is the judge. Pre-registered bars are executed as written (ENGINEERING_PRINCIPLES.md §0): a pinned gate is not a default to be scaled down.
+**Not every ticket ends in a diff.** When a ticket's verify clause is an eval run against a pre-registered bar and the run passes with no code change, the closure is evidence-only: recorded evidence + the named gate's verdict + a decision-log entry + a ledger receipt that binds the evidence to the code version it evaluated (commit sha or artifact hash). Eval-reproducibility record (LOGGING.md): the receipt names corpus version, pin sha256, driver version, model ID + effort/config, and wall time — not just the code version. No branch, no PR, no merge gate — the gate evaluation itself is the judge. Pre-registered bars are executed as written (ENGINEERING_PRINCIPLES.md §0): a pinned gate is not a default to be scaled down.
 
 The loop's custody discipline applies to evidence as well as diffs. A receipt that can't say which code produced the evidence must say so — unverifiable provenance is itself a finding, recorded, not rounded up.
 
 ## Loop Contract
 
-Written before iteration 1. The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → halt the loop, write the stall record to the state file and ledger, and wait; escalation is a write, not a message), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Model identity (SUPPLY-CHAIN.md): pin the model serving each role; a model change is a dependency update, and measurements don't compare across unidentified versions. Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
+**Write the contract before iteration 1.** The contract names: the binary executable gate (what command proves done), the token budget, max rounds, the no-progress limit (stall detector — N rounds with no progress → halt the loop, write the stall record to the state file and ledger, and wait; escalation is a write, not a message), the wall-clock cap, and the blast radius (what the loop may touch, and what it must never touch — no prod deploys, no self-scheduling). Model identity (SUPPLY-CHAIN.md): pin the model serving each role; a model change is a dependency update, and measurements don't compare across unidentified versions. Every incident the loop survives gets ratcheted into this contract as a permanent gate, hook, or convention.
 
 Distinguish "escalate because stuck" from "surface a designed ruling request": a pre-registered rule that requires a human decision (e.g. a `needs-mars-ruling` terminal state) is not a stall — it is a terminal state. Stop, write the ledger receipt, wait. The compliant completion is the decision brief (evidence, options, recommendation) recorded in the plan; "blocked" is not a deliverable.
 
@@ -149,20 +151,23 @@ The loop's shape generalizes beyond this repo:
 
 ## Failure handling (all hit in practice)
 
-- Every retry names what changed since the last attempt — a retrigger
+- **Every retry names what changed since the last attempt** — a retrigger
   without a changed hypothesis is a loop, not a recovery.
-- Bot posts "could not be completed" → exactly one empty-commit retrigger,
-  re-run the wait protocol. If it errors again, note timestamp/PR/sha and a
-  log window in the state file, then proceed. Redact before capture (LOGGING.md rule 3): CI log windows are secret-adjacent — scrub first, then record.
-- Bot review still absent at 120s+45s → note it in the state file, proceed.
-- `pytest | tail` lies about the exit code — gate pushes on the real RC:
+- **"Could not be completed" gets exactly one empty-commit retrigger.** Bot
+  posts "could not be completed" → re-run the wait protocol. If it errors
+  again, note timestamp/PR/sha and a log window in the state file, then
+  proceed. Redact before capture (LOGGING.md rule 3): CI log windows are
+  secret-adjacent — scrub first, then record.
+- **Bot review still absent at 120s+45s → note it and proceed.** Record it
+  in the state file.
+- **`pytest | tail` lies about the exit code** — gate pushes on the real RC:
   write output to a file, check `$?`, grep the summary line.
-- Exported AWS creds poison the suite — run capture and pytest in separate
+- **Exported AWS creds poison the suite** — run capture and pytest in separate
   shells.
 
 ## Loop Ledger
 
-Each stage writes a receipt before the loop moves on: who ran it, what was
+**Each stage writes a receipt before the loop moves on:** who ran it, what was
 checked, the evidence hash (diff, test output tail, file:line refs), and a
 timestamp. The ledger is the audit form of the custody law. Secrets are
 masked in the ledger (`[REDACTED]`) — receipts prove what happened, not what
@@ -170,7 +175,7 @@ the credentials were. Scrub traces and audit logs with a check independent of th
 
 ## Test discipline
 
-Test discipline lives in PYTHON.md §16 — the loop enforces it, doesn't restate it. Loop-specific: **tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise.
+**Tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise. Test discipline lives in PYTHON.md §16 — the loop enforces it, doesn't restate it.
 
 ## Environment
 
@@ -184,4 +189,3 @@ loop = that tmux session.
   against the real state (actual files, actual test output) rather than
   trusting the fixer's summary. Confirmed by Marcos from the orchestrator's
   reasoning.
-

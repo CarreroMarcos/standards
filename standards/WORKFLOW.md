@@ -1,16 +1,16 @@
 ---
 title: Workflow Standard
-version: "2.7"
+version: "2.8"
 scope: The seven-phase development workflow
-consult_when: "When starting or planning a unit of work, from idea through clean commit."
-last_reviewed: 2026-09-29
+consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
+last_reviewed: 2026-10-03
 ---
 
 # Workflow Standard
 
 Portable feature-development discipline — seven phases: brainstorm → spec → plan → implement (TDD) → simplify → security review → commit.
 
-Prevents the most common AI coding failure mode: writing code before understanding what to build.
+**Core principle:** never write code before understanding what to build — the most common AI coding failure mode.
 
 ## Sections
 
@@ -27,7 +27,7 @@ Prevents the most common AI coding failure mode: writing code before understandi
 
 ## Phase 1 — Brainstorm
 
-For any non-trivial feature, bug fix with unclear root cause, or architectural change.
+**For any non-trivial feature, bug fix with unclear root cause, or architectural change.**
 
 - Explore the codebase to understand existing patterns first
 - Ask clarifying questions one at a time: purpose, constraints, success criteria
@@ -40,7 +40,7 @@ For any non-trivial feature, bug fix with unclear root cause, or architectural c
 
 ## Phase 2 — Spec
 
-Write the validated design to `docs/specs/YYYY-MM-DD-<topic>.md`: context (why), architecture, components, data flow, error handling, verification steps.
+**Write the validated design to `docs/specs/YYYY-MM-DD-<topic>.md`:** context (why), architecture, components, data flow, error handling, verification steps.
 
 - Self-review: no *unowned* TBDs — every open question names its owner and decision date; no contradictions, no ambiguity
 - Get user approval before proceeding
@@ -52,7 +52,7 @@ Write the validated design to `docs/specs/YYYY-MM-DD-<topic>.md`: context (why),
 
 ## Phase 3 — Plan
 
-Write the implementation plan to `docs/plans/YYYY-MM-DD-slug.md` and get user approval before proceeding.
+**Write the implementation plan to `docs/plans/YYYY-MM-DD-slug.md` and get user approval before proceeding.**
 
 The plan file is the durable record of implementation detail. On conflict, the spec/HLD wins on intent, the plan wins on implementation detail — a plan that contradicts its spec is a plan bug: fix the plan. Track only the active next steps separately at each session start — don't reload the full plan when context is intact; after compaction or a fresh session, re-read it: the plan is the anchor. Intact context is the condition, not the session count.
 
@@ -64,7 +64,7 @@ End the plan with an acceptance contract: checkable pass/fail criteria, not *vag
 
 ## Recorded decisions
 
-A recorded decision is a decision on a framed question — the options considered, the recommendation, who decided — written to the decision log with date and scope. It constrains later work but does not replace phase gates: later phases verify compliance with it rather than re-deriving it.
+**A recorded decision is a decision on a framed question** — the options considered, the recommendation, who decided — written to the decision log with date and scope. It constrains later work but does not replace phase gates: later phases verify compliance with it rather than re-deriving it.
 
 **A pinned decision is executed, not re-litigated.** Reopening one is itself a decision — it needs a new framed question and a new log entry, not a quiet reinterpretation mid-task.
 
@@ -72,12 +72,12 @@ A recorded decision is a decision on a framed question — the options considere
 
 ## Phase 3.5 — Independent Plan Review (advisory — not one of the seven counted phases)
 
-Between Plan and Implement: an advisory review, not a gate. Self-review shares the author's blind spots; an independent check finds what it can't.
+**Between Plan and Implement: an advisory review, not a gate.** Self-review shares the author's blind spots; an independent check finds what it can't.
 
 - Dispatch a fresh agent with no authorship context, on a capable model
 - It verifies the plan against its spec and the actual current repo state
 - Findings use the project's review vocabulary — `CODE-REVIEW.md` (`VERIFIED` / `INFERRED` / `SPECULATIVE`, `Severity`, `Blocking`)
-- Any `Blocking: true` finding should be fixed before proceeding; disclose non-blocking findings in the plan's Design Note — never drop them silently
+- **Fix any `Blocking: true` finding before proceeding;** disclose non-blocking findings in the plan's Design Note — never drop them silently
 - If the review agent fails to complete, retry once; still blocked → disclose to the user and get an explicit decision before proceeding without one
 - The reviewer also grills the acceptance contract. Two modes: when the contract is open, it negotiates the definition of done with the author before code starts — what the acceptance checks are, and who runs them. When the contract is pre-registered and decision-constrained (a recorded decision already fixed the bounds), there is nothing to negotiate — the review verifies the plan *against the decision* instead: does it stay inside the ruled bounds, or does it quietly reopen them?
 
@@ -130,7 +130,7 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 
 ## Phase 5 — Simplify
 
-After implementation is complete:
+**After implementation is complete:**
 
 - Review all changed files for clarity, consistency, and maintainability
 - Remove dead code — flag it during simplify; remove in the same pass only with proof in hand — otherwise file it as its own unit of work (principle: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Removal Is a Separate Authority")
@@ -141,7 +141,7 @@ After implementation is complete:
 
 ## Phase 6 — Security Review
 
-Scan the diff against these patterns:
+**Scan the diff against these patterns:**
 
 | Severity | Patterns |
 |----------|----------|
@@ -167,7 +167,7 @@ Full review vocabulary and procedure: `CODE-REVIEW.md`.
     git add <specific files — never git add -A blindly>
     git commit -m "feat: <what was built and why in one line>"
 
-Never commit `.env` or credentials. Keep the diff scoped to the ticket — drive-by fixes to lines you touched ride along; anything that could be its own commit gets its own commit. (Credential rules: `SECRETS.md`.)
+**Never commit `.env` or credentials.** Keep the diff scoped to the ticket — drive-by fixes to lines you touched ride along; anything that could be its own commit gets its own commit. (Credential rules: `SECRETS.md`.)
 
 Update the changelog in the same commit — Keep-a-Changelog sections (Added/Changed/Deprecated/Removed/Fixed/Security), one entry per user-visible change, curated prose. Users decide whether to upgrade by reading the changelog, not the diff.
 
@@ -177,7 +177,7 @@ This standard ends at a clean commit. What happens between push and merge — re
 
 ## Handoff
 
-Trigger a handoff when the symptoms show — re-reading files you already read, the plan feeling distant — or the user types "Handoff" (the ~40% context meter is the fallback, not the trigger):
+**Trigger a handoff when the symptoms show** — re-reading files you already read, the plan feeling distant — or the user types "Handoff" (the ~40% context meter is the fallback, not the trigger):
 
 1. Stop all work immediately
 2. Write `handoff.md` to the project root — accomplishments, files changed, service state, commands to resume, pending tasks

@@ -1,16 +1,18 @@
 ---
 title: Code Review Standard
-version: "2.5"
+version: "2.6"
 scope: How to run code reviews, including AI-assisted review
-consult_when: "When reviewing a diff - yours, a bot's, or another agent's."
-last_reviewed: 2026-09-29
+consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
+last_reviewed: 2026-10-03
 ---
 
 # Code Review Standard
 
 What a complete code review is and how findings are evidenced. Advisory — owning gates define pass/fail.
 
-A review is complete when every required domain is covered, every finding carries evidence, the opposition review answered its four questions, and a verdict is stated. This standard does not mandate agent topology, model, or phase count.
+**Core principle:** a review is complete when every required domain is covered, every finding carries evidence, the opposition review answered its four questions, and a verdict is stated.
+
+This standard does not mandate agent topology, model, or phase count.
 
 Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition review.
 
@@ -29,7 +31,7 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 
 ## 1. Coverage
 
-Cover every change for: Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
+**Cover every change for five domains:** Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
 
 Activate conditional domains when the change triggers them:
 - Performance — runtime-sensitive changes (tight loops, DB queries, I/O paths)
@@ -39,7 +41,7 @@ Severity scale: `Critical → High → Medium → Low → Info`
 
 ## 2. Finding schema
 
-Give every finding: Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking. Impact is the concrete consequence if the finding is real; Severity is the risk rating. Cite the trust level in security findings (TRUST-CLASSIFICATION.md): `Issue: SQL injection via UNTRUSTED user input` — the level gates how the finding is handled.
+**Give every finding eight fields:** Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking. Impact is the concrete consequence if the finding is real; Severity is the risk rating. Cite the trust level in security findings (TRUST-CLASSIFICATION.md): `Issue: SQL injection via UNTRUSTED user input` — the level gates how the finding is handled.
 
 Value scales: Severity is `Critical | High | Medium | Low | Info`. Blocking is `true | false`. Basis is `VERIFIED | INFERRED | SPECULATIVE`.
 
@@ -47,7 +49,7 @@ Compatibility note: `Basis` replaced the earlier `Confidence` field — any pars
 
 ## 3. Basis classification
 
-The `Basis` field classifies how the reviewer arrived at the finding.
+**The `Basis` field classifies how the reviewer arrived at the finding.**
 
 | Basis | Meaning |
 |---|---|
@@ -72,17 +74,17 @@ Run the command before writing its output. An unrun example is the same defect a
 
 ## 4. Blocking semantics
 
-`Blocking: true` requires `Severity >= High AND Basis != SPECULATIVE`.
+**`Blocking: true` requires `Severity >= High` AND `Basis != SPECULATIVE`.**
 
 - Critical/High + VERIFIED or INFERRED → may be `Blocking: true`
 - Any severity + SPECULATIVE → `Blocking: false`
 - Medium/Low/Info → `Blocking: false` by default
 
-Default every High finding to `Blocking: true` unless you have specific evidence that the risk is contained — a cited test, a control that mitigates it, or a blast radius bounded in the diff — not a feeling.
+**Default every High finding to `Blocking: true`.** Downgrade only with specific evidence that the risk is contained — a cited test, a control that mitigates it, or a blast radius bounded in the diff — not a feeling.
 
 ## 5. Report sections
 
-Assemble the report after all findings are collected: gather every finding first, then sort them into these sections in order: Scope, Files reviewed, Domain coverage, Supported Findings, Predicted Risks (omit if empty), Testing gaps, Opposition review, Verdict.
+**Assemble the report after all findings are collected:** gather every finding first, then sort them into these sections in order: Scope, Files reviewed, Domain coverage, Supported Findings, Predicted Risks (omit if empty), Testing gaps, Opposition review, Verdict.
 
 **Supported Findings** — VERIFIED and INFERRED findings; each row's Basis column carries the classification.
 
@@ -90,7 +92,7 @@ Assemble the report after all findings are collected: gather every finding first
 
 ## 6. Opposition review
 
-Answer all four explicitly — this is not a summary pass:
+**Answer all four explicitly — this is not a summary pass:**
 1. Is any Critical/High finding overstated? Give counter-evidence.
 2. What was not reviewed that could matter?
 3. Which findings might be false positives in this codebase's context?
@@ -112,7 +114,7 @@ A Testing assessment that reports "suite passes" without having established that
 
 ## 8. Failure criteria
 
-The review fails on any of:
+**The review fails on any of:**
 - A required domain was skipped
 - Any finding lacks a `file:line` reference or an Evidence field
 - Evidence does not materially support the finding claim
@@ -125,11 +127,11 @@ The review fails on any of:
 
 ## 9. Remediation
 
-An *independent* reviewer identifies and recommends; it doesn't remediate unasked. When you're reviewing your own diff, fixing your own findings is the job.
+**An *independent* reviewer identifies and recommends; it doesn't remediate unasked.** When you're reviewing your own diff, fixing your own findings is the job.
 
 ## 10. Scale the ceremony to the diff
 
-Not every diff earns all ten sections. Match the review's weight to the change's blast radius — the trigger is what the change can break, not its line count.
+**Not every diff earns all ten sections.** Match the review's weight to the change's blast radius — the trigger is what the change can break, not its line count.
 
 Evidence-only tasks (re-captures, re-runs) get ceremony scaled to the decision they gate, not to a diff that doesn't exist.
 
@@ -138,3 +140,8 @@ Evidence-only tasks (re-captures, re-runs) get ceremony scaled to the decision t
 - **Large or risky (multi-file, behavior change, or anything touching auth, money, data loss, or security boundaries):** the full standard, no shortcuts.
 
 A 5-line auth change gets the full treatment; a 200-line rename gets the light one. When in doubt, go heavier and say why.
+
+| Thought | Reality |
+|---|---|
+| "It's only N lines" | Blast radius, not line count, sets the ceremony — a 5-line auth change gets the full treatment. |
+| "When in doubt, keep it light" | When in doubt, go heavier and say why. |

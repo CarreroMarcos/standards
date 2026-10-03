@@ -1,12 +1,14 @@
 ---
 title: Agentic Design
-version: "1.0"
+version: "1.1"
 scope: Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation
-consult_when: "When designing agent systems or multi-agent orchestration — autonomy boundaries, architecture choice, evaluation."
-last_reviewed: 2026-09-30
+consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
+last_reviewed: 2026-10-03
 ---
 
 # Agentic Design
+
+**Core principle:** a model may propose, but it never authorizes. Keep authority, truth, and state outside the model — and verify ground truth between actions.
 
 ## Sections
 
@@ -31,7 +33,7 @@ Agent-security mechanics have their own sources of truth — `AGENTIC-SAFETY.md`
 
 ## 1. Use Autonomy Only Where It Earns Its Cost
 
-Prefer deterministic code for deterministic decisions and predefined workflows for well-defined sequences.
+**Prefer deterministic code for deterministic decisions** and predefined workflows for well-defined sequences.
 
 Use model-directed autonomy when the work genuinely requires one or more of:
 
@@ -51,7 +53,7 @@ Autonomy adds nondeterminism, latency, cost, evaluation burden, security exposur
 
 ## 2. Use the Least Complex Agent Architecture That Works
 
-Start with the smallest useful agentic unit.
+**Start with the smallest useful agentic unit.**
 
 A single agent with clear tools and bounded responsibility is easier to evaluate, authorize, observe, and debug than a network of agents.
 
@@ -65,7 +67,11 @@ Multi-agent systems have measured failure modes: system design, inter-agent misa
 
 ## 3. Bound Autonomy; Keep Authority Outside the Model
 
-A model may propose what should happen. Deterministic policy decides what is allowed to happen.
+```
+NEVER LET THE MODEL AUTHORIZE
+```
+
+A model may propose. Deterministic policy decides what is allowed to happen.
 
 Keep outside the model:
 
@@ -94,6 +100,10 @@ Every autonomous loop needs explicit stopping conditions appropriate to the work
 
 Do not depend on the model eventually deciding to stop.
 
+| Thought | Reality |
+|---|---|
+| "It'll stop when it's done" | A loop with no declared stopping condition isn't "almost done" — it's unbounded. Declare the conditions up front. |
+
 For destructive, irreversible, privilege-expanding, externally visible, financial, security-sensitive, or otherwise high-impact actions, enforce authorization outside the model and require human approval where policy or risk calls for it.
 
 Scope the sandbox to the tool call, not the agent. One sandbox shared across tools grants the union of every tool's permissions — confine each invocation to its declared capabilities so the isolation is real, not nominal.
@@ -102,13 +112,15 @@ Break the lethal trifecta (AGENTIC-SAFETY.md, "Break the lethal trifecta"): neve
 
 **The common failure:** encoding a hard business or security rule only in a system prompt and treating model compliance as enforcement.
 
+**The law, restated:** the model proposes; it never authorizes.
+
 ## 4. Observe Ground Truth Between Meaningful Actions
 
-An agent works in a changing environment. Do not let it plan indefinitely from stale assumptions.
+An agent works in a changing environment. **Do not let it plan indefinitely from stale assumptions.**
 
-Before consequential actions, validate current authoritative state and applicable policy.
+**Before consequential actions, validate current authoritative state** and applicable policy.
 
-After an action, observe the environment or authoritative system and verify the effect that matters before treating the step as complete.
+**After an action, verify the effect that matters** — observe the environment or authoritative system — before treating the step as complete.
 
 A tool returning `"success": true` proves only what the tool contract says it proves. It does not automatically prove that the user's intended external outcome occurred.
 
@@ -120,7 +132,7 @@ For consequential loops, each stage writes a signed receipt — who acted, what 
 
 ## 5. Treat Model and Tool Outputs as Evidence, Not Authority
 
-Model confidence is not proof. Retrieved text is not policy. Tool output is not automatically trusted simply because it came through a typed protocol.
+**Model confidence is not proof.** Retrieved text is not policy. Tool output is not automatically trusted simply because it came through a typed protocol.
 
 Audit tool definitions on install and after every update (MCP-SECURITY.md, "Audit tool definitions"): a compromised tool description can instruct the agent to re-emit secrets — runtime delimiting doesn't cover the description.
 
@@ -138,7 +150,7 @@ Do not allow one untrusted tool result to grant authority to another tool call.
 
 ## 6. Context Is a Budget and a Trust Boundary
 
-More context is not automatically better context.
+**More context is not automatically better context.**
 
 Provide the model with the information needed for the current decision while preserving enough provenance to distinguish:
 
@@ -149,7 +161,7 @@ Provide the model with the information needed for the current decision while pre
 * tool results;
 * assumptions.
 
-Long-running agents should curate or compact context deliberately rather than accumulating every historical token indefinitely. Preserve load-bearing decisions and evidence; discard irrelevant mechanics.
+Long-running agents curate or compact context deliberately rather than accumulating every historical token indefinitely. Preserve load-bearing decisions and evidence; discard irrelevant mechanics.
 
 Do not solve an information-architecture problem by dumping an entire repository, ticket history, database record, or conversation into the model context.
 
@@ -159,9 +171,9 @@ Do not solve an information-architecture problem by dumping an entire repository
 
 Conventional unit and integration tests verify deterministic machinery around the model. They do not prove the agent behaves reliably across realistic inputs.
 
-For load-bearing agent behavior, maintain evaluations that exercise representative tasks, important edge cases, and known failure modes.
+**For load-bearing agent behavior, maintain evaluations** that exercise representative tasks, important edge cases, and known failure modes.
 
-Define what success means before comparing models or prompts.
+**Define what success means before comparing models or prompts.**
 
 Where relevant, evaluate:
 
@@ -187,7 +199,7 @@ Record every eval run per LOGGING.md ("Eval-reproducibility record") — corpus 
 
 ## 8. Preserve Human Control at Consequential Boundaries
 
-Human involvement should be purposeful, not ceremonial.
+**Make human involvement purposeful, not ceremonial.**
 
 Do not require approval for every harmless read simply to claim a "human in the loop." Place approval where it changes risk: before a consequential action whose target, scope, or effect the human can meaningfully review.
 
@@ -200,19 +212,23 @@ Escalate when:
 * an action crosses a defined risk threshold;
 * the system cannot establish a safe basis to continue.
 
-Approval should describe the actual operation being authorized. If the target, scope, environment, cost, or impact materially changes afterward, re-evaluate the approval rather than treating the earlier consent as universal.
+**Approval describes the actual operation being authorized.** If the target, scope, environment, cost, or impact materially changes afterward, re-evaluate the approval rather than treating the earlier consent as universal.
+
+| Thought | Reality |
+|---|---|
+| "We have human-in-the-loop" | Approval on every harmless read is ceremony, not control. Approval belongs where it changes risk: the consequential action a human can actually review. |
 
 **The common failure:** asking for broad approval at workflow start and then allowing the agent to choose a materially different destructive action several steps later.
 
 ## 9. Orchestrating Multiple Agents
 
-When one agent dispatches others, the orchestrator owns verification. A subagent's report is a claim, not a fact.
+When one agent dispatches others, **the orchestrator owns verification.** A subagent's report is a claim, not a fact.
 
 **Verify independently, in-band.** After a worker completes, check the resulting state directly — the files changed, the tests run, the artifacts produced — rather than trusting the worker's summary. A worker that reports success from the wrong directory, or self-certifies its own review, is caught only by checking ground truth.
 
 **Make handoffs file-backed.** Do not rely on transcript inheritance between stages: each stage writes its output to a named file, and the next stage is pointed at that file. A verifier that cannot see the evidence must refuse to fabricate findings from hints.
 
-**Pin context; do not describe it.** Give a worker the literal absolute paths it should touch, not a "work from this directory" instruction it must translate. Where location matters, require the worker's first action to confirm its actual location before touching anything.
+**Pin context; do not describe it.** Give a worker the literal absolute paths it will touch, not a "work from this directory" instruction it must translate. Where location matters, require the worker's first action to confirm its actual location before touching anything.
 
 **Keep role separation real.** A reviewer that also implemented the change is not an independent reviewer. Adversarial review works only when the reviewer has no stake in the outcome — separate the roles, and treat self-approval as a process failure even when the underlying work is correct.
 

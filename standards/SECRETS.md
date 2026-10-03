@@ -1,14 +1,14 @@
 ---
 title: SECRETS.md — Ephemeral by Default
-version: "2.5"
+version: "2.6"
 scope: Secrets management: storage, rotation, agent exposure
-consult_when: "When handling credentials, API keys, or tokens - storing, passing, logging, or reviewing code that touches them."
-last_reviewed: 2026-09-29
+consult_when: "When handling credentials, API keys, or tokens — storing, passing, logging, or reviewing code that touches them. Especially when an agent is about to touch credentials: 'the agent needs the key just for this run'."
+last_reviewed: 2026-10-03
 ---
 
 # SECRETS.md — Ephemeral by Default
 
-Secrets (API keys, tokens, passwords, certificates, connection strings) live in a secrets manager, rotate on short schedules, and never touch version control or an agent's environment.
+**Core principle:** secrets (API keys, tokens, passwords, certificates, connection strings) live in a secrets manager, rotate on short schedules, and never touch version control or an agent's environment.
 
 **Why this file exists.** In March 2026, a backdoored `litellm` build (v1.82.7/1.82.8, CVE-2026-33634) auto-executed at Python startup and harvested environment variables, SSH keys, cloud credentials, and shell history from every host it touched. Long-lived credentials sitting in a developer's env or history were in the exfiltration set. This standard keeps yours out of that set.
 

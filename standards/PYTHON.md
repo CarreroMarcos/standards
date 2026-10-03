@@ -1,16 +1,18 @@
 ---
 title: Python Standard
-version: "1.6"
+version: "1.7"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
-consult_when: "When writing Python - style, typing, async, errors, tooling, or performance."
-last_reviewed: 2026-09-29
+consult_when: "When writing Python and reaching for the old habits — bare `except`, mutable defaults, sync calls in async code, 'just pip install it' — or when the code runs but a Python review would flag it."
+last_reviewed: 2026-10-03
 ---
 
 # Python Standard
 
 Operational Python rules for agents. Language-neutral principles live in `ENGINEERING_PRINCIPLES.md`; per-task quality rules in `CODE-QUALITY.md`. This file owns the Python-specific how: the tooling contract, style, typing, async, errors, packaging, and performance.
 
-Every rule carries its why. Read the why before the rule — the point is that you understand the decision well enough to own it, not that you skim a checklist.
+**Core principle:** explicit, typed, boring Python — the kind the type checker, the linter, and the runtime all agree with.
+
+Every rule carries its why — read it, don't skim past it. The point is that you understand the decision well enough to own it, not that you check a box.
 
 ## Sections
 
@@ -34,7 +36,7 @@ Every rule carries its why. Read the why before the rule — the point is that y
 
 ## 1. The tooling contract
 
-The project names its tools once, in `AGENTS.md`, and every agent uses them. A conflicting project instruction overrides the default; the linter's opinion never does.
+**The project names its tools once, in `AGENTS.md`, and every agent uses them.** A conflicting project instruction overrides the default; the linter's opinion never does.
 
 - **uv runs everything.** `uv run` for execution, `uv.lock` committed for deployables, CI installs with `--locked`. The lockfile is what makes "tests pass" mean something — without it the dependency set drifts between runs and a green suite proves nothing about the next install. PEP 735 dependency groups replace ad-hoc `requirements-dev.txt`.
 - **Ruff is the linter and the formatter.** One tool replaces black/isort/flake8/pylint — say so explicitly in `AGENTS.md` ("do not call Black, flake8, isort, or pylint") so agents stop reaching for the old stack.
@@ -102,6 +104,10 @@ assert user_id, "user_id is required"
 if not user_id:
     raise ValueError("user_id is required")
 ```
+
+| Thought | Reality |
+|---|---|
+| "It's only a sanity check" | Under `python -O` the check doesn't exist. Validation that protects a boundary must survive optimization. |
 
 - **Don't shadow builtins.** `list`, `dict`, `id`, `type`, `input` as variable names break the reader's mental model and any later code in the scope that needs the real builtin. Name it `items`, `payload`, `user_id` — don't wait for the linter to flag it.
 
@@ -171,7 +177,7 @@ These failure modes are easy to write, hard to see in review, and often invisibl
 
 **Keep the event loop responsive during blocking or unbounded work.** Inside `async def`, make network, database, process, and large-disk waits awaitable. A synchronous DB driver, a `requests` call, or `time.sleep` stops every concurrent task in the process. The symptom is throughput that collapses under concurrency while each individual request looks fine in isolation.
 
-**The proportionality rule:** size the execution strategy to the work and its bound. Run network and unbounded blocking I/O through awaitable paths. Run small, bounded, local work — a startup config read, a few-kilobyte file read outside the hot path, an in-memory transform — inline when the cost of offloading exceeds the blocking risk. Treat unknown-size files and paths that might be network mounts as unbounded.
+**The proportionality rule:** size the execution strategy to the work and its bound. Run network and unbounded blocking I/O through awaitable paths. Run small, bounded, local work — a startup config read, a few-kilobyte file read outside the hot path, an in-memory transform — inline when the cost of offloading exceeds the blocking risk. Treat unknown-size files and suspected network mounts as unbounded.
 
 Use `asyncio.to_thread` for unavoidable synchronous **I/O-bound** work, such as a blocking library with no async API.
 
@@ -199,9 +205,13 @@ A call inheriting the request deadline and its client's configured timeout is al
 
 When a call is genuinely unbounded, fix it at layer 1 or 2 before reaching for layer 3.
 
-**When layer 1 is not available yet** — no request context or deadline object — configure the bound on the client (layer 2) and note the budget needs end-to-end wiring; a locally guessed five seconds buried three frames deep is harder to find and fix later than an unwired budget you explicitly identified. Establish the deadline convention as its own task, separate from unrelated changes, unless the change is itself the budget-tuning work the plan calls for.
+**When layer 1 is not available yet** — no request context or deadline object — configure the bound on the client (layer 2) and note the budget needs end-to-end wiring; a locally guessed five seconds buried three frames deep is harder to find and fix later than an unwired budget you explicitly identified. Establish the deadline convention as its own task, separate from unrelated changes. When the change itself is the budget-tuning work the plan calls for, that's the task — not an exception.
 
 **The common failure:** wrapping every `await` in `asyncio.timeout` with a locally invented number. Nested deadlines disagree, the innermost one wins by accident, the budget becomes fiction, and a slow dependency trips a two-second inner timeout while the caller was willing to wait thirty.
+
+| Thought | Reality |
+|---|---|
+| "This call needs a timeout" | It already has two — the request deadline and the client default. A third invented number makes the budget fiction. |
 
 ## 5. Errors and exceptions
 
@@ -326,7 +336,7 @@ The readability rules are Python's rendering of CODE-QUALITY.md §8 (canonical) 
 
 **Unpack to name, not to index.** `x, y = point` beats `point[0], point[1]` — the names document what each position *means* at the use site, so the reader never holds the layout in their head. Unpacking is naming; indexing is a memory test.
 
-**One thing per function, one level of abstraction.** A function small enough that its whole idea fits in your head at once — roughly under 50 lines, files under ~800. Long functions mix abstraction levels (policy next to byte-twiddling), which makes the bug surface the entire function. The top function should read as an outline; details live one call down.
+**One thing per function, one level of abstraction.** A function small enough that its whole idea fits in your head at once — roughly under 50 lines, files under ~800. Long functions mix abstraction levels (policy next to byte-twiddling), which makes the bug surface the entire function. The top function reads as an outline; details live one call down.
 
 **Guard clauses beat nesting.** Validate inputs and handle edge cases first; keep the happy path at the left margin. Each nesting level doubles the reader's mental stack. Cap nesting at ~4 — past that, extract.
 

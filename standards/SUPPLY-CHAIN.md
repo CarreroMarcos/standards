@@ -1,12 +1,14 @@
 ---
 title: Supply Chain Security
-version: "2.7"
+version: "2.8"
 scope: Supply chain security: dependencies, provenance, SBOM
-consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code."
-last_reviewed: 2026-09-29
+consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code — 'it's just a patch bump', 'the model recommended this package'."
+last_reviewed: 2026-10-03
 ---
 
 # Supply Chain Security
+
+**Core principle:** a familiar name is not evidence of a clean artifact — resolve every suggested package at the registry before installing.
 
 Applies to: adding, upgrading, or regenerating dependencies in AI-assisted development.
 
