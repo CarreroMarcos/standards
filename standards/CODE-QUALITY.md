@@ -1,9 +1,9 @@
 ---
 title: Code Quality
-version: "2.6"
+version: "2.7"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When writing or refactoring code and you want the per-task quality rules."
-last_reviewed: 2026-09-29
+last_reviewed: 2026-10-02
 ---
 
 # Code Quality
@@ -20,9 +20,9 @@ boilerplate — nothing in this repo reads them.
 
 - **1. Prove Completion, Don't Claim It** — every "done" carries executed evidence, not assertion
 - **2. Be Conservative with Files** — don't create files unasked
-- **3. Handle Errors Explicitly** — no silent swallowing; errors surface with context
+- **3. Handle Errors Explicitly** — no silent swallowing; errors surface with context; handle at the boundary, not everywhere
 - **4. Comment the WHY, Keep Provenance Honest** — why-not-what; no comments on absent code
-- **5. Keep Changes Surgical and Small** — the smallest diff that does the job
+- **5. Keep Changes Surgical and Small** — the smallest diff that does the job; simplest solution at stated scale; stdlib before packages
 - **6. State Assumptions, Verify Goals** — say what you assumed, check what you achieved
 - **7. Dead Code** — flagging is always safe; deleting needs proof
 - **8. Naming, Function Size, and Control-Flow Discipline** — naming, guard clauses, rule of three
@@ -80,6 +80,34 @@ except ValueError as e:
 
 → PYTHON.md §5 "Errors and exceptions" (structured exception hierarchies, `raise DomainError(...) from err`, one retry wrapper per boundary).
 
+**Handle errors at the boundary, not everywhere.** Error handling belongs where
+the program meets the untrusted or unreliable: user input, file I/O, network
+calls, IPC, subprocesses. Internal deterministic paths — pure functions,
+in-memory transforms on already-validated data — stay clean and direct. Do not
+armor against impossible failures: a `try/except` around code that cannot fail
+is not robustness, it is noise that hides the handling that matters.
+
+```python
+# ❌ BAD - Armoring the deterministic path
+try:
+    total = sum(items)          # items: list[int], already validated
+except Exception:
+    total = 0                   # hides real bugs, "handles" nothing
+
+# ✅ GOOD - Handling at the boundary, clean inside
+raw = request.json()            # external boundary: validate and handle
+try:
+    items = [int(x) for x in raw["items"]]
+except (KeyError, ValueError) as e:
+    raise BadRequest(f"invalid items payload: {e}") from e
+total = sum(items)              # deterministic from here: no armor needed
+```
+
+A failure worth handling is a *credible* one: observed here, reported in
+comparable systems, or following from a concrete mechanism — not merely
+imaginable.
+→ ENGINEERING_PRINCIPLES.md §1 "Simplicity vs. resilience mechanisms" (credible failures).
+
 ## 4. Comment the WHY, Keep Provenance Honest
 
 **Comment the WHY, not the WHAT.** A comment must trace to observable behavior,
@@ -110,6 +138,29 @@ adjacent code, don't refactor what isn't broken, match existing style.
 If 200 lines could be 50, rewrite it — when the code your task already touches could be much smaller, shrink it as part of the change. Don't go rewriting modules your diff doesn't otherwise need. Minimum code that solves the problem,
 nothing speculative.
 → ENGINEERING_PRINCIPLES.md §1 "Design Principles" (Beck's design rules).
+
+**Solve the stated problem at its stated scale.** Choose the simplest, most
+readable solution that fulfills the immediate requirement — no speculative
+generality, no framework for a script, no plugin system for two callers.
+Generalize for the second caller that exists, not the one you imagine.
+Over-engineering is a defect: 1000 lines where 300 would do is not thoroughness,
+it is bug surface.
+
+```python
+# ❌ BAD - Speculative machinery for one caller
+class ReportStrategy(ABC): ...
+class PdfReportStrategy(ReportStrategy): ...   # the only strategy that will ever exist
+
+# ✅ GOOD - The direct solution
+def render_pdf_report(data): ...
+```
+
+**Standard library before packages.** Reach for the standard library — and
+native platform APIs (`fetch`, DOM methods) — before adding an external
+package. A new dependency is a supply-chain, upgrade, and audit cost: it must
+earn its place. Use one when the stdlib genuinely cannot do the job, or the
+package removes real, non-trivial complexity. `pip install` is not step one.
+→ SUPPLY-CHAIN.md (vetting a new dependency before adding it).
 
 Work in small incremental changes — easier to review and debug.
 → ENGINEERING_PRINCIPLES.md §6 (smallest change).
