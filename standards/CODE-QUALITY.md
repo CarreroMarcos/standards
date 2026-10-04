@@ -148,6 +148,8 @@ if installation is None:
     return None
 ```
 
+If the skip rate itself goes anomalous — every item suddenly "bad" — that's a systemic failure, not per-item noise. Alert on skip volume and let the overload path own it (→ ARCHITECTURE.md §15), rather than warning-logging your way through an outage.
+
 → ENGINEERING_PRINCIPLES.md §1 "Simplicity vs. resilience mechanisms" (credible failures).
 
 ## 4. Comment the WHY, Keep Provenance Honest

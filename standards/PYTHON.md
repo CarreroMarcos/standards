@@ -524,8 +524,10 @@ def cmd_stats(...):
 batch_size = options.get("deletions.batch-size", 1000)
 
 # Good: the registered default is the default
-batch_size = options.get("deletions.batch-size")
+batch_size: int = options.get("deletions.batch-size")
 ```
+
+The contract: registration requires a default, so the call returns the registered type — don't annotate the result `Optional` out of habit. The "missing default" case you're guarding against cannot happen; the duplicate is the only new failure mode.
 
 ## 15. Runtimes: Lambda and long-lived servers
 
