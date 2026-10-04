@@ -1,9 +1,9 @@
 ---
 title: Python Standard
-version: "1.7"
+version: "1.8"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python and reaching for the old habits — bare `except`, mutable defaults, sync calls in async code, 'just pip install it' — or when the code runs but a Python review would flag it."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-04
 ---
 
 # Python Standard
@@ -158,6 +158,18 @@ def render(shape: Circle | Square) -> str:
 ```
 
 - `TypeIs` (3.13+) over `TypeGuard` for narrowing functions — it informs the checker on the negative branch too.
+- **Narrow with `isinstance()`, never `hasattr()`.** `hasattr()` tests capability, not type — for `str | None` it answers the wrong question, and the checker can't narrow on it. `isinstance()` tells both the reader and the checker what the value is.
+
+```python
+# Bad: duck-typing a union
+x: str | None = maybe_name()
+if hasattr(x, "replace"):
+    x = x.replace("e", "a")
+
+# Good: the checker narrows, the reader knows
+if isinstance(x, str):
+    x = x.replace("e", "a")
+```
 - `ParamSpec`/`TypeVar` for decorators (`def deco[**P, R](f: Callable[P, R]) -> Callable[P, R]`), `Unpack[TypedDict]` for `**kwargs`, `@override` (PEP 698) when overriding — the checker verifies the signature actually matches the parent.
 - `Never`/`NoReturn` for functions that never return (raise-only helpers, `sys.exit` wrappers).
 
@@ -504,6 +516,16 @@ def cmd_stats(...):
 **One typed settings object, built once at startup, passed explicitly.** `pydantic-settings` `BaseSettings`: typed, validated, env-sourced. Scattered `os.environ[...]` reads fail at 3 AM with `KeyError` deep in a code path; a settings object fails once, at startup, with a precise validation error naming the variable. Typing documents every knob in one place. Secrets ride as `SecretStr` so they redact in logs and tracebacks.
 
 **Hide inputs at sensitive boundaries.** pydantic's `ValidationError.errors()` returns structured `{type, loc, msg, input}` — machine-readable, which is good — but at sensitive boundaries use `errors(include_input=False)` so secrets and PII never echo back in error payloads and logs. (Also noted for `SECRETS.md`.)
+
+**Don't re-supply what the framework guarantees.** If a registry requires a default at registration time, passing your own default at the call site doesn't add safety — it adds a second source of truth that can drift from the real one. The "missing default" case you're guarding against cannot happen; the duplicate is the only new failure mode.
+
+```python
+# Bad: two sources of truth for one knob
+batch_size = options.get("deletions.batch-size", 1000)
+
+# Good: the registered default is the default
+batch_size = options.get("deletions.batch-size")
+```
 
 ## 15. Runtimes: Lambda and long-lived servers
 

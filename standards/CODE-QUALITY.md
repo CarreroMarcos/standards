@@ -1,9 +1,9 @@
 ---
 title: Code Quality
-version: "2.8"
+version: "2.9"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-04
 ---
 
 # Code Quality
@@ -132,6 +132,21 @@ imaginable.
 |---|---|
 | "Better safe than sorry" | A `try/except` around code that cannot fail hides real bugs — safety theater, not safety. |
 | "What if something unexpected comes in" | Handle it at the boundary where it's credible, not three layers deep where it isn't. |
+
+**In per-item paths, a permanently bad item gets logged and skipped — never raised through the loop.** When a handler processes a stream of items (webhook events, queue messages, digest loops) and one item is malformed beyond recovery, log it at warning with the item's identity and continue. A raise in a per-item hot path multiplies by volume: one bad payload shape in a continuously-firing handler becomes hundreds of thousands of errors. Raise when something downstream owns the failure (a queue's dead-letter, a retry budget); skip when the loop itself is the last owner.
+
+```python
+# ❌ BAD - one poison item aborts the batch, then fires again on retry
+installations = lookup_installations(slug)
+if installations.count() != 1:
+    raise ValueError(f"Expected 1 installation for {slug}")
+
+# ✅ GOOD - the bad item is logged and skipped; the stream continues
+installation = lookup_installations(slug).first()
+if installation is None:
+    logger.warning("app.installation_not_found", extra={"slug": slug})
+    return None
+```
 
 → ENGINEERING_PRINCIPLES.md §1 "Simplicity vs. resilience mechanisms" (credible failures).
 

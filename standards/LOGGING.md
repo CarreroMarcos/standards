@@ -1,9 +1,9 @@
 ---
 title: Logging Standard
-version: "2.6"
+version: "2.7"
 scope: Logging: what to log, levels, structure, retention
 consult_when: "When adding or changing log/telemetry statements — or deciding whether a field is safe to log ('is this secret-adjacent?')."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-04
 ---
 
 # Logging Standard
@@ -12,7 +12,7 @@ last_reviewed: 2026-10-03
 
 ## Sections
 
-- **Rules** — structured format, honest levels, request-scoped context, redaction before rendering, libraries emit records
+- **Rules** — structured format, honest levels, exception logging, request-scoped context, redaction before rendering, libraries emit records
 - **Example** — the canonical logging setup
 - **What Never to Log** — secrets and everything adjacent
 
@@ -28,6 +28,7 @@ last_reviewed: 2026-10-03
    - **Queue workers: the unit is one message, not one invocation.** A Lambda invocation may process a batch; bind `message_id` (and entity IDs like `pr_number`) at message receipt and clear before the next message. Binding at invocation scope leaks message A's IDs into message B's lines — the exact bug this rule warns about, caused by following it literally.
 6. **Log identifiers, not objects** — a lazy repr can trigger queries inside the log call. Redaction runs *before* rendering: the secret-scrubbing step sits ahead of the formatter, so a secret never reaches the string that gets emitted.
 7. **Libraries emit records; applications own policy** — a library attaches a NullHandler and nothing else: never configure handlers, levels, or formatting in library code. Hierarchical logger names (`getLogger(__name__)`); lazy arguments so disabled levels cost nothing.
+8. **Inside an `except` block, log with `logger.exception()`, never `logger.error()`.** `exception()` attaches the traceback; `error()` inside a handler discards the one artifact that would diagnose the failure. The message names the event; the traceback names the cause.
 
 **Format by environment:** structured JSON in production (queryable in CloudWatch/Loki); human-readable console rendering in dev. Serverless: structured JSON to stdout.
 
