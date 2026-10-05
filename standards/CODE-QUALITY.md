@@ -171,6 +171,56 @@ for user in users:
     process(user)
 ```
 
+**Write for the reader who never saw your session.** No comments that narrate
+the conversation: `# changed per review feedback`, `# v2 — simpler after
+iteration`, `# as discussed`. Maintainer-facing prose — code comments, commit
+messages, PR descriptions — must read clean for someone with no access to the
+session that produced it. Issue references are still fine (`# Workaround for
+GH-123`): they name a traceable artifact, not a conversation.
+
+```python
+# ❌ BAD - Leaks session history
+# Refactored per user's request to be simpler
+
+# ✅ GOOD - States behavior and rationale
+# Single pass: input fits in memory and ordering is stable, so no
+# chunking needed
+```
+
+**Explain the constraint, not the compatibility.** Past-facing wording like
+"preserve the existing behavior" is a why-shaped hole — it names no
+constraint a reader can check. Write the actual backwards-compatibility
+constraint the code honors, in the present tense. Genuinely historical notes
+("removed in v3 because X") are fine when a future reader needs the history;
+the target is lazy compatibility hand-waving.
+
+```python
+# ❌ BAD - Past-facing, names no checkable constraint
+# Preserve existing behavior for backwards compatibility
+accept_missing_version = True
+
+# ✅ GOOD - Names the constraint
+# Pre-2.0 clients omit the version header; treat missing as v1
+# or their sync breaks
+accept_missing_version = True
+```
+
+**Every suppressed guard carries its safety case.** A lint or type-check
+suppression (`# noqa`, `# type: ignore`, `eslint-disable-next-line`,
+clippy `#[expect]`) is a claim that the guarded-against case cannot bite —
+write the claim down, inline, or the suppression is a lie waiting to rot.
+Project-wide disables belong in the linter config with their rationale there,
+not scattered as bare per-line suppressions.
+
+```python
+# ❌ BAD - Bare suppression
+result = legacy_parse(data)  # type: ignore
+
+# ✅ GOOD - Suppression with its safety case
+result = legacy_parse(data)  # type: ignore[no-untyped-call] - legacy_parse
+                             # is untyped by design; input schema is validated above
+```
+
 → ENGINEERING_PRINCIPLES.md §2 "Code Readability & Documentation" (provenance of rationale).
 
 ## 5. Keep Changes Surgical and Small
