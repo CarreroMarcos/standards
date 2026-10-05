@@ -35,21 +35,21 @@ last_reviewed: 2026-10-03
 
 For significant systems, identify the business-critical flows first:
 
-* what outcome the flow exists to produce;
-* what authoritative state it reads or changes;
-* which dependencies participate;
-* what must remain available;
-* what may degrade;
-* what failure would be unacceptable.
+- what outcome the flow exists to produce;
+- what authoritative state it reads or changes;
+- which dependencies participate;
+- what must remain available;
+- what may degrade;
+- what failure would be unacceptable.
 
 Then identify important failure modes for those flows. For each meaningful failure, understand:
 
-* **cause or dependency** — what can fail;
-* **impact** — what outcome becomes incorrect or unavailable;
-* **blast radius** — what else is affected;
-* **detection** — how the failure becomes observable;
-* **safe behavior** — fail, degrade, queue, reject, retry, or stop;
-* **recovery** — how correct operation is restored.
+- **cause or dependency** — what can fail;
+- **impact** — what outcome becomes incorrect or unavailable;
+- **blast radius** — what else is affected;
+- **detection** — how the failure becomes observable;
+- **safe behavior** — fail, degrade, queue, reject, retry, or stop;
+- **recovery** — how correct operation is restored.
 
 Prioritize failure modes by business impact and credible likelihood — credible means observed here, reported in comparable systems, or following from a concrete mechanism, not merely imaginable. Do not engineer every hypothetical failure equally.
 
@@ -83,16 +83,16 @@ Introduce separately deployable services when independent scaling, ownership, se
 
 For shared or durable state, explicitly identify:
 
-* **source of truth** — which representation is authoritative;
-* **ownership** — who may make the authoritative decision or write;
-* **durability** — what must survive process, host, zone, or regional failure;
-* **consistency** — when readers must observe a write and where eventual consistency is acceptable;
-* **concurrency** — what happens when multiple actors act on the same state;
-* **ordering** — whether event or mutation order is meaningful;
-* **retry and replay** — what happens when work is repeated;
-* **identity and deduplication** — how the same logical operation is recognized;
-* **retention** — how long the state remains valid;
-* **recovery** — how authoritative state is reconstructed after failure.
+- **source of truth** — which representation is authoritative;
+- **ownership** — who may make the authoritative decision or write;
+- **durability** — what must survive process, host, zone, or regional failure;
+- **consistency** — when readers must observe a write and where eventual consistency is acceptable;
+- **concurrency** — what happens when multiple actors act on the same state;
+- **ordering** — whether event or mutation order is meaningful;
+- **retry and replay** — what happens when work is repeated;
+- **identity and deduplication** — how the same logical operation is recognized;
+- **retention** — how long the state remains valid;
+- **recovery** — how authoritative state is reconstructed after failure.
 
 Choose a database, queue, cache, event stream, object store, or workflow engine only after the required semantics are understood.
 
@@ -114,15 +114,15 @@ Write queries the index can answer: filter on indexed columns, and check the que
 
 **Before adding retries, circuit breakers, fallbacks, queues, caches, or similar mechanisms, define the dependency contract:**
 
-* **Timeout budget:** set the total time the caller is willing to wait, including retries, rather than the dependency's response time alone.
-* **Retryability and idempotency:** classify which failures are retryable and whether repeating the operation can duplicate side effects.
-* **Retry ownership:** avoid uncontrolled retries at multiple layers; identify which layer owns retry behavior.
-* **Retry budget:** bound the total attempts or retry volume so a distressed dependency does not receive an expanding wave of retries.
-* **Capacity and overload behavior:** define useful concurrency limits, queue bounds, admission control, backpressure, or load shedding where the dependency can be saturated.
-* **Cancellation:** define whether abandoned work can be stopped, and whether it must be.
-* **Fallback correctness:** define the fallback's return value and whether it gives the caller a safe basis to proceed.
-* **Observability:** emit enough telemetry to show when retries fire, queues grow, admission rejects, circuits open, or fallbacks engage.
-* **User-visible failure behavior:** define the user's experience when attempts fail and make the result actionable.
+- **Timeout budget:** set the total time the caller is willing to wait, including retries, rather than the dependency's response time alone.
+- **Retryability and idempotency:** classify which failures are retryable and whether repeating the operation can duplicate side effects.
+- **Retry ownership:** avoid uncontrolled retries at multiple layers; identify which layer owns retry behavior.
+- **Retry budget:** bound the total attempts or retry volume so a distressed dependency does not receive an expanding wave of retries.
+- **Capacity and overload behavior:** define useful concurrency limits, queue bounds, admission control, backpressure, or load shedding where the dependency can be saturated.
+- **Cancellation:** define whether abandoned work can be stopped, and whether it must be.
+- **Fallback correctness:** define the fallback's return value and whether it gives the caller a safe basis to proceed.
+- **Observability:** emit enough telemetry to show when retries fire, queues grow, admission rejects, circuits open, or fallbacks engage.
+- **User-visible failure behavior:** define the user's experience when attempts fail and make the result actionable.
 
 Require deduplication safeguards before automatically retrying non-idempotent writes.
 
@@ -194,14 +194,14 @@ A local scratch or documentation repository that produces no released artifact d
 
 Critical flows expose the telemetry required to answer those questions. Depending on the system, that includes:
 
-* meaningful health and readiness signals;
-* structured logs;
-* metrics tied to user or business outcomes as well as infrastructure;
-* distributed traces where a request crosses meaningful boundaries;
-* correlation or request identifiers that reconstruct one flow;
-* queue depth, retry, rejection, saturation, and degraded-mode signals;
-* actionable error classification;
-* discoverable ownership and recovery guidance.
+- meaningful health and readiness signals;
+- structured logs;
+- metrics tied to user or business outcomes as well as infrastructure;
+- distributed traces where a request crosses meaningful boundaries;
+- correlation or request identifiers that reconstruct one flow;
+- queue depth, retry, rejection, saturation, and degraded-mode signals;
+- actionable error classification;
+- discoverable ownership and recovery guidance.
 
 Observe outcomes, not only machinery. CPU at 40% does not prove releases are progressing, orders are completing, or an agent is producing valid decisions.
 
@@ -217,12 +217,12 @@ A search outage may leave checkout available. An analytics failure does not norm
 
 Do **not** convert any of the following into stale, guessed, or apparently successful results merely to keep the flow moving:
 
-* missing or failed authorization;
-* unavailable authoritative state required for correctness;
-* failed writes whose outcome is uncertain;
-* schema or contract uncertainty;
-* security or policy checks that could not be completed;
-* safety-critical or otherwise consequential decisions whose basis is unavailable.
+- missing or failed authorization;
+- unavailable authoritative state required for correctness;
+- failed writes whose outcome is uncertain;
+- schema or contract uncertainty;
+- security or policy checks that could not be completed;
+- safety-critical or otherwise consequential decisions whose basis is unavailable.
 
 Make degraded mode observable and exercise it periodically when it is important enough to depend on. Rarely used fallback code is still production code.
 
@@ -234,16 +234,16 @@ Make degraded mode observable and exercise it periodically when it is important 
 
 Depending on the actual failure mode, mechanisms may include:
 
-* bounded concurrency;
-* bounded queues;
-* admission control;
-* load shedding;
-* rate limits and quotas;
-* randomized exponential backoff;
-* retry budgets;
-* timeouts;
-* circuit breakers;
-* degraded responses.
+- bounded concurrency;
+- bounded queues;
+- admission control;
+- load shedding;
+- rate limits and quotas;
+- randomized exponential backoff;
+- retry budgets;
+- timeouts;
+- circuit breakers;
+- degraded responses.
 
 Choose the mechanism from the dependency contract and capacity model rather than applying the entire catalog.
 

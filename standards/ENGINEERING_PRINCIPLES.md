@@ -259,9 +259,9 @@ Use three concrete instances as the default evidence threshold. When you have tw
 
 **Scope for this rule.** The Rule of Three trades a maintenance cost — duplication — against a design risk — the wrong shape. Use an earlier abstraction when duplication threatens correctness or security:
 
-* **Published contracts** — a schema, message envelope, event shape, or API consumed by another team or service. Designed before consumers exist, by agreement rather than observation; Contract-First (ARCHITECTURE.md §8) governs instead. See §0.
-* **Security-sensitive logic** — authentication, authorization checks, signing, secret redaction, input sanitization. A second copy is a second thing to get wrong and a second thing to forget when patching. One implementation, from the first duplication.
-* **Logic that must stay behaviorally identical** — idempotency-key derivation, fingerprint and dedup hashing, serialization formats, anything where two implementations silently diverging is a correctness bug rather than an inconsistency. If "these must always agree" is a requirement, express it as one function.
+- **Published contracts** — a schema, message envelope, event shape, or API consumed by another team or service. Designed before consumers exist, by agreement rather than observation; Contract-First (ARCHITECTURE.md §8) governs instead. See §0.
+- **Security-sensitive logic** — authentication, authorization checks, signing, secret redaction, input sanitization. A second copy is a second thing to get wrong and a second thing to forget when patching. One implementation, from the first duplication.
+- **Logic that must stay behaviorally identical** — idempotency-key derivation, fingerprint and dedup hashing, serialization formats, anything where two implementations silently diverging is a correctness bug rather than an inconsistency. If "these must always agree" is a requirement, express it as one function.
 
 Ordinary maintenance concerns remain subject to the three-instance threshold. The exceptions above apply when duplication threatens correctness or security.
 
@@ -433,11 +433,11 @@ Ask when the decision cannot be safely resolved later; otherwise state the assum
 
 Do not manufacture certainty from incomplete evidence. Distinguish:
 
-* verified fact;
-* explicit requirement;
-* architectural decision;
-* reasonable working assumption;
-* unresolved dependency.
+- verified fact;
+- explicit requirement;
+- architectural decision;
+- reasonable working assumption;
+- unresolved dependency.
 
 This distinction matters particularly when an AI agent is doing the analysis (AGENTIC-DESIGN.md §5).
 
@@ -504,12 +504,12 @@ Credential mechanics: `SECRETS.md`.
 
 For database changes, document:
 
-* **Migration safety:** how the migration runs while old and new code may both be live.
-* **Rollback or forward-fix strategy:** the recovery path for a partially applied migration.
-* **Locking and performance impact:** the effect on high-traffic tables and the online execution strategy.
-* **Data-backfill considerations:** how existing data is populated when the migration adds or changes state.
-* **Compatibility window:** when applicable, how old and new readers/writers coexist.
-* **Verification:** how the migrated data and application behavior are proven correct.
+- **Migration safety:** how the migration runs while old and new code may both be live.
+- **Rollback or forward-fix strategy:** the recovery path for a partially applied migration.
+- **Locking and performance impact:** the effect on high-traffic tables and the online execution strategy.
+- **Data-backfill considerations:** how existing data is populated when the migration adds or changes state.
+- **Compatibility window:** when applicable, how old and new readers/writers coexist.
+- **Verification:** how the migrated data and application behavior are proven correct.
 
 For consequential migrations, correctness takes precedence over making rollback artificially easy. Some data transformations move forward through a verified repair rather than reversing through a lossy migration.
 
@@ -575,11 +575,11 @@ Classify work requiring an unconfirmed authentication pattern, unresolved author
 
 Before building across a boundary, know:
 
-* who owns the dependency;
-* what contract is authoritative;
-* which decision remains unresolved;
-* which test or fixture proves the seam;
-* whether useful work can proceed without guessing.
+- who owns the dependency;
+- what contract is authoritative;
+- which decision remains unresolved;
+- which test or fixture proves the seam;
+- whether useful work can proceed without guessing.
 
 This keeps integrations grounded in reviewed behavior.
 
@@ -587,13 +587,13 @@ This keeps integrations grounded in reviewed behavior.
 
 The full workflow is for work with at least one of these properties:
 
-* It creates or changes a contract another team or independently deployed service consumes.
-* It changes persisted state, a schema, consistency semantics, or a migration path.
-* It changes a critical flow's reliability or failure behavior.
-* It touches authentication, authorization, secrets, trust boundaries, or privileged operations.
-* The agent takes actions beyond read-only analysis, or the change expands what an agent may do.
-* It is irreversible or expensive to reverse.
-* The requirement is genuinely ambiguous — reasonable engineers would build materially different systems from the description.
+- It creates or changes a contract another team or independently deployed service consumes.
+- It changes persisted state, a schema, consistency semantics, or a migration path.
+- It changes a critical flow's reliability or failure behavior.
+- It touches authentication, authorization, secrets, trust boundaries, or privileged operations.
+- The agent takes actions beyond read-only analysis, or the change expands what an agent may do.
+- It is irreversible or expensive to reverse.
+- The requirement is genuinely ambiguous — reasonable engineers would build materially different systems from the description.
 
 **For work outside these categories, proceed directly.** A medium-sized but well-understood change — a new endpoint over an existing model, a bounded refactor, a handler following an established pattern — needs a clear description of intent and appropriate tests, not architecture theater.
 

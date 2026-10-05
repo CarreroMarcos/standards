@@ -235,10 +235,10 @@ Do not invent an elaborate hierarchy when the application has no callers that ne
 
 Catching a specific expected exception and handling it is correct code. Legitimate examples:
 
-* `FileNotFoundError` during idempotent cleanup of something that may already be gone;
-* `KeyError` when probing genuinely optional data — though `.get()` may express the intent more clearly;
-* a known client exception triggering a defined fallback whose correctness is stated;
-* `TimeoutError` entering an explicitly designed degraded path.
+- `FileNotFoundError` during idempotent cleanup of something that may already be gone;
+- `KeyError` when probing genuinely optional data — though `.get()` may express the intent more clearly;
+- a known client exception triggering a defined fallback whose correctness is stated;
+- `TimeoutError` entering an explicitly designed degraded path.
 
 The distinguishing test is whether the caller receives an accurate picture.
 
