@@ -158,7 +158,7 @@ def render(shape: Circle | Square) -> str:
 ```
 
 - `TypeIs` (3.13+) over `TypeGuard` for narrowing functions — it informs the checker on the negative branch too.
-- **Narrow with `isinstance()`, never `hasattr()`.** `hasattr()` tests capability, not type — for `str | None` it answers the wrong question, and the checker can't narrow on it. `isinstance()` tells both the reader and the checker what the value is.
+- **Narrow types with `isinstance()`, not `hasattr()`.** For type narrowing, `hasattr()` tests capability, not type — for `str | None` it answers the wrong question, and the checker can't narrow on it. `isinstance()` tells both the reader and the checker what the value is. (`hasattr()` keeps its one legitimate job: genuine capability/feature detection on objects you don't control, where no type exists to narrow to.)
 
 ```python
 # Bad: duck-typing a union
