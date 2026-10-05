@@ -1,8 +1,8 @@
 ---
 title: Engineering Principles
-version: "1.13"
+version: "1.14"
 scope: Core engineering principles and practices
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-04
 consult_when: "When making a judgment call no specific standard covers — 'the rules point both ways', 'this feels over-engineered but I can't say why', 'which principle wins here'."
 ---
 
@@ -370,6 +370,34 @@ Agent-workflow mechanics: `WORKFLOW.md` (Phase 4).
 **For a multi-unit task, write and pass one test exercising the smallest meaningful path end to end** before implementing individual units in isolation.
 
 Integration and wiring problems — imports, plumbing, environment, configuration — surface immediately instead of after N isolated units turn out not to connect.
+
+### Test Timing, Skips, and Assertions
+
+**Poll for the condition; never sleep for it.** A fixed `sleep(2)` in a test bets that 2 seconds is always enough and never wasteful — it loses both ways, flakily. Wait with a bounded poll that asserts the condition: re-check until it passes or the timeout expires.
+*Why: sleeps make suites slow when the system is fast and flaky when the system is slow. A poll with the assertion inside fails fast on real breakage and passes fast on real readiness.*
+*Carve-out: tests whose subject is time itself (debounce, backoff, rate limits) — there the sleep is the behavior under test, not a wait.*
+
+```python
+# ❌ BAD - fixed sleep: slow when fast, flaky when slow
+await asyncio.sleep(2)
+assert job.status == "done"
+
+# ✅ GOOD - poll the condition with a timeout
+async with asyncio.timeout(10):
+    while job.status != "done":
+        await asyncio.sleep(0.1)
+# The loop exits only when the condition holds; the timeout raises otherwise.
+# The wait is the assertion — no trailing assert needed.
+```
+
+**Never skip a known failure — strict-xfail it.** `it.skip` / `@pytest.mark.skip` on a known failure is a fake green: nothing tells you when the bug is fixed, so the workaround rots. Mark it expected-to-fail instead — `pytest.mark.xfail(strict=True)` — so the suite goes red the day the test starts passing, which is exactly when the workaround should be deleted. Reserve unconditional skips for "cannot run here at all" (missing platform, no GPU), never for "currently broken."
+*Why: a skip that can't go red is a test that stopped testing. Strict xfail turns stale workarounds into deletion notices.*
+
+**On volatile surfaces, assert patterns and sequences — not exact strings and positions.** Log messages get reworded; output order shifts. A test asserting the exact message or the item at index 3 breaks on cosmetic change and teaches the team to distrust the suite. On presentation surfaces (logs, formatted output), match on content patterns (`re.search`, `in`) and verify sequences, not positions. For stable data — IDs, counts, structured payloads — exact assertions are correct and desirable; don't weaken them.
+*Why: brittle assertions fail for reasons unrelated to behavior, and every false red trains the team to ignore real ones.*
+
+**Fixtures live in files, not inline strings — past the trivial case.** An inline fixture definition is invisible to grep, uneditable by other tools, and duplicated the moment a second test needs it. Put fixture data in real files under the test directory and reference them by path. Inline is fine only when the fixture is trivially small and used by exactly one test.
+*Why: fixtures are shared artifacts; inline definitions privatize them to one test.*
 
 ---
 
