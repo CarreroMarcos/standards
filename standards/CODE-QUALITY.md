@@ -203,22 +203,26 @@ accept_missing_version = True
 # Pre-2.0 clients omit the version header; treat missing as v1
 # or their sync breaks
 accept_missing_version = True
+
+# ✅ GOOD - Historical note a future reader needs
+# Removed in v3: every supported client sends the version header since 2.4
 ```
 
 **Every suppressed guard carries its safety case.** A lint or type-check
 suppression (`# noqa`, `# type: ignore`, `eslint-disable-next-line`,
 clippy `#[expect]`) is a claim that the guarded-against case cannot bite —
 write the claim down, inline, or the suppression is a lie waiting to rot.
-Project-wide disables belong in the linter config with their rationale there,
-not scattered as bare per-line suppressions.
+File-level directives (e.g. a `# ruff: noqa` header) and project-wide disables
+carry their rationale in the same place they live — the directive comment or
+the linter config — not scattered as bare per-line suppressions.
 
 ```python
 # ❌ BAD - Bare suppression
 result = legacy_parse(data)  # type: ignore
 
-# ✅ GOOD - Suppression with its safety case
-result = legacy_parse(data)  # type: ignore[no-untyped-call] - legacy_parse
-                             # is untyped by design; input schema is validated above
+# ✅ GOOD - Safety case on its own line, stays attached through reflows
+# legacy_parse is untyped by design; input schema is validated above
+result = legacy_parse(data)  # type: ignore[no-untyped-call]
 ```
 
 → ENGINEERING_PRINCIPLES.md §2 "Code Readability & Documentation" (provenance of rationale).
