@@ -37,11 +37,11 @@ Agent-security mechanics have their own sources of truth — `AGENTIC-SAFETY.md`
 
 Use model-directed autonomy when the work genuinely requires one or more of:
 
-* judgment under uncertainty;
-* interpretation of unstructured information;
-* dynamic planning;
-* choosing among tools based on context;
-* adapting a path that cannot reasonably be enumerated ahead of time.
+- judgment under uncertainty;
+- interpretation of unstructured information;
+- dynamic planning;
+- choosing among tools based on context;
+- adapting a path that cannot reasonably be enumerated ahead of time.
 
 Do not convert ordinary application logic into an agent merely because a model can perform it.
 
@@ -67,7 +67,7 @@ Multi-agent systems have measured failure modes: system design, inter-agent misa
 
 ## 3. Bound Autonomy; Keep Authority Outside the Model
 
-```
+```text
 NEVER LET THE MODEL AUTHORIZE
 ```
 
@@ -75,28 +75,28 @@ A model may propose. Deterministic policy decides what is allowed to happen.
 
 Keep outside the model:
 
-* authentication and authorization;
-* tenant and environment boundaries;
-* irreversible invariants;
-* state ownership;
-* permission checks;
-* financial and quota limits;
-* data-classification rules;
-* approval requirements;
-* tool availability;
-* destructive-operation safeguards.
+- authentication and authorization;
+- tenant and environment boundaries;
+- irreversible invariants;
+- state ownership;
+- permission checks;
+- financial and quota limits;
+- data-classification rules;
+- approval requirements;
+- tool availability;
+- destructive-operation safeguards.
 
 Every autonomous loop needs explicit stopping conditions appropriate to the workflow, such as:
 
-* task completed;
-* bounded attempts;
-* bounded tool calls;
-* deadline reached;
-* cost or resource budget reached;
-* repeated failure;
-* required information unavailable;
-* escalation or human approval required;
-* cancellation.
+- task completed;
+- bounded attempts;
+- bounded tool calls;
+- deadline reached;
+- cost or resource budget reached;
+- repeated failure;
+- required information unavailable;
+- escalation or human approval required;
+- cancellation.
 
 Do not depend on the model eventually deciding to stop.
 
@@ -154,12 +154,12 @@ Do not allow one untrusted tool result to grant authority to another tool call.
 
 Provide the model with the information needed for the current decision while preserving enough provenance to distinguish:
 
-* instructions;
-* authoritative state;
-* retrieved evidence;
-* prior model output;
-* tool results;
-* assumptions.
+- instructions;
+- authoritative state;
+- retrieved evidence;
+- prior model output;
+- tool results;
+- assumptions.
 
 Long-running agents curate or compact context deliberately rather than accumulating every historical token indefinitely. Preserve load-bearing decisions and evidence; discard irrelevant mechanics.
 
@@ -177,17 +177,17 @@ Conventional unit and integration tests verify deterministic machinery around th
 
 Where relevant, evaluate:
 
-* task completion;
-* factual or contract faithfulness;
-* correct tool selection;
-* correct tool arguments;
-* policy compliance;
-* unnecessary actions;
-* state-handling correctness;
-* recovery from tool failure;
-* escalation behavior;
-* cost and latency;
-* regression against previously solved cases.
+- task completion;
+- factual or contract faithfulness;
+- correct tool selection;
+- correct tool arguments;
+- policy compliance;
+- unnecessary actions;
+- state-handling correctness;
+- recovery from tool failure;
+- escalation behavior;
+- cost and latency;
+- regression against previously solved cases.
 
 Use evaluation results to choose the simplest model and architecture that satisfy the requirement. Do not choose complexity first and construct an evaluation that merely confirms it.
 
@@ -205,12 +205,12 @@ Do not require approval for every harmless read simply to claim a "human in the 
 
 Escalate when:
 
-* failure or retry thresholds are exceeded;
-* the agent lacks required information;
-* user intent remains materially ambiguous;
-* policy requires approval;
-* an action crosses a defined risk threshold;
-* the system cannot establish a safe basis to continue.
+- failure or retry thresholds are exceeded;
+- the agent lacks required information;
+- user intent remains materially ambiguous;
+- policy requires approval;
+- an action crosses a defined risk threshold;
+- the system cannot establish a safe basis to continue.
 
 **Approval describes the actual operation being authorized.** If the target, scope, environment, cost, or impact materially changes afterward, re-evaluate the approval rather than treating the earlier consent as universal.
 

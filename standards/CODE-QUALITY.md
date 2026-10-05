@@ -33,7 +33,7 @@ boilerplate — nothing in this repo reads them.
 
 ## 1. Prove Completion, Don't Claim It
 
-```
+```text
 NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE
 ```
 
@@ -41,7 +41,7 @@ No verification run in this session? You cannot claim it passes.
 
 **Never claim "done" without evidence.** Every completion report carries executed results:
 
-```
+```text
 ❌ "Done! I've implemented the feature."
 
 ✅ "Done! I've implemented the feature.
