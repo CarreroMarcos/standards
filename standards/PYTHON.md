@@ -527,7 +527,7 @@ batch_size = options.get("deletions.batch-size", 1000)
 batch_size: int = options.get("deletions.batch-size")
 ```
 
-The contract: registration requires a default, so the call returns the registered type — don't annotate the result `Optional` out of habit. The "missing default" case you're guarding against cannot happen; the duplicate is the only new failure mode.
+The contract: registration requires a default, so the call returns the registered default (raising if none was registered) — never `None` out of thin air. Don't annotate the result `Optional` out of habit.
 
 ## 15. Runtimes: Lambda and long-lived servers
 
