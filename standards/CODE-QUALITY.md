@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.9"
+version: "2.10"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
 last_reviewed: 2026-10-04
@@ -239,6 +239,18 @@ human confirmation. Full policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Remo
 **Mark deliberate escape hatches explicitly** — a leading underscore signals "I chose this"; the full convention lives in PYTHON.md §10.
 
 **One thing per function, one level of abstraction.** Roughly under 50 lines; files under ~800. The top function reads as an outline; details live one call down. Long functions mix abstraction levels, which makes the bug surface the entire function.
+
+**Scope-test before you write: 2–4 bullets.** Line counts are a lagging indicator — a 30-line function can still do six things. Before writing a function or module, list what it accomplishes in 2–4 bullets. More than four means split it. State the problem it solves without describing machinery; if the "what" needs the "how," the scope is wrong.
+*Why: the 50-line cap catches size after the fact. The bullet test forces the scope decision up front, where splitting is cheap.*
+
+```python
+# ❌ BAD - scope discovered after writing
+def handle_webhook(req):  # verifies, parses, routes, retries, notifies...
+
+# ✅ GOOD - scope decided before writing
+# handle_webhook: 1) verify signature, 2) parse event, 3) dispatch.
+# Three bullets, one concept — now write it.
+```
 
 **Flat structure first; guard clauses beat nesting.** Validate inputs and
 handle edge cases first; keep the happy path at the left margin. Nesting is
