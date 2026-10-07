@@ -1,9 +1,9 @@
 ---
 title: Supply Chain Security
-version: "2.8"
+version: "2.9"
 scope: Supply chain security: dependencies, provenance, SBOM
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code — 'it's just a patch bump', 'the model recommended this package'."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 ---
 
 # Supply Chain Security
@@ -19,6 +19,10 @@ Applies to: adding, upgrading, or regenerating dependencies in AI-assisted devel
 - **Verify every suggested package at the registry — before installing** — resolve first, install second; release-age gating for new versions too
 - **Treat the model as a supply-chain artifact** — pin model IDs; model change = dependency update
 - **Make dependency additions explicit and pinned** — manifests and lockfiles, reviewed diffs
+- **Adding a dependency is a last resort** — platform API, stdlib, or inline first; every dep traceable to a consumer
+- **A dependency bump is a repo-wide, verified operation** — no ephemeral pins, every duplicate in one commit
+- **Pin policy follows the audience** — exact pins internal, wide ranges published
+- **Vendored and copied code is read-only** — no fixes to the baseline; small patches with upstream links, license attribution in the same PR
 - **The artifact your gates measure against is a trust root** — eval corpora and ground-truth sets get lockfile treatment
 - **The agent never adds a dependency on its own** — propose; human approves
 - **Deny install-time execution by default** — scripts off, sandboxed installs
@@ -74,6 +78,38 @@ Pins of model outputs record the model identity that produced them: model name, 
 Route every new dependency through the manifest — `requirements*.txt`, `package.json`, lockfiles — so it arrives as a reviewed diff, never as a transcript of an `install` command. Pin versions; the lockfile records what actually resolved.
 
 - **Large artifacts that exceed the repo's size gate live out-of-band with a tracked manifest** (pointer + sha256 + provenance); consumers verify before use and fail loudly on mismatch. Worked example: an eval pin manifest (`multi-pin-manifest.json`) whose scoring driver verifies the pin's sha256 + byte length before scoring.
+
+## Adding a dependency is a last resort
+
+**A new dependency is the last option, not the first** — inline trivial utilities, use the platform's own API (or the stdlib) over a wrapper package, and rule those out before proposing the addition. Every dependency must be traceable to a concrete consumer: "where is it used?"
+
+- Why: every dependency is a trust and maintenance surface you carry forever. An agent defaults to the new-package solution because it minimizes *its* thinking, not your carried cost.
+- Bad: `pip install <helper>` for a 20-line utility. Good: inline the helper, or use the stdlib and keep the surface yours.
+- Boundary: the justification test — this rule decides whether an addition is warranted. The approval gate still applies ("The agent never adds a dependency on its own"). A platform-API-only rewrite that dwarfs the dependency's weight is not the cheaper option; compare total carried cost, not line counts.
+
+## A dependency bump is a repo-wide, verified operation
+
+**A version bump is an atomic, repo-wide, verified operation — never a single-line manifest edit.** Grep the entire repo for the old version value — build scripts, CI configs, Dockerfiles, deliberate assertion tables — and update every duplicate in one commit. Never merge a pin to an ephemeral artifact (preview tags, unmerged-PR builds): swap to the merged upstream SHA and, where the upstream publishes prebuilts, verify they exist for every platform × flavor before merge.
+
+- Why: a bump half-applied across manifests is two dependency sets pretending to be one — "it resolved on my machine" is not verification.
+- For vendored bumps: rebase every local patch and verify fetch + patch + compile from a clean state. Verify the exact replacement upstream chose before mass renames — a plausible-but-wrong substitution multiplied across hundreds of files becomes a fixup measured in thousands of lines.
+- Boundary: in a single-manifest repo the "repo-wide" sweep is one file — but the atomicity and verification bar stands.
+
+## Pin policy follows the audience
+
+**Pin exact versions in repo-internal manifests; keep ranges wide in published ones.** Repo-internal manifests (test fixtures, tooling, CI images) pin exact versions — never `^` or `~`, and never "tidy" an exact pin into a range. Published packages do the opposite: wide ranges or peerDependencies for toolchains the consumer already has, and runtime deps bundled into the shipped artifact — the end-user machine has no lockfile to read.
+
+- Why: internal exactness buys reproducibility; published exactness buys breakage reports from users whose environments disagree with yours.
+- Overrides/resolutions entries are load-bearing — find out what breakage one prevents before deleting it.
+- Boundary: audience means consumers outside this repo checkout — internal tools distributed as packages (a team CLI) are published-audience, so pin wide there too.
+
+## Vendored and copied code is read-only
+
+**Vendored and copied code is read-only — it serves as a conformance baseline, not working code.** No style or typo fixes to vendored dirs, fixture copies, or pasted sources; exclude vendored dirs from mechanical rewrites and formatter passes. Vendor patches stay small, with a comment explaining the upstream behavior they correct plus the upstream issue link. Ship license attribution for copied open-source code in the same PR.
+
+- Why: "fixing" vendored code silently diverges the baseline, and a formatter sweep across `vendor/` poisons every downstream diff with churn.
+- Bad: formatter reformatting `vendor/` (hundreds of files of noise). Good: exclude vendored paths at the tool-config level so the baseline stays byte-identical to upstream.
+- Boundary: patches are the sanctioned mutation path — small, upstream-linked, attributed. Anything bigger means re-vendoring from a newer upstream, not growing a fork.
 
 ## The artifact your gates measure against is a trust root
 
