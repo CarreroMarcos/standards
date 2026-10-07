@@ -109,6 +109,7 @@ Route every new dependency through the manifest — `requirements*.txt`, `packag
 
 - Why: "fixing" vendored code silently diverges the baseline, and a formatter sweep across `vendor/` poisons every downstream diff with churn.
 - Bad: formatter reformatting `vendor/` (hundreds of files of noise). Good: exclude vendored paths at the tool-config level so the baseline stays byte-identical to upstream.
+- Boundary: patches are the sanctioned mutation path — small, upstream-linked, attributed. Anything bigger means re-vendoring from a newer upstream, not growing a fork.
 
 ## The artifact your gates measure against is a trust root
 
