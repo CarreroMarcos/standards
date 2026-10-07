@@ -129,7 +129,7 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 **Match validation to the change's risk — never validate as a completion ritual.** A copy change doesn't earn a full build; a cross-cutting change earns the targeted type check. Prefer existing diagnostics and the smallest tests covering the change; don't start builds, watchers, or broad type checks just to feel done. Reuse a passing validation while its inputs are unchanged — re-running it for the commit is ritual, not rigor. (vscode `.github/copilot-instructions.md:53`)
 - Why: heavy validation is slow, and agents love theater — a green full-suite run on a typo fix proves patience, not correctness.
 - Bad: full typecheck across the repo for a comment edit. Good: the one targeted test for the changed behavior, then stop.
-- Boundary: when CI or review will catch it anyway, lighter local validation is correct — not lazy. Floor: the targeted test for the changed behavior always runs; "lighter" never means "none".
+- Boundary: floor first — the targeted test for the changed behavior always runs; "lighter" never means "none". When CI or review will catch the rest anyway, lighter local validation is correct — not lazy.
 
 **Test design:**
 
