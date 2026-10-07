@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "2.8"
+version: "2.9"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 ---
 
 # Workflow Standard
@@ -87,6 +87,10 @@ Principle: `ENGINEERING_PRINCIPLES.md` §8 "Independent Review for Significant W
 
 ## Phase 4 — Implement (TDD)
 
+**Orient before you implement — default order:** semantic search for the concept, grep for exact strings (error messages, identifiers), follow imports from the nearest known module, check the test files (they document expected behavior). (vscode `.github/copilot-instructions.md:46`)
+- Why: agents that read files at random build a false map of the codebase and confidently edit the wrong layer.
+- Boundary: skip steps the situation already answers (you know the file — go there); the order is the default search pattern, not a ritual. If the fourth step hasn't located it, state what's missing instead of guessing — don't keep digging.
+
 **Verification-First:** Before implementing, write down:
 - Test cases or expected outputs (even informal: "function should return X given Y")
 - The success criteria (what does "done" look like?)
@@ -121,6 +125,11 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 **"Tests pass" is not "mergeable."** Roughly half of test-passing benchmark PRs would not survive a real merge review (METR, Mar 2026) — green tests are necessary, not sufficient. The security review and simplify phases still apply.
 
 **Commit frequency:** After each passing test or logical unit. Never accumulate more than one unit of work in a commit — one unit is the smallest change you can verify independently; name it in the commit message.
+
+**Match validation to the change's risk — never validate as a completion ritual.** A copy change doesn't earn a full build; a cross-cutting change earns the targeted type check. Prefer existing diagnostics and the smallest tests covering the change; don't start builds, watchers, or broad type checks just to feel done. Reuse a passing validation while its inputs are unchanged — re-running it for the commit is ritual, not rigor. (vscode `.github/copilot-instructions.md:53`)
+- Why: heavy validation is slow, and agents love theater — a green full-suite run on a typo fix proves patience, not correctness.
+- Bad: full typecheck across the repo for a comment edit. Good: the one targeted test for the changed behavior, then stop.
+- Boundary: floor first — the targeted test for the changed behavior always runs; "lighter" never means "none". When CI or review will catch the rest anyway, lighter local validation is correct — not lazy.
 
 **Test design:**
 
@@ -168,6 +177,10 @@ Full review vocabulary and procedure: `CODE-REVIEW.md`.
     git commit -m "feat: <what was built and why in one line>"
 
 **Never commit `.env` or credentials.** Keep the diff scoped to the ticket — drive-by fixes to lines you touched ride along; anything that could be its own commit gets its own commit. (Credential rules: `SECRETS.md`.)
+
+**Remove your scratch files.** Temporary files, scripts, or helpers created to iterate get deleted at the end of the task — they don't ride along into the commit or linger in the tree. (vscode `.github/copilot-instructions.md:142`)
+- Why: scratch files left behind become mystery files the next agent has to read, trust, or clean up.
+- Boundary: if the scratch earned permanence (a real helper, a regression test), promote it deliberately — don't let it drift into the tree unreviewed.
 
 Update the changelog in the same commit — Keep-a-Changelog sections (Added/Changed/Deprecated/Removed/Fixed/Security), one entry per user-visible change, curated prose. Users decide whether to upgrade by reading the changelog, not the diff.
 

@@ -1,9 +1,9 @@
 ---
 title: Rules-File Integrity
-version: "2.3"
+version: "2.4"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
 consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — 'it's just a formatting tweak', 'the bot's PR, just merge it'."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 ---
 
 # Rules-File Integrity
@@ -17,6 +17,7 @@ last_reviewed: 2026-10-03
 - **§1. Write plain, visible Markdown** — the six hard requirements plus the pre-commit enforcement hook
 - **§2. Violation response** — stop, preserve, revert, post-mortem, rotate
 - **§3. Threat model (2024–2026)** — the attack table
+- **§4. Content architecture** — what belongs in the file and where: layered structure, learnings section
 - **References**
 
 ## §1. Write plain, visible Markdown
@@ -84,6 +85,19 @@ If you find a violation:
 | HTML comments embedding hidden directives a human skimmer will miss | GitHub Copilot agent guidance (2025) | Block HTML comments in rules files; require plain-Markdown prose only |
 | "Ignore previous instructions" / "disable guardrails" / "bypass CONFIRM" patterns | Standard prompt-injection corpus | Explicit lint pattern list (§1, rule 3) |
 | Rules-file rug-pull: trusted repo later adds a malicious rule in a minor release | Supply-chain parallel (e.g., xz-utils, PhantomRaven) | Pin and review rules-file updates as dependency upgrades; require explicit PR approval |
+
+## §4. Content architecture
+
+§§1–3 keep a rules file honest. This section keeps it followed — what belongs in the file, and where. Structure evidence: microsoft/vscode's instruction corpus at commit `9a89cf962f1d34463974058e9ef2b59f2bc33f15` — a 5-line root pointer (`AGENTS.md`, routing at line 5), one main file (`.github/copilot-instructions.md`), 26 path-scoped `.instructions.md` files declaring `applyTo: src/vs/**` in frontmatter (`.github/instructions/coding-guidelines.instructions.md:3`), 48 skills, 2 agent definitions.
+
+1. **Layer the file; don't monolith it.** The root instruction file holds three things: a map of the territory, the universal constraints, and routing to the rest. Scoped rules live in scoped files that declare their scope up front; deep topics become skills the main file names in one line (vscode `.github/copilot-instructions.md:105`: "See the `design-philosophy` skill for the full Values→Principles→Moves vocabulary").
+   - Why: agents weight the root file highest and skim the rest — scoped rules buried in the root read as universal, and universal rules buried in scoped files read as optional.
+   - Bad: one AGENTS.md with lint rules, deploy runbooks, and UI philosophy interleaved. Good: root holds the universal ("tabs, not spaces"); `css-best-practices.instructions.md` holds the rest, scoped to its paths.
+   - Boundary: single-purpose repos earn a single file — layering pays off past ~150 lines or past two audiences.
+
+2. **Give every instruction file a learnings section.** Distilled postmortems, one line each: the incident, then the rule it earned (vscode's `## Learnings` section: "Minimize the amount of assertions in tests — prefer one snapshot-style `assert.deepStrictEqual`"; "Do not stub globals in tests — make the dependency injectable instead").
+   - Why: a rule with a scar behind it gets followed; a rule asserted from nowhere gets negotiated away.
+   - Boundary: learnings record what was learned, not what was done — no changelogs, no war stories past two lines.
 
 ## References
 
