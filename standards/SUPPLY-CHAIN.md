@@ -22,7 +22,7 @@ Applies to: adding, upgrading, or regenerating dependencies in AI-assisted devel
 - **Adding a dependency is a last resort** — platform API, stdlib, or inline first; every dep traceable to a consumer
 - **A dependency bump is a repo-wide, verified operation** — no ephemeral pins, every duplicate in one commit
 - **Pin policy follows the audience** — exact pins internal, wide ranges published
-- **Vendored and copied code is read-only** — no fixes to the baseline; small patches with upstream links
+- **Vendored and copied code is read-only** — no fixes to the baseline; small patches with upstream links, license attribution in the same PR
 - **The artifact your gates measure against is a trust root** — eval corpora and ground-truth sets get lockfile treatment
 - **The agent never adds a dependency on its own** — propose; human approves
 - **Deny install-time execution by default** — scripts off, sandboxed installs
@@ -89,7 +89,7 @@ Route every new dependency through the manifest — `requirements*.txt`, `packag
 
 ## A dependency bump is a repo-wide, verified operation
 
-**A version bump is an atomic, repo-wide, verified operation — never a single-line manifest edit.** Grep the entire repo for the old version value — build scripts, CI configs, Dockerfiles, deliberate assertion tables — and update every duplicate in one commit. Never merge a pin to an ephemeral artifact (preview tags, unmerged-PR builds): swap to the merged upstream SHA and verify prebuilt artifacts exist for every platform × flavor before merge.
+**A version bump is an atomic, repo-wide, verified operation — never a single-line manifest edit.** Grep the entire repo for the old version value — build scripts, CI configs, Dockerfiles, deliberate assertion tables — and update every duplicate in one commit. Never merge a pin to an ephemeral artifact (preview tags, unmerged-PR builds): swap to the merged upstream SHA and, where the upstream publishes prebuilts, verify they exist for every platform × flavor before merge.
 
 - Why: a bump half-applied across manifests is two dependency sets pretending to be one — "it resolved on my machine" is not verification.
 - For vendored bumps: rebase every local patch and verify fetch + patch + compile from a clean state. Verify the exact replacement upstream chose before mass renames — a plausible-but-wrong substitution multiplied across hundreds of files becomes a fixup measured in thousands of lines.
@@ -101,7 +101,7 @@ Route every new dependency through the manifest — `requirements*.txt`, `packag
 
 - Why: internal exactness buys reproducibility; published exactness buys breakage reports from users whose environments disagree with yours.
 - Overrides/resolutions entries are load-bearing — find out what breakage one prevents before deleting it.
-- Boundary: internal tools distributed as packages (a team CLI) are published-audience — pin wide there too.
+- Boundary: audience means consumers outside this repo checkout — internal tools distributed as packages (a team CLI) are published-audience, so pin wide there too.
 
 ## Vendored and copied code is read-only
 
