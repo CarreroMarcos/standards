@@ -87,9 +87,9 @@ Principle: `ENGINEERING_PRINCIPLES.md` §8 "Independent Review for Significant W
 
 ## Phase 4 — Implement (TDD)
 
-**Orient before you implement — in this order:** semantic search for the concept, grep for exact strings (error messages, identifiers), follow imports from the nearest known module, check the test files (they document expected behavior). (vscode `.github/copilot-instructions.md:46`)
+**Orient before you implement — default order:** semantic search for the concept, grep for exact strings (error messages, identifiers), follow imports from the nearest known module, check the test files (they document expected behavior). (vscode `.github/copilot-instructions.md:46`)
 - Why: agents that read files at random build a false map of the codebase and confidently edit the wrong layer.
-- Boundary: if the fourth step hasn't located it, state what's missing instead of guessing — don't keep digging.
+- Boundary: skip steps the situation already answers (you know the file — go there); the order is the default search pattern, not a ritual. If the fourth step hasn't located it, state what's missing instead of guessing — don't keep digging.
 
 **Verification-First:** Before implementing, write down:
 - Test cases or expected outputs (even informal: "function should return X given Y")
@@ -129,7 +129,7 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 **Match validation to the change's risk — never validate as a completion ritual.** A copy change doesn't earn a full build; a cross-cutting change earns the targeted type check. Prefer existing diagnostics and the smallest tests covering the change; don't start builds, watchers, or broad type checks just to feel done. Reuse a passing validation while its inputs are unchanged — re-running it for the commit is ritual, not rigor. (vscode `.github/copilot-instructions.md:53`)
 - Why: heavy validation is slow, and agents love theater — a green full-suite run on a typo fix proves patience, not correctness.
 - Bad: full typecheck across the repo for a comment edit. Good: the one targeted test for the changed behavior, then stop.
-- Boundary: when CI or review will catch it anyway, lighter local validation is correct — not lazy.
+- Boundary: when CI or review will catch it anyway, lighter local validation is correct — not lazy. Floor: the targeted test for the changed behavior always runs; "lighter" never means "none".
 
 **Test design:**
 
