@@ -1,8 +1,8 @@
 # The 18 Techniques
 
-Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three analyst reports). Full evidence, reconciled disagreements, and open questions: `synthesis.md`.
+Distilled from a forensic analysis of a production agent-skills library (14 skills).
 
-**Evidence tiers:** Tier 1 = upstream's own wording A/B tests. Tier 2 = observed across the whole corpus. Tier 3 = strong but situational.
+**Evidence tiers:** Tier 1 = controlled wording A/B tests. Tier 2 = observed across the whole corpus. Tier 3 = strong but situational.
 
 ---
 
@@ -12,7 +12,7 @@ Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three a
 
 **Evidence:** Head-to-head wording tests: the prohibition arm produced *more* of the unwanted content than the recipe arm on shaping problems — worse than the no-guidance control.
 
-**Example:** Bloated prompts fixed with a recipe (what goes in, in what order), not "don't paste history." Skipped test-first fixed with prohibition + table ("Thinking 'skip TDD just this once'? Stop. That's rationalization.").
+**Example:** Bloated prompts fixed with a recipe (what goes in, in what order), not "don't paste history." Skipped test-first fixed with prohibition + table ("Thinking 'skip the test just this once'? Stop. That's rationalization.").
 
 **Replaces:** Listing prohibitions regardless of failure type.
 
@@ -30,7 +30,7 @@ Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three a
 
 **Do:** For every load-bearing rule, write the exact sentence the agent thinks when tempted to break it — in quotes, in its own voice — plus a one-sentence reality check. Excuse|Reality tables or Red Flags lists. Harvest objections from watching agents fail without the guidance.
 
-**Evidence:** Converts unobservable rationalizing into pattern-matchable text the agent can grep its own chain-of-thought against. 10/15 skills carry rationalization tables, 8/15 carry Red Flags (15 = installed copy incl. the `using-superpowers` router; analyzed corpus = 14 skills).
+**Evidence:** Converts unobservable rationalizing into pattern-matchable text the agent can grep its own chain-of-thought against. 10 of 15 skills carry rationalization tables, 8 carry Red Flags sections (15 = installed copy including the router skill; analyzed corpus = 14 skills).
 
 **Example:** | 'Too tedious to test' | Testing is less tedious than debugging bad skill in production. |
 
@@ -68,7 +68,7 @@ Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three a
 
 **Do:** ❌/✅ pair directly under the rule — not in an appendix. BAD shows the specific failure the agent will actually produce, with a one-line caption. Real paths, real commands, real machine output.
 
-**Evidence:** TDD is ~40% example code; 21 pairs in writing-skills alone. Several rules are ambiguous without their pair.
+**Evidence:** example-heavy skills run ~40% example code; 21 pairs in a single skill file. Several rules are ambiguous without their pair.
 
 **Example:** `**❌ Too broad:** 'Fix all the tests' — agent gets lost` / `**✅ Specific:** 'Fix agent-tool-abort.test.ts' — focused scope.`
 
@@ -86,7 +86,7 @@ Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three a
 
 **Do:** Every rule a bolded lead label or bolded imperative line-start. Skimming bold alone must yield the complete argument skeleton. Code spans = exact strings to reproduce. Never bold for decoration.
 
-**Evidence:** 69 bold-imperative line-starts in writing-skills; the universal paragraph unit (`**Core principle:**`, `**Don't skip when:**`).
+**Evidence:** 69 bold-imperative line-starts in one skill file; the universal paragraph unit (`**Core principle:**`, `**Don't skip when:**`).
 
 **Replaces:** Rules buried as plain sentences; decorative bold.
 
@@ -94,7 +94,7 @@ Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three a
 
 **Do:** End with a checklist, gate, red-flags table, or the law restated. The last line constrains or directs what the reader does next. "The last thing the agent reads is its excuses preemptively destroyed."
 
-**Example:** TDD ends restating the Iron Law; diagnosing-superpowers ends on the Red Flags table.
+**Example:** one skill ends restating its Iron Law; another ends on its Red Flags table.
 
 **Replaces:** The recap paragraph, which teaches the reader the ending is skippable.
 
@@ -168,6 +168,6 @@ Workflow machinery that doesn't belong in a rules library: announce-at-start spe
 
 ## Honesty notes
 
-- Tier 1 claims are upstream's self-reported eval results (harness in `evals/`, not in the installed copy — not independently replicated). Strong priors, not settled science.
-- Technique counts ("69 bold-imperative line-starts") are analyst measurements over the installed v6.4.2 copy; re-grep before citing as fact.
-- Open questions needing our own micro-tests (per upstream's "micro-test your own case"): prohibition-backfire generalization to rule libraries, why-placement isolation, bad/good vs. excuse-table exchange rate, optimal doc density, "human partner" A/B, tripwire calibration, persuasion-research transfer to agents, interaction effects of stacked techniques, and the foundational "reading ≠ using" gap for read-only standards. Full list in `synthesis.md` §5 ("Open questions — where the evidence is thin").
+- Tier 1 claims are the library authors' self-reported eval results (harness not independently replicated). Strong priors, not settled science.
+- Technique counts ("69 bold-imperative line-starts") are analyst measurements over the analyzed copy; re-grep before citing as fact.
+- Open questions needing our own micro-tests (per the authors' "micro-test your own case"): prohibition-backfire generalization to rule libraries, why-placement isolation, bad/good vs. excuse-table exchange rate, optimal doc density, "human partner" A/B, tripwire calibration, persuasion-research transfer to agents, interaction effects of stacked techniques, and the foundational "reading ≠ using" gap for read-only standards.
