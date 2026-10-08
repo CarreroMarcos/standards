@@ -1,6 +1,6 @@
 # Synthesis: What Makes Superpowers Skills Followable — and How to Steal It
 
-**Purpose:** Distill the writing techniques of the obra/superpowers skill library (v6.4.2, 14 skills analyzed across three forensic reports) into an actionable inventory for rewriting agent-facing standards docs (CODE-QUALITY.md / WORKFLOW.md / ENGINEERING_PRINCIPLES.md class). Direct input to the workspace skill for writing high-impact agent docs.
+**Purpose:** Distill the writing techniques of the obra/superpowers skill library (v6.4.2, 14 skills analyzed across three forensic reports; 15 counting the `using-superpowers` router — device-penetration figures use the installed-copy denominator) into an actionable inventory for rewriting agent-facing standards docs (CODE-QUALITY.md / WORKFLOW.md / ENGINEERING_PRINCIPLES.md class). Direct input to the workspace skill for writing high-impact agent docs.
 
 **Sources:**
 - Report A — process skills: brainstorming, systematic-debugging, writing-plans, executing-plans, subagent-driven-development, dispatching-parallel-agents
