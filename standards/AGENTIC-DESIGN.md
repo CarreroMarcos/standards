@@ -1,7 +1,7 @@
 ---
 title: Agentic Design
 version: "1.3"
-scope: Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation
+scope: "Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation"
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
 last_reviewed: 2026-10-07
 ---
@@ -22,7 +22,6 @@ last_reviewed: 2026-10-07
 - **8. Preserve Human Control at Consequential Boundaries** — human gates for consequential actions
 - **9. Orchestrating Multiple Agents** — multi-agent discipline
 - **10. Shape Responses So the Reader Can Act** — answer-first, scannable agent output
-
 
 Agentic systems inherit every principle above. They do not get weaker architecture, testing, state, security, or operational requirements because a model is involved.
 
@@ -67,6 +66,7 @@ Multi-agent systems have measured failure modes: system design, inter-agent misa
 **The common failure:** introducing multiple agents because the conceptual diagram maps neatly onto organizational roles, then paying for coordination, context handoff, duplicated reasoning, and ambiguous ownership without improving the outcome.
 
 **Compose before minting.** A new skill or agent ships only when the behavior can't be composed from existing ones — every skill is permanent maintenance surface (docs, router, manifests).
+
 - Why: skill sprawl taxes every future edit; the catalog stays the size the maintainer actually uses daily.
 - Boundary: "can't be composed" is judged on behavior, not convenience — mild awkwardness in composition doesn't earn a new skill.
 
@@ -136,6 +136,7 @@ For consequential loops, each stage writes a signed receipt — who acted, what 
 **The common failure:** an agent issues a deployment, receives a successful API response, and reasons from "deployment succeeded" without verifying rollout state, health, or the actual target revision.
 
 **No red-capable repro, no hypothesis.** Before theorizing about a bug, build one command that goes red on the exact symptom — red-capable, deterministic, fast. Hypotheses come next as 3–5 ranked, falsifiable predictions.
+
 - Why: agents anchor on the first plausible theory; the repro gate converts debugging from opinion into experiment.
 - Boundary: the rule-sized core only — the full multi-phase discipline is a parked future-research idea (future-ideas.md), not an existing skill; this rule is the complete prescription.
 
@@ -177,6 +178,7 @@ Do not solve an information-architecture problem by dumping an entire repository
 **The common failure:** increasing context until the needed fact is technically present but buried among stale, duplicated, conflicting, or untrusted information.
 
 **Engineer the pointer's wording, not just its target.** Treat every context pointer as a trigger surface: front-load the leading word, one trigger per branch — sharpen the wording before inlining material.
+
 - Why: a must-have target behind a weakly worded pointer is a variance bug — the agent never reaches the material. Retrieval precision is the unmeasured risk.
 - Bad: README row "For agent coordination concerns, see AGENTIC-DESIGN.md" — trigger buried three words in. Good: the row leads with the situation vocabulary the reader actually has when they need it.
 - Boundary: sharpen first; inline the material only if sharpening fails.
@@ -255,9 +257,11 @@ When one agent dispatches others, **the orchestrator owns verification.** A suba
 **The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
 **Re-sync the router on the same trigger.** Add, rename, remove, or re-fit a rule → update the routing map (README table) in the same pass. A new entry the map never mentions, or a stale one it still routes to, is a router that lies.
+
 - Why: agents trust indexes more than they verify them; staleness accumulates exactly where nobody re-reads.
 
 **Name the invocation tool.** When one instruction tells the agent to invoke another skill or agent, spell out the tool call — not a `/name` mention or a cross-file link. A step needing two skills is two calls, stated as such.
+
 - Why: a bare mention is a hint the model must interpret; a named tool call is an instruction it can execute.
 
 ---
@@ -311,4 +315,3 @@ next-actions on closed work.
 **Never ask what you can read; cap intake at four.** Detect stack, test-runner, linters, CI from the repo first; report in two lines; ask only the remainder — max four questions, each with defaults.
 *Why: ungrounded questions tax working memory and produce guess-configs; bounded intake makes "I don't know" a complete answer.*
 Boundary: genuinely unknowable preferences (values, taste) still get asked — the cap applies to knowables.
-

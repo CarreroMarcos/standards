@@ -170,6 +170,7 @@ if hasattr(x, "replace"):
 if isinstance(x, str):
     x = x.replace("e", "a")
 ```
+
 - `ParamSpec`/`TypeVar` for decorators (`def deco[**P, R](f: Callable[P, R]) -> Callable[P, R]`), `Unpack[TypedDict]` for `**kwargs`, `@override` (PEP 698) when overriding — the checker verifies the signature actually matches the parent.
 - `Never`/`NoReturn` for functions that never return (raise-only helpers, `sys.exit` wrappers).
 
@@ -486,6 +487,7 @@ def flatten(rows):
 **`def main() -> int` + `sys.exit(main())`.** Scripts are structured as a `main()` returning an exit code, guarded by `if __name__ == "__main__": sys.exit(main())`. Top level holds definitions and constants only — no work. Importable modules are testable modules; top-level side effects make `import` run your program. `main(argv) -> int` is directly unit-testable without subprocesses. Map exit codes deliberately (0 ok, non-zero failure, 130 on KeyboardInterrupt); handle `BrokenPipeError` for piped output. One real console entrypoint owns arg parsing, logging setup, and the top-level error boundary.
 
 **Guards get the 0/1/2 contract.** Exit 0 = clean, 1 = violation, 2 = the guard couldn't run — and a 2 must never read as a 0.
+
 - Why: a checker that silently passes on unavailable inputs converts ignorance into assurance, the most dangerous verdict a gate can emit.
 - Boundary: the couldn't-run path needs its own alerting, or it becomes a quiet bypass.
 

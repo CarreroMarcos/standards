@@ -1,0 +1,28 @@
+{
+  // Lint policy for CarreroMarcos/standards.
+  // Run from repo root: npx markdownlint-cli2 "standards/*.md"
+  //
+  // Deliberately relaxed rules — reasons, not neglect:
+  //
+  // - MD013 line-length: prose docs. Capping at 80 would churn ~1100 lines
+  //   for zero rendering or readability benefit. Lines stay as written.
+  //
+  // - MD025 single-title: every file carries frontmatter `title:` (machine
+  //   routing) AND a matching `# Title` (human reading). markdownlint counts
+  //   the frontmatter title as an H1, so the default mode can never pass
+  //   under this convention. `front_matter_title: ""` keeps the rule active
+  //   for genuine duplicate H1s while ignoring the frontmatter title.
+  //
+  // - MD060 table-column-style: pipe alignment/spacing is cosmetic; every
+  //   table renders correctly. Not worth ~100 cells of churn.
+  //
+  // Known single exception (left as-is, not a defect):
+  // - MD036 at ENGINEERING_PRINCIPLES.md:542 — a bolded phase sequence used
+  //   as a displayed list, not a heading. Converting it to a heading would
+  //   add a bogus outline entry.
+  "config": {
+    "MD013": false,
+    "MD025": { "front_matter_title": "" },
+    "MD060": false
+  }
+}
