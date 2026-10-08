@@ -4,6 +4,8 @@ Distilled from a forensic analysis of a production agent-skills library (14 skil
 
 **Evidence tiers:** Tier 1 = controlled wording A/B tests. Tier 2 = observed across the whole corpus. Tier 3 = strong but situational.
 
+**Caveat up front:** Tier 1 claims are the library authors' self-reported eval results (not independently replicated); technique counts are analyst measurements — re-grep before citing as fact. Full honesty notes at the end of this file.
+
 ---
 
 ### T1. Match the form to the failure — never default to "don't" (Tier 1)

@@ -9,7 +9,7 @@ description: "Use when writing or revising agent-facing docs — standards files
 
 ## Purpose
 
-Rewrite or author agent-facing docs (standards files, skills, rules docs) so agents follow them under pressure — not just when freshly read. The 18 techniques in `references/techniques.md` are distilled from a forensic analysis of a production agent-skills library, ranked by evidence: Tier 1 = controlled wording A/B tests, Tier 2 = observed across the whole corpus, Tier 3 = strong but situational. **The tiers describe sourcing, not validation** — they rank how the techniques were evidenced in that corpus, and are not measurements from this repo.
+Rewrite or author agent-facing docs (standards files, skills, rules docs) so agents follow them under pressure — not just when freshly read. The 18 techniques in `references/techniques.md` are distilled from a forensic analysis of a production agent-skills library, ranked by evidence: Tier 1 = controlled wording A/B tests, Tier 2 = observed across the whole corpus, Tier 3 = strong but situational. **The tiers describe sourcing, not validation** — they rank how the techniques were evidenced in that corpus, and are not measurements from this repo. See the honesty notes in `references/techniques.md` before citing any count or tier claim.
 
 ## Workflow
 
@@ -46,7 +46,7 @@ Apply `references/techniques.md` as the checklist. The load-bearing moves, in or
 ### 4. Verify the rewrite
 
 - **Bold-skeleton test:** read only the bold text. If the argument doesn't survive, the markers are wrong.
-- **Hedge grep:** `rg -i '\b(should|generally|consider|try to|where possible|unless)\b'` — then triage: hits inside quoted rationalizations and examples are false positives by design; a hit in a rule sentence is a bug.
+- **Hedge grep:** `rg -i '\b(should|generally|consider|try to|where possible|unless)\b'` — then triage: hits inside quoted rationalizations and examples are false positives by design; a hit in a rule sentence is a bug. A rule sentence is any bolded lead, imperative line, or template slot outside quotes and code blocks — hedges live only inside quoted rationalizations and examples.
 - **Trigger test:** does the description name a symptom or temptation? If it summarizes contents, rewrite it.
 - **Close test:** the last line directs action. If it recaps, replace it.
 - **Section-number check:** no renumbering — existing §N cross-references must stay valid.
