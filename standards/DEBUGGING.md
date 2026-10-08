@@ -50,7 +50,7 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 **If you genuinely cannot build a loop, stop.** List what you tried. Ask the user for (a) access to an environment that reproduces it, (b) a redacted captured artifact (HAR file, log dump, core dump, screen recording with timestamps), or (c) permission to add temporary production instrumentation. Do not hypothesize without a loop.
 *Why: the no-loop moment is when theory-first debugging is most tempting — which is exactly what this file exists to prevent. The "list what you tried" clause makes the stop auditable instead of a shrug.*
 
-## 3. Minimise until every remaining element is load-bearing
+## 3. Minimize until every remaining element is load-bearing
 
 **Shrink the repro to the smallest scenario that still goes red.** Cut inputs, callers, config, data, and steps one at a time, re-running the loop after each cut. Done when removing any single remaining element makes the loop go green.
 *Why: a minimal repro shrinks the hypothesis space — fewer moving parts to suspect — and it becomes the regression test for free. One artifact, two jobs.*
@@ -90,7 +90,7 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 **If no correct seam exists, that itself is the finding.** The architecture is preventing the bug from being locked down — note it and flag it. Untestable seams are a design defect, not a process failure.
 *Why: converts "I can't write the test" from a shrug into a routed architectural finding.*
 
-**Watch it fail; re-run the original.** If you forced the red by mutating code or a fixture, diff against a pristine copy to prove the mutation landed before you trust it. After the fix, re-run the *original un-minimised* loop — the minimised repro can pass while the original scenario still fails.
+**Watch it fail; re-run the original.** If you forced the red by mutating code or a fixture, diff against a pristine copy to prove the mutation landed before you trust it. After the fix, re-run the *original un-minimized* loop — the minimized repro can pass while the original scenario still fails.
 *Why: a test that never demonstrably failed proves nothing, and over-minimisation is a real acceptance gap.*
 
 ## 7. Keep guards through code motion
@@ -104,7 +104,8 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 ## 8. Debug without leaking
 
 **Redact first, quote only the signal.** Debug sessions are the highest-volume secret-display surface — commands, outputs, HARs, dumps. Write `<REDACTED>` before showing anything; build loops against env vars so the credential stays in the environment, not in what you show. Quote only the lines that carry the signal. If redacted output is insufficient, say so and ask — don't un-redact to be helpful.
-*Why: a share-first reflex in a debug session is how credentials end up in transcripts and reports.* → SECRETS.md owns the why; this is the debug-session application.
+*Why: a share-first reflex in a debug session is how credentials end up in transcripts and reports.*
+→ SECRETS.md owns the why; this is the debug-session application.
 
 **A diagnostic that cannot run is "could not verify" — never a pass.** A repro harness that errors on setup (bad fixture, unreachable env) and gets read as "bug not reproduced" converts ignorance into assurance.
 *Why: the most dangerous verdict a debug gate can emit is assurance from ignorance.* (Companion to PYTHON.md's 0/1/2 guard contract.)
