@@ -104,8 +104,9 @@ If you find a violation:
    - Boundary: learnings record what was learned, not what was done — no changelogs, no war stories past two lines.
 
 3. **Write the description as a trigger, never as a summary.** Skill and rule descriptions say what the rule provides and when to activate it, in the user's vocabulary — never a summary of the workflow inside.
-   - Why: agents discover skills by lexical routing, not comprehension; a workflow summary teaches the agent to follow the summary instead of reading the skill. The source author reports one added clause of user vocabulary moving a skill's trigger rate from 7/27 to 21/27 in their own eval (single skill, single model — unverified here; the lexical-routing mechanism is the load-bearing claim, not the numbers).
+   - Why: agents discover skills by lexical routing, not comprehension; a workflow summary teaches the agent to follow the summary instead of reading the skill. (The source repo runs trigger evals over skill descriptions — addyosmani/agent-skills `evals/README.md` — but publishes no per-change numbers; treat any cited lift as directional, not measured.)
    - Bad: description summarizes the six review steps → the agent follows the summary and never opens the skill. Good: description names the trigger condition ("applies even when the diff is pasted inline") → the agent reads the full skill.
+   - Boundary: governs descriptions (the routing surface), not skill bodies — never trim the body to "save" the reader a click.
 
 4. **Keep model-specific workarounds out of shared rules.** If a step can't be justified without naming a model, a model version, or one agent's private tool name, it belongs in an issue or a per-agent adapter — never the shared rule. Describe the capability ("run the focused test command"), not the mechanism one runtime exposes.
    - Why: a step justified by one model's failure constrains every *other* model to its level — a stronger model has measured *worse with* such a skill than without it. This is also the prune test: "does this rule survive without naming a model?"
