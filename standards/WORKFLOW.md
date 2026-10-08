@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "2.9"
+version: "3.0"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
 last_reviewed: 2026-10-07
@@ -123,6 +123,11 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 **If a test looks wrong, stop — don't fix the test yourself.** A flawed acceptance test goes back to its author with file:line evidence; the correction lands as a new checkpoint, not a quiet edit. Never contort the code to satisfy a flawed test — strict "stop if the tests look flawed" discipline is what separates testing from specification gaming.
 
 **"Tests pass" is not "mergeable."** Roughly half of test-passing benchmark PRs would not survive a real merge review (METR, Mar 2026) — green tests are necessary, not sufficient. The security review and simplify phases still apply.
+
+**Bug fix: grep every caller, then fix the root cause once in the shared code.** Before editing, grep every caller of the function you touch; the fix lands in the shared function, not the loudest caller — caller-local workarounds duplicate and diverge. The grep step makes the evidence auditable ("grep returned N callers").
+*Bad:* patch the one caller that's failing, leave the same bug live in four others.
+*Good:* grep finds six callers; the fix lands once in the shared function.
+Boundary: when callers genuinely need different behavior, that's the signal to split — not to workaround.
 
 **Commit frequency:** After each passing test or logical unit. Never accumulate more than one unit of work in a commit — one unit is the smallest change you can verify independently; name it in the commit message.
 
