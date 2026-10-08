@@ -33,6 +33,9 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 **Check the decision records in the blast area before diagnosing.** Past decisions explain present weirdness — read the ADRs and docs for the code you're touching before theorizing.
 *Why: debugging without them re-litigates settled trade-offs; "weird" code is often weird on purpose.*
 
+**Match the loop to the size of the problem.** A one-line fix in a small file gets a one-command check, not the nine-phase treatment. The full discipline earns its keep on bugs that resist the simple loop — when the first check doesn't converge, *then* build the loop properly.
+*Why: the loop serves the fix, not the other way around. A disproportionate loop on a trivial bug is the debugging equivalent of over-engineering.*
+
 | Thought | Reality |
 |---|---|
 | "I have a strong hunch where the bug is" | A hunch without a loop is a vibe. Build the loop, then test the hunch in one run. |
