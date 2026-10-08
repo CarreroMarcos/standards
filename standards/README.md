@@ -34,6 +34,7 @@ These are best practices, not laws. Context matters — some rules don't fit cer
 | Designing agent systems or multi-agent orchestration — autonomy boundaries, architecture choice, evaluation | AGENTIC-DESIGN.md | Skip when no model is acting. AGENTIC-SAFETY owns the safety controls; this file owns the design. |
 | Making a judgment call no specific file covers — 'the rules point both ways', 'which principle wins here' | ENGINEERING_PRINCIPLES.md | A specific standard always wins over a general principle. Check §0 when two rules seem to conflict. |
 | Starting a new repo (or refreshing an existing one) and want the portable agent-instruction foundation — the stack-agnostic anti-slop core distilled from this library | AGENTS-STARTER.md | Skip when the repo already has working agent instructions — otherwise copy in as AGENTS.md or merge into the existing one, fill in Repo-specific, change nothing above the line. |
+| Starting a new repo (or refreshing an existing one) and want a zero-dependency drop-in AGENTS.md — the portable starter with no pointers into this library | AGENTS-STARTER-PUBLIC.md | Skip when the repo already has working agent instructions — otherwise copy in as AGENTS.md or merge into the existing one, fill in Repo-specific, change nothing above the line. |
 
 ## Conventions
 
