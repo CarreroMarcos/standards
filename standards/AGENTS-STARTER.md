@@ -30,7 +30,7 @@ class PdfReportStrategy(ReportStrategy): ...   # the only strategy that will eve
 def render_pdf_report(data): ...
 ```
 
-**Every changed line traces to the request.** Don't improve adjacent code, don't refactor what isn't broken, match existing style. When code your diff already touches could be much smaller, shrink it as part of the change — but don't go rewriting modules your diff doesn't need.
+**Every changed line traces to the request.** Don't improve adjacent code, don't refactor what isn't broken, match existing style. When code your diff already touches could be much smaller, shrink it as part of the change — but don't go rewriting modules your diff doesn't need. Shrinking is fewer lines in code your diff already changes; expanding is touching code your diff doesn't need. The first is part of the task, the second is a separate task.
 
 | Thought | Reality |
 |---|---|
