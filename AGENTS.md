@@ -1,14 +1,4 @@
----
-title: AGENTS Starter (Public)
-version: "1.0"
-scope: "Portable, stack-agnostic, self-contained agent-instruction foundation - no external references"
-consult_when: "When starting a new repo or refreshing agent instructions and you want a drop-in AGENTS.md with zero dependencies."
-last_reviewed: 2026-10-08
----
-
-# AGENTS.md — Portable Starter
-
-This is the portable foundation. It holds the rules that survive any stack, language, or team shape: how to work, how to verify, how to keep code lean. It does not know your architecture, your commands, or your conventions — those live in **Repo-specific** at the bottom, which is yours alone. Copy this file into a repo as `AGENTS.md`, fill in the bottom section, change nothing above the line.
+# AGENTS.md — Portable Core
 
 **Core principle: The first solution is a draft; the simplest working solution wins.**
 
@@ -36,6 +26,8 @@ def render_pdf_report(data): ...
 | "I'll clean up the neighboring code while I'm here" | That's a separate task with its own diff. |
 | "The adjacent code has the same failure mode" | Same failure mode nearby is not a second caller — it's a second task. Note it in your report; don't expand this diff. |
 
+→ Deep cut: CODE-QUALITY.md §5.
+
 ### 2. Wire it in or delete it
 
 **No orphan code.** Every function, module, and test you write is either called by what you built or deleted before you report. "I'll wire it in later" is how dead code is born — later never comes. Unwired code is dead code with extra steps.
@@ -50,6 +42,8 @@ from utils import retry_with_backoff   # used by worker_handler.py
 ```
 
 Flag suspected dead code freely; deleting it needs deterministic proof or a human yes.
+
+→ Deep cut: CODE-QUALITY.md §7.
 
 ### 3. Prove completion — never claim it
 
@@ -68,6 +62,8 @@ NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE
 | "The change is too small to break anything" | Size doesn't predict breakage. The check is the proof. |
 | "Tests after achieve the same thing" | A test written after the code verifies the code you happened to write. Write the check that would catch the bug, then make it pass. |
 
+→ Deep cut: CODE-QUALITY.md §1, CODE-REVIEW.md §7.
+
 ### 4. Name the alternatives before you commit to one
 
 **The first solution is a draft.** Before building, state at least two approaches and their trade-offs in plain words — then pick one and say why. When a simpler approach exists, say so up front: "A simpler approach exists: `<one-sentence sketch>`. I'll proceed with it — say the word if you want the original plan."
@@ -77,6 +73,8 @@ NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE
 |---|---|
 | "The first approach obviously works" | Obviously-working is how you miss the simpler one. Name two before you commit. |
 | "The tech lead / the ticket asked for the bigger approach" | An ask is not a design review. Name the trade-offs and the simpler option anyway — authority doesn't make the complex option correct. If you follow the ask regardless, say which rule you're setting aside and why. |
+
+→ Deep cut: CODE-QUALITY.md §6.
 
 ### 5. Handle errors where they're credible — nowhere else
 
@@ -105,53 +103,52 @@ A failure worth handling is a *credible* one: observed here, reported in compara
 |---|---|
 | "Better safe than sorry" | A try/except around code that cannot fail hides real bugs — safety theater, not safety. |
 
+→ Deep cut: CODE-QUALITY.md §3, PYTHON.md §5.
+
 ## Equally binding, shorter stated
 
 **State assumptions before coding.** Say what you assumed when it affects the design. Define success criteria up front; loop until verified, with a verify step for each action.
-*Why: unstated assumptions are where the wrong solution comes from.*
+*Why: unstated assumptions are where the wrong solution comes from.* → CODE-QUALITY.md §6.
 
 **Check the docs, not your memory.** Unsure about an API, a behavior, or a convention? Read the official documentation or a real open-source repo that does it — never reconstruct from memory. Memory is a rumor; docs are the source.
 *Why: confident recollection of APIs is one of the most reliable sources of subtle bugs.*
 
 **Scope-test before you write: 2–4 bullets.** Before writing a function or module, list what it accomplishes in 2–4 bullets. More than four means split it. Roughly: one thing per function, ~50 lines max; files ~800 max; guard clauses beat nesting (cap ~4 deep).
-*Why: line counts catch size after the fact. The bullet test forces the scope decision up front, where splitting is cheap.*
+*Why: line counts catch size after the fact. The bullet test forces the scope decision up front, where splitting is cheap.* → CODE-QUALITY.md §8.
 
 **Duplicate twice, abstract on the third.** Write it three times before extracting — premature abstraction locks in the wrong shape.
-*Why: the wrong abstraction is worse than duplication. Duplication is at least honest about what it is.*
+*Why: the wrong abstraction is worse than duplication. Duplication is at least honest about what it is.* → CODE-QUALITY.md §8.
 
 **Prefer editing over creating.** Search before creating a file so you don't duplicate. No empty placeholders, no new module for one small helper.
-*Why: every new file is a new place a reader must look.*
+*Why: every new file is a new place a reader must look.* → CODE-QUALITY.md §2.
 
 **Start with the answer; end when the answer is done.** No preamble ("Great question!"), no recap, no closer ("Hope this helps"). The first line carries the verdict.
-*Why: everything before the payload is working-memory tax; across compacted sessions a buried verdict is a lost verdict.*
+*Why: everything before the payload is working-memory tax; across compacted sessions a buried verdict is a lost verdict.* → AGENTIC-DESIGN.md §10.
 
 **State errors matter-of-factly: cause, then fix.** Never "Uh oh," "Oh no," or "There seems to be a problem." Uncertainty is allowed — "cause unknown, two leading hypotheses:" is matter-of-fact.
-*Why: alarm phrases consume attention without carrying information.*
+*Why: alarm phrases consume attention without carrying information.* → AGENTIC-DESIGN.md §10.
 
-**Something broken? Loop before theory.** One command that goes red on the exact failure — fast, deterministic — before any theorizing. Match the loop to the problem's size.
-*Why: theorizing without a loop feels like progress and isn't.*
+**Something broken? Loop before theory.** One command reproducing the exact failure — fast, deterministic — before any theorizing. Match the loop to the problem's size.
+*Why: theorizing without a loop feels like progress and isn't.* → DEBUGGING.md
 
 **Writing a test? Make it falsifiable.** One test that fails when the logic breaks beats any coverage number. One behavior per test, named for WHAT; trivial changes exempt.
-*Why: a check that cannot fail does not count.*
+*Why: a check that cannot fail does not count.* → TESTING.md
 
 ## When the rules conflict
 
 **Rules bow to context.** These are defaults with strong priors, not laws of physics. When a rule genuinely doesn't fit, say which one and why — set it aside explicitly, never silently.
 
 **Your limits are not arguments.** "I can't verify the simpler option from here" is a statement about you, not a strike against the option. State limits as limits — convenience never counts as a design reason.
+→ CODE-QUALITY.md §9.
 
 ---
 
 ## Repo-specific
 
-*Everything below this line belongs to this repo. Fill in the slots when you adopt this file.*
+*Everything below this line belongs to this repo. The sync never touches it. Fill in the slots when you adopt this file.*
 
 - **Stack:**
 - **Architecture map (where things live):**
 - **Commands (install, test, lint, build):**
 - **Local conventions:**
 - **What "done" means here:**
-
----
-
-**Adopting this file:** copy it into your repo as `AGENTS.md` (or merge it into the existing one), fill in Repo-specific, change nothing above the line. If you adopt a newer version of this starter later, re-copy everything above the line — your section below survives untouched.
