@@ -24,7 +24,7 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
 
 **Cover the changed lines, not the project.** Gate on the coverage of the lines the change touched — computed by intersecting the suite's existing coverage output with `git diff`. Never run the suite a second time just to produce the metric.
 *Why: project coverage is an inherited number the agent cannot move — gating on it produces a permanently red build (then a team that learns to ignore red builds) or drive-by tests on untouched code. Changed-lines coverage is actionable per diff, and single-run mechanics keep the check cheap enough to survive.*
-*Boundary: the intersection mechanics are stack-specific (lcov + git diff, coverage.py + diff-cover) — this rule defines the metric and the single-run constraint; each repo's CI defines the gate. Until a gate exists, the check is manual at task end.*
+*Boundary: the intersection mechanics are stack-specific (lcov + git diff, coverage.py + diff-cover) — this rule defines the metric and the single-run constraint; each repo's CI defines the gate. Until a gate exists, the check is manual at task end. Adopting repos record their gate (tool + threshold) or "manual" in their own conventions — an unrecorded gate is an unenforced one.*
 
 **Ratchet, don't aspirate.** When the codebase fails the target number today, record today's value with a "must not fall" direction and gate on *that*. Never set a bar the codebase fails on day one.
 *Why: an unreachable bar trains everyone to ignore red builds — the gate decays into decoration while still looking enforced, which is worse than no gate.*
@@ -43,7 +43,8 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
 
 **New non-trivial logic leaves one small test.** Any new branch, loop, parser, money or security logic, data write, bug fix, or whole new script/app gets one small test — or an assert-based self-check for throwaway code. Trivial changes are explicitly exempt: no test theater.
 *Why: the parenthesized trigger list is mechanically checkable — "did I write a branch?" needs no risk judgment — and the explicit exemption is what stops the rule from generating test theater.*
-*Boundary: code explicitly marked throwaway gets no test suite at all — tests are polish the prototype's purpose (learning fast) doesn't need. It must still run; it need not be verified. That exemption covers* writing *tests only. A diagnostic that cannot run is still "could not verify," never a pass (→ DEBUGGING.md §8).*
+*Boundary: code explicitly marked throwaway gets no test suite at all — tests are polish the prototype's purpose (learning fast) doesn't need. It must still run; it need not be verified.*
+*Scope limit: that exemption covers* writing *tests only. Separately, a diagnostic that cannot run is still "could not verify," never a pass (→ DEBUGGING.md §8).*
 
 ## 4. One good test beats coverage
 
