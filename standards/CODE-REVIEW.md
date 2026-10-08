@@ -3,7 +3,7 @@ title: Code Review Standard
 version: "2.7"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 ---
 
 # Code Review Standard
@@ -115,6 +115,7 @@ A Testing assessment that reports "suite passes" without having established that
 **Rank checks by circularity.** "Can the agent pass this check with code that doesn't work?" Require at least one non-circular (external) check per gate.
 - Why: a check the agent can satisfy with broken code is a self-attestation in disguise; external checks are the ones that can't be gamed from inside.
 - Boundary: generalizes WORKFLOW.md's "acceptance tests are external truth" beyond acceptance tests — it doesn't replace it.
+- Verdict: the Testing assessment names the external check — a gate whose evidence lists no external check fails §8.
 
 ## 8. Failure criteria
 

@@ -3,7 +3,7 @@ title: Agentic Design
 version: "1.3"
 scope: Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 ---
 
 # Agentic Design
@@ -137,7 +137,7 @@ For consequential loops, each stage writes a signed receipt — who acted, what 
 
 **No red-capable repro, no hypothesis.** Before theorizing about a bug, build one command that goes red on the exact symptom — red-capable, deterministic, fast. Hypotheses come next as 3–5 ranked, falsifiable predictions.
 - Why: agents anchor on the first plausible theory; the repro gate converts debugging from opinion into experiment.
-- Boundary: the rule-sized core only — the full multi-phase debugging discipline lives as a future skill, not here.
+- Boundary: the rule-sized core only — the full multi-phase discipline is a parked future-research idea (future-ideas.md), not an existing skill; this rule is the complete prescription.
 
 ## 5. Treat Model and Tool Outputs as Evidence, Not Authority
 

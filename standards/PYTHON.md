@@ -3,7 +3,7 @@ title: Python Standard
 version: "1.9"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python and reaching for the old habits — bare `except`, mutable defaults, sync calls in async code, 'just pip install it' — or when the code runs but a Python review would flag it."
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-07
 ---
 
 # Python Standard
