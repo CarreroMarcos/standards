@@ -1,9 +1,9 @@
 ---
 title: Python Standard
-version: "1.8"
+version: "1.9"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python and reaching for the old habits — bare `except`, mutable defaults, sync calls in async code, 'just pip install it' — or when the code runs but a Python review would flag it."
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-07
 ---
 
 # Python Standard
@@ -484,6 +484,10 @@ def flatten(rows):
 ## 12. Module and package design
 
 **`def main() -> int` + `sys.exit(main())`.** Scripts are structured as a `main()` returning an exit code, guarded by `if __name__ == "__main__": sys.exit(main())`. Top level holds definitions and constants only — no work. Importable modules are testable modules; top-level side effects make `import` run your program. `main(argv) -> int` is directly unit-testable without subprocesses. Map exit codes deliberately (0 ok, non-zero failure, 130 on KeyboardInterrupt); handle `BrokenPipeError` for piped output. One real console entrypoint owns arg parsing, logging setup, and the top-level error boundary.
+
+**Guards get the 0/1/2 contract.** Exit 0 = clean, 1 = violation, 2 = the guard couldn't run — and a 2 must never read as a 0.
+- Why: a checker that silently passes on unavailable inputs converts ignorance into assurance, the most dangerous verdict a gate can emit.
+- Boundary: the couldn't-run path needs its own alerting, or it becomes a quiet bypass.
 
 **Do no work at import time; make heavy imports lazy.** Import must be safe and fast: no network, no filesystem mutations, no expensive work, no heavy third-party imports at module top level. Move slow imports (pandas, cloud SDKs, ML libs) into the functions that need them. Import cost is paid on *every* invocation — every CLI run, every Lambda cold start, every test collection — and the wins are measured in the high double digits of percent. Profile with `python -X importtime` before guessing. Manage the trade-off deliberately: ruff PLC0415 gets per-file ignores in CLI modules, not blanket disables; `TYPE_CHECKING` for type-only imports; a regression test asserting heavy modules are absent from `sys.modules` after importing the CLI. On 3.15+, the `lazy import` statement makes deferral declarative instead of hiding imports inside functions — prefer it where the version allows; keep function-level imports with `noqa: PLC0415` on older versions.
 

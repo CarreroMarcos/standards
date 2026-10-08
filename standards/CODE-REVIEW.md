@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.6"
+version: "2.7"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 ---
 
 # Code Review Standard
@@ -111,6 +111,11 @@ Two traps, both hit while proving this rule:
 **A self-attested completion counts as UNMET.** A completion claim supported only by the agent's own assertion is not evidence — it ranks *below* an openly declared gap, which at least is accurate about where the work stopped.
 
 A Testing assessment that reports "suite passes" without having established that the relevant assertions discriminate has reported an execution, not a verification. State what was run, what it returned, and — for anything guarding a security or correctness boundary — what happens to it under mutation. A ticked checkbox whose evidence line still reads `pending` is worse than an empty box: proving a command ran and matched expected text is strictly weaker than proving the check discriminates.
+
+**Rank checks by circularity.** "Can the agent pass this check with code that doesn't work?" Require at least one non-circular (external) check per gate.
+- Why: a check the agent can satisfy with broken code is a self-attestation in disguise; external checks are the ones that can't be gamed from inside.
+- Boundary: generalizes WORKFLOW.md's "acceptance tests are external truth" beyond acceptance tests — it doesn't replace it.
+- Verdict: the Testing assessment names the external check — a gate whose evidence lists no external check fails §8.
 
 ## 8. Failure criteria
 
