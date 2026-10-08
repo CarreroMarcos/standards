@@ -91,7 +91,7 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 *Why: converts "I can't write the test" from a shrug into a routed architectural finding.*
 
 **Watch it fail; re-run the original.** If you forced the red by mutating code or a fixture, diff against a pristine copy to prove the mutation landed before you trust it. After the fix, re-run the *original un-minimized* loop — the minimized repro can pass while the original scenario still fails.
-*Why: a test that never demonstrably failed proves nothing, and over-minimisation is a real acceptance gap.*
+*Why: a test that never demonstrably failed proves nothing, and over-minimization is a real acceptance gap.*
 
 ## 7. Keep guards through code motion
 
