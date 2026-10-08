@@ -1,6 +1,6 @@
 # The 18 Techniques
 
-Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three analyst reports). Full evidence, reconciled disagreements, and open questions: `~/workspace/skill-style-analysis/SYNTHESIS.md`.
+Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three analyst reports). Full evidence, reconciled disagreements, and open questions: `synthesis.md`.
 
 **Evidence tiers:** Tier 1 = upstream's own wording A/B tests. Tier 2 = observed across the whole corpus. Tier 3 = strong but situational.
 

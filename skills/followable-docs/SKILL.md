@@ -9,7 +9,7 @@ description: "Use when writing or revising agent-facing docs — standards files
 
 ## Purpose
 
-Rewrite or author agent-facing docs (standards files, skills, rules docs) so agents follow them under pressure — not just when freshly read. The 18 techniques in `references/techniques.md` are distilled from a forensic analysis of the obra/superpowers skill library (14 skills, three analyst reports, full synthesis at `~/workspace/skill-style-analysis/SYNTHESIS.md`), ranked by evidence: Tier 1 = upstream's own wording A/B tests, Tier 2 = observed across the whole corpus, Tier 3 = strong but situational.
+Rewrite or author agent-facing docs (standards files, skills, rules docs) so agents follow them under pressure — not just when freshly read. The 18 techniques in `references/techniques.md` are distilled from a forensic analysis of the obra/superpowers skill library (14 skills, three analyst reports, full synthesis at `references/synthesis.md`), ranked by evidence: Tier 1 = upstream's own wording A/B tests, Tier 2 = observed across the whole corpus, Tier 3 = strong but situational.
 
 ## Workflow
 
