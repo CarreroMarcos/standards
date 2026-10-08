@@ -1,9 +1,9 @@
 ---
 title: Standards
-version: "1.9"
+version: "2.0"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-08
 ---
 
 # Standards
@@ -25,6 +25,8 @@ These are best practices, not laws. Context matters — some rules don't fit cer
 | Adding or changing log/telemetry statements, or deciding whether a field is safe to log | LOGGING.md | Skip when not emitting telemetry. Never log secrets — SECRETS.md owns why. |
 | Reviewing a diff — yours, a bot's, or another agent's | CODE-REVIEW.md | Skip when not reviewing. Advisory — the owning gate defines pass/fail. |
 | Writing or changing code — especially when tempted to skip the small stuff ('just a quick fix', 'the diff is obvious') — or preempting review nits (proof of completion, file hygiene, error handling) | CODE-QUALITY.md | Skip when a specific standard already answers the question. Design principles live in ENGINEERING_PRINCIPLES. |
+| Writing tests — unit, integration, edge cases, e2e — or deciding what to mock, what coverage to require, or whether a test is actually proving anything | TESTING.md | Skip when not writing tests. Philosophy lives in ENGINEERING_PRINCIPLES.md §4; the TDD loop in WORKFLOW.md Phase 4. |
+| Debugging a failure — building the repro, minimizing it, testing hypotheses, instrumenting — or when a debug session is spiraling | DEBUGGING.md | Skip when nothing is broken. The gates (red-capable repro, three-strikes) live in AGENTIC-DESIGN.md §4 and DEV-LOOP.md. |
 | Writing Python — style, typing, async, errors, tooling, or performance | PYTHON.md | Skip when not writing Python. Language-neutral principles live in ENGINEERING_PRINCIPLES; per-task quality rules in CODE-QUALITY. |
 | Starting or planning a unit of work, from idea through clean commit | WORKFLOW.md | Skip when the work is already ticketed inside the dev loop. Ends at commit — DEV-LOOP owns push to merge. |
 | Operating the ticket → implement → verify → review → gate → merge loop | DEV-LOOP.md | Skip for one-off changes on the verbal go-ahead path. Documents the loop as operated. |
