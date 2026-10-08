@@ -1,6 +1,6 @@
 ---
 title: Agentic Design
-version: "1.1"
+version: "1.2"
 scope: Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
 last_reviewed: 2026-10-03
@@ -21,6 +21,7 @@ last_reviewed: 2026-10-03
 - **7. Evaluate Agent Behavior, Not Just Agent Code** — behavioral evals
 - **8. Preserve Human Control at Consequential Boundaries** — human gates for consequential actions
 - **9. Orchestrating Multiple Agents** — multi-agent discipline
+- **10. Shape Responses So the Reader Can Act** — answer-first, scannable agent output
 
 
 Agentic systems inherit every principle above. They do not get weaker architecture, testing, state, security, or operational requirements because a model is involved.
@@ -241,4 +242,50 @@ When one agent dispatches others, **the orchestrator owns verification.** A suba
 **The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
 ---
+
+## 10. Shape Responses So the Reader Can Act
+
+**Start with the answer; end when the answer is done.** No preamble, no recap,
+no closer. Ban the openers ("Great question," "Let me look…", "I'll…"), the
+post-task recaps ("I've now done X, Y, Z, which means…"), and the closers
+("Hope this helps," "Let me know if…"). First line carries the verdict. The
+last line is the next action when one exists (see below); otherwise it
+carries what just happened.
+*Why: readers act on the first line they read — everything before the payload
+is working-memory tax, and across compacted sessions a buried verdict is a
+lost verdict. This governs every subagent final report, every bot comment,
+every overnight status message.*
+*Bad:* "Great question! I dug into the failure and here's what I found…" —
+verdict in paragraph three.
+*Good:* "Root cause: missing auth header on the token-refresh call. Fix: add
+it in `refresh()`." — then the detail.
+Boundary: when asked to explain or walk through, the body runs as long as the
+topic needs (headers for skimmability) — still no preamble, still no closer.
+
+**Lead with the next action.** If the answer is a command, path, or snippet,
+it goes first — prose after, if at all. The friction between "got it" and
+"done it" is where work dies; a first-line action makes the verdict scannable
+in reports.
+Boundary: when there's no action (pure verdict), answer-first already covers
+it.
+
+**Restate state every turn; never narrate the plan twice.** "Step N of M done:
+X. Next: Y." — one line restores position across turns (and across
+compaction). With a task/plan tool, the checklist does the restating; do not
+*also* narrate the full plan as prose — dual restatement doubles context
+cost.
+Boundary: one line, not a status paragraph.
+
+**State errors matter-of-factly: cause, then fix.** Ban the alarm phrases ("Uh
+oh," "Oh no," "There seems to be a problem") — they consume attention without
+carrying information. The complete diagnostic payload is cause → fix.
+Boundary: doesn't ban uncertainty — "cause unknown, here are the two leading
+hypotheses" is matter-of-fact.
+
+**End with one concrete next action, doable in under two minutes.** If
+anything is left open, name ONE thing the reader can do in under two minutes
+— even "open the file" counts. An open thread without a next step stalls; the
+two-minute bar makes starting trivial.
+Boundary: only when something is actually left open — no manufactured
+next-actions on closed work.
 

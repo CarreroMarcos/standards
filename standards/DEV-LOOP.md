@@ -1,6 +1,6 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "1.9"
+version: "2.0"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When running the ticket → implement → verify → review → gate → merge loop — especially when tempted to treat a bot verdict or green CI as the merge decision."
 last_reviewed: 2026-10-03
@@ -69,6 +69,16 @@ main. Repo-specific names are marked; the shape is the reusable part.
    oscillating, not converging: escalate instead of looping. Frozen residuals
    go into the Oracle gate brief as "open at freeze, rulings demanded."
    A dispositioned finding that recurs is not re-litigated (freeze rule).
+   **Three strikes on "still broken" exits the code loop.** After three
+   consecutive turns of the same failure, stop iterating on code: name the
+   assumption that might be wrong, ask one diagnostic question. Repeated
+   failure-then-retry almost always means a wrong shared assumption, not an
+   insufficient patch — the count is a mechanical loop-breaker. A genuinely
+   new failure mode resets the count; if unsure whether a failure is new or
+   the same one relabeled, treat it as the same failure. The freeze rule's
+   conversation-level
+   sibling: it breaks debug spirals the way the freeze rule breaks bot
+   ping-pong.
 6. **Ticket hygiene.** PATCH the CI checkbox, post the Jira PR comment, move
    the ticket to In Review.
 7. **Oracle gate.** Adversarial gate on a v2 brief. The Oracle is a blind

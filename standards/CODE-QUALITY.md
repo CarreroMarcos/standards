@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-version: "2.10"
+version: "2.11"
 scope: Code quality rules: comments, dead code, testing, verification
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
 last_reviewed: 2026-10-04
@@ -227,6 +227,18 @@ result = legacy_parse(data)  # type: ignore[no-untyped-call]
 
 → ENGINEERING_PRINCIPLES.md §2 "Code Readability & Documentation" (provenance of rationale).
 
+**A deliberate shortcut names its ceiling and its upgrade trigger.** A
+shortcut with a known limit gets a `shortcut:` comment naming the limit
+*and* the condition that forces the real fix — so "later" is a defined
+condition, not a hope. The marker is always exactly `shortcut:` — one grep
+pattern finds every marker, with or without a trigger. Markers with no
+trigger are rot: greppable, and the debt scan's mechanical signal.
+
+*Example:* `// shortcut: inlines the one live path; upgrade to strategy pattern if a second caller appears`
+
+Boundary: for genuinely throwaway code, the trigger can be "delete with the
+experiment."
+
 ## 5. Keep Changes Surgical and Small
 
 **Every changed line traces directly to the user's request.** Don't improve
@@ -268,6 +280,55 @@ package removes real, non-trivial complexity. `pip install` is not step one.
 Work in small incremental changes — easier to review and debug.
 → ENGINEERING_PRINCIPLES.md §6 (smallest change).
 
+**Be lazy about the solution, never about the change itself.** Finish every
+part the task needs — the callers, tests, fixtures, and config your change
+breaks. A minimized diff that leaves a broken caller is not minimal, it is
+half-landed.
+*Why: the corpus says "minimize" five ways but never states the completeness
+corollary — and minimality without it is exactly how "lazy" produces
+half-landed diffs.*
+*Bad:* rename a function, update its definition, leave three callers on the
+old name — "small diff."
+*Good:* the rename lands with all callers, tests, and fixtures updated in the
+same diff — or the rename doesn't ship.
+Boundary: "every part the task needs," not every part of the repo — the
+task's reach list bounds it.
+
+**Prefer fixes that delete code.** Propose the smallest fix that works;
+between a patch that adds and a fix that removes, take the removal. Never add
+layers, frameworks, or config the problem does not need.
+*Why: gives repair a directional bias — the codebase moves toward less code
+with every fix, not merely "not more." A mechanical tie-breaker for
+refactor-vs-patch decisions.*
+*Bad:* fix a tangled helper by adding a wrapper that routes around it.
+*Good:* fix it by deleting the helper and inlining the one live path.
+Boundary: the deletion bias bows to the never-cut list — validation at trust
+boundaries, error handling that prevents data loss, security. The bias
+governs fix *shape*; it never authorizes expanding the task's scope to chase
+deletions — every changed line still traces to the request.
+
+**A one-liner that needs decoding is not short.** Gates brevity on
+readability — the direct antidote to AI code-golf (nested comprehensions,
+clever one-liners) that minimizes lines while maximizing bug surface. Short =
+glanceable, not token-minimal.
+Boundary: applies to cleverness, not density — a dense-but-idiomatic line is
+fine.
+
+**Delete wrappers that only pass calls through.** Interface with one
+implementation, factory with one product, wrapper that only passes calls
+through — if the layer adds no logic, it dies. Pass-through wrappers are AI's
+favorite "clean architecture" cargo cult: a named layer with zero behavior,
+doubling the edit surface of every future change.
+Boundary: wrappers that exist for a real seam (test double injection, trust
+boundary) stay — the tripwire is *no logic added*.
+
+**Enumerate the change's reach before writing.** Read the task and the code it
+touches; list every place the change must reach — callers, tests, fixtures,
+config, exports — before writing. Blocks both failure modes: the lazy agent
+that under-touches (breaks a caller) and the eager one that over-touches (adds
+features).
+Boundary: the enumeration is author-time, one pass — not a design doc.
+
 ## 6. State Assumptions, Verify Goals
 
 **State assumptions before coding.** Say what you assumed when it affects the
@@ -305,6 +366,20 @@ def handle_webhook(req):  # verifies, parses, routes, retries, notifies...
 # handle_webhook: 1) verify signature, 2) parse event, 3) dispatch.
 # Three bullets, one concept — now write it.
 ```
+
+**Split by job, never by line count.** A function doing several unrelated jobs
+gets split along the job boundaries. Never split into helpers that exist only
+to make a function shorter — `do_part1()` / `do_part2()` is line-count
+theater, not structure.
+*Why: mechanical splitting satisfies the line cap while adding indirection
+without meaning; the bug surface doesn't shrink. This is AI's favorite way to
+look disciplined while getting worse.*
+*Bad:* 60-line function → `do_part1()`, `do_part2()`, `do_part3()` called in
+sequence.
+*Good:* 60-line function → `validate_input()`, `compute_result()`,
+`format_output()` — each testable alone.
+Boundary: the existing ~50-line / ~4-nesting guidance stands as a smell
+signal; this rule governs what the split must *be*, not whether to split.
 
 **Flat structure first; guard clauses beat nesting.** Validate inputs and
 handle edge cases first; keep the happy path at the left margin. Nesting is
