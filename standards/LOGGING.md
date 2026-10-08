@@ -1,7 +1,7 @@
 ---
 title: Logging Standard
 version: "2.7"
-scope: Logging: what to log, levels, structure, retention
+scope: "Logging: what to log, levels, structure, retention"
 consult_when: "When adding or changing log/telemetry statements — or deciding whether a field is safe to log ('is this secret-adjacent?')."
 last_reviewed: 2026-10-04
 ---

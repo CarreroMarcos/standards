@@ -78,7 +78,7 @@ NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE
 
 ### 4. Name the alternatives before you commit to one
 
-**The first solution is a draft.** Before building, state at least two approaches and their trade-offs in plain words — then pick one and say why. When a simpler approach exists, say so up front: "A simpler approach exists: <one-sentence sketch>. I'll proceed with it — say the word if you want the original plan."
+**The first solution is a draft.** Before building, state at least two approaches and their trade-offs in plain words — then pick one and say why. When a simpler approach exists, say so up front: "A simpler approach exists: `<one-sentence sketch>`. I'll proceed with it — say the word if you want the original plan."
 *Why: the first idea is the most available, not the best. Forcing the comparison is the cheapest design review that exists.*
 
 | Thought | Reality |

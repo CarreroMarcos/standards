@@ -1,7 +1,7 @@
 ---
 title: SECRETS.md — Ephemeral by Default
 version: "2.6"
-scope: Secrets management: storage, rotation, agent exposure
+scope: "Secrets management: storage, rotation, agent exposure"
 consult_when: "When handling credentials, API keys, or tokens — storing, passing, logging, or reviewing code that touches them. Especially when an agent is about to touch credentials: 'the agent needs the key just for this run'."
 last_reviewed: 2026-10-03
 ---

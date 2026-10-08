@@ -1,7 +1,7 @@
 ---
 title: Code Quality
 version: "2.11"
-scope: Code quality rules: comments, dead code, testing, verification
+scope: "Code quality rules: comments, dead code, testing, verification"
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
 last_reviewed: 2026-10-04
 ---
@@ -333,7 +333,7 @@ Boundary: the enumeration is author-time, one pass — not a design doc.
 
 **State assumptions before coding.** Say what you assumed when it affects the
 design, and push back when a simpler approach exists — in plain words: "A
-simpler approach exists: <one-sentence sketch>. I'll proceed with it — say the
+simpler approach exists: `<one-sentence sketch>`. I'll proceed with it — say the
 word if you want the original plan."
 → §6 "State Assumptions Explicitly".
 

@@ -1,7 +1,7 @@
 ---
 title: Supply Chain Security
 version: "2.9"
-scope: Supply chain security: dependencies, provenance, SBOM
+scope: "Supply chain security: dependencies, provenance, SBOM"
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code — 'it's just a patch bump', 'the model recommended this package'."
 last_reviewed: 2026-10-07
 ---

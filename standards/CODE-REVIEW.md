@@ -34,6 +34,7 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 **Cover every change for five domains:** Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
 
 Activate conditional domains when the change triggers them:
+
 - Performance — runtime-sensitive changes (tight loops, DB queries, I/O paths)
 - Accessibility — UI file changes
 
@@ -93,6 +94,7 @@ Run the command before writing its output. An unrun example is the same defect a
 ## 6. Opposition review
 
 **Answer all four explicitly — this is not a summary pass:**
+
 1. Is any Critical/High finding overstated? Give counter-evidence.
 2. What was not reviewed that could matter?
 3. Which findings might be false positives in this codebase's context?
@@ -105,6 +107,7 @@ A passing opposition review answers all four. A general statement that none appl
 **A check that cannot fail does not count as a check.** A test whose assertion holds whether the guarded code works, is broken, or is deleted provides no regression protection, however green it runs. Before offering a test as evidence for a guard, break the guard and confirm the test goes red.
 
 Two traps, both hit while proving this rule:
+
 - **A mutation that changes bytes has not necessarily changed behavior.** Replacing a command with a no-op that produces the same output looks applied and proves nothing. Confirm the mutated build behaves differently on a canary input before concluding a test "stayed green".
 - **Redundant match paths mask mutations.** Where two independent code paths can produce the same verdict, mutating one leaves the other answering. Mutate all of them, or the result is a false negative.
 
@@ -113,6 +116,7 @@ Two traps, both hit while proving this rule:
 A Testing assessment that reports "suite passes" without having established that the relevant assertions discriminate has reported an execution, not a verification. State what was run, what it returned, and — for anything guarding a security or correctness boundary — what happens to it under mutation. A ticked checkbox whose evidence line still reads `pending` is worse than an empty box: proving a command ran and matched expected text is strictly weaker than proving the check discriminates.
 
 **Rank checks by circularity.** "Can the agent pass this check with code that doesn't work?" Require at least one non-circular (external) check per gate.
+
 - Why: a check the agent can satisfy with broken code is a self-attestation in disguise; external checks are the ones that can't be gamed from inside.
 - Boundary: generalizes WORKFLOW.md's "acceptance tests are external truth" beyond acceptance tests — it doesn't replace it.
 - Verdict: the Testing assessment names the external check — a gate whose evidence lists no external check fails §8.
@@ -120,6 +124,7 @@ A Testing assessment that reports "suite passes" without having established that
 ## 8. Failure criteria
 
 **The review fails on any of:**
+
 - A required domain was skipped
 - Any finding lacks a `file:line` reference or an Evidence field
 - Evidence does not materially support the finding claim

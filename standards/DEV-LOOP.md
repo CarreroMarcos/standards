@@ -9,7 +9,7 @@ last_reviewed: 2026-10-03
 # Dev Loop — the agentic build loop, as operated
 
 Reconstructed 2026-09-27 from live activity on the pr-reviewer repo (PRs
-#75–#119), the repo's process docs, and the orchestrator's own account of a
+\#75–#119), the repo's process docs, and the orchestrator's own account of a
 session. This is the loop a unit of work travels from spec task to merged
 main. Repo-specific names are marked; the shape is the reusable part.
 

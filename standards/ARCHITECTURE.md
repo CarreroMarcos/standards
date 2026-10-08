@@ -1,7 +1,7 @@
 ---
 title: Architecture
 version: "1.1"
-scope: Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation
+scope: "Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation"
 consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
 last_reviewed: 2026-10-03
 ---
@@ -27,7 +27,6 @@ last_reviewed: 2026-10-03
 - **13. Design for Operability** — observe and operate what you ship
 - **14. Graceful Degradation** — defined fallback behavior
 - **15. Overload Protection, Rate Limiting & Circuit Breakers** — shed load, don't amplify it
-
 
 ## 1. Start With Critical Flows and Failure Modes
 
@@ -254,4 +253,3 @@ Circuit-breaker thresholds, rate limits, queue bounds, and concurrency settings 
 **The common failure:** allowing every layer to queue and retry independently. One user request fans out, queues accumulate, timeouts fire, each layer retries, and protection mechanisms amplify the outage they were intended to prevent.
 
 ---
-

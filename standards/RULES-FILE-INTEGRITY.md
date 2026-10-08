@@ -77,6 +77,7 @@ If you find a violation:
 5. Rotate credentials the compromised file gave the agent a path to — directives touching secrets, or secrets within the agent's working scope while it was active.
 
 **Loosening is loud; tightening is silent.** A change that loosens a rule — moves a threshold, eases a test, silences a checker, adds an exception — never rides in the same commit or PR as the change it gates. Tightening may bundle freely.
+
 - Why: agents don't craft clever loopholes; they hit a red check and take the cheapest road to green. Bundling makes one review see one "coherent" change instead of two suspicious ones.
 - Boundary: the asymmetry is the point — tightening never needs this ceremony.
 
