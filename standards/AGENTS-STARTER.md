@@ -1,12 +1,12 @@
 ---
 title: AGENTS Starter (Portable Core)
-version: "1.1"
+version: "1.2"
 scope: Portable, stack-agnostic agent-instruction foundation distilled from the standards library
 consult_when: "When starting a new repo or refreshing agent instructions — copy into the repo as AGENTS.md."
 last_reviewed: 2026-10-07
 ---
 
-<!-- portable-core v1.1 · distilled from CarreroMarcos/standards main @ 107a7aeb · MANAGED SECTION: everything above "## Repo-specific" is owned by the sync — do not hand-edit -->
+<!-- portable-core v1.2 · distilled from CarreroMarcos/standards main @ fcdc6d2 · MANAGED SECTION: everything above "## Repo-specific" is owned by the sync — do not hand-edit -->
 
 # AGENTS.md — Portable Core
 
@@ -139,6 +139,12 @@ A failure worth handling is a *credible* one: observed here, reported in compara
 
 **State errors matter-of-factly: cause, then fix.** Never "Uh oh," "Oh no," or "There seems to be a problem." Uncertainty is allowed — "cause unknown, two leading hypotheses:" is matter-of-fact.
 *Why: alarm phrases consume attention without carrying information.* → AGENTIC-DESIGN.md §10.
+
+**Something broken? Loop before theory.** One command reproducing the exact failure — fast, deterministic — before any theorizing. Match the loop to the problem's size.
+*Why: theorizing without a loop feels like progress and isn't.* → DEBUGGING.md
+
+**Writing a test? Make it falsifiable.** One test that fails when the logic breaks beats any coverage number. One behavior per test, named for WHAT; trivial changes exempt.
+*Why: a check that cannot fail does not count.* → TESTING.md
 
 ## When the rules conflict
 
