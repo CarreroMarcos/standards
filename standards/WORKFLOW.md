@@ -127,7 +127,7 @@ Never *keep* implementation that no failing test covers — explore freely in sc
 **Bug fix: grep every caller, then fix the root cause once in the shared code.** Before editing, grep every caller of the function you touch; the fix lands in the shared function, not the loudest caller — caller-local workarounds duplicate and diverge. The grep step makes the evidence auditable ("grep returned N callers").
 *Bad:* patch the one caller that's failing, leave the same bug live in four others.
 *Good:* grep finds six callers; the fix lands once in the shared function.
-Boundary: when callers genuinely need different behavior, that's the signal to split — not to workaround.
+Boundary: when callers genuinely need different behavior, that's the signal to split — not to workaround. The grep runs per changed symbol; when the fix spans a call graph, the root-cause landing point is the common dependency the callers share, not necessarily one function.
 
 **Commit frequency:** After each passing test or logical unit. Never accumulate more than one unit of work in a commit — one unit is the smallest change you can verify independently; name it in the commit message.
 

@@ -248,8 +248,9 @@ When one agent dispatches others, **the orchestrator owns verification.** A suba
 **Start with the answer; end when the answer is done.** No preamble, no recap,
 no closer. Ban the openers ("Great question," "Let me look…", "I'll…"), the
 post-task recaps ("I've now done X, Y, Z, which means…"), and the closers
-("Hope this helps," "Let me know if…"). First line carries the verdict; the
-last line carries what just happened.
+("Hope this helps," "Let me know if…"). First line carries the verdict. The
+last line is the next action when one exists (see below); otherwise it
+carries what just happened.
 *Why: readers act on the first line they read — everything before the payload
 is working-memory tax, and across compacted sessions a buried verdict is a
 lost verdict. This governs every subagent final report, every bot comment,

@@ -74,7 +74,9 @@ main. Repo-specific names are marked; the shape is the reusable part.
    assumption that might be wrong, ask one diagnostic question. Repeated
    failure-then-retry almost always means a wrong shared assumption, not an
    insufficient patch — the count is a mechanical loop-breaker. A genuinely
-   new failure mode resets the count. The freeze rule's conversation-level
+   new failure mode resets the count; if unsure whether a failure is new or
+   the same one relabeled, treat it as the same failure. The freeze rule's
+   conversation-level
    sibling: it breaks debug spirals the way the freeze rule breaks bot
    ping-pong.
 6. **Ticket hygiene.** PATCH the CI checkbox, post the Jira PR comment, move

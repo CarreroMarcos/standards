@@ -302,7 +302,9 @@ refactor-vs-patch decisions.*
 *Bad:* fix a tangled helper by adding a wrapper that routes around it.
 *Good:* fix it by deleting the helper and inlining the one live path.
 Boundary: the deletion bias bows to the never-cut list — validation at trust
-boundaries, error handling that prevents data loss, security.
+boundaries, error handling that prevents data loss, security. The bias
+governs fix *shape*; it never authorizes expanding the task's scope to chase
+deletions — every changed line still traces to the request.
 
 **A one-liner that needs decoding is not short.** Gates brevity on
 readability — the direct antidote to AI code-golf (nested comprehensions,
