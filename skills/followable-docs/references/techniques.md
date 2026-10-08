@@ -30,7 +30,7 @@ Distilled from the obra/superpowers v6.4.2 forensic analysis (14 skills, three a
 
 **Do:** For every load-bearing rule, write the exact sentence the agent thinks when tempted to break it — in quotes, in its own voice — plus a one-sentence reality check. Excuse|Reality tables or Red Flags lists. Harvest objections from watching agents fail without the guidance.
 
-**Evidence:** Converts unobservable rationalizing into pattern-matchable text the agent can grep its own chain-of-thought against. 10/15 skills carry rationalization tables, 8/15 carry Red Flags.
+**Evidence:** Converts unobservable rationalizing into pattern-matchable text the agent can grep its own chain-of-thought against. 10/15 skills carry rationalization tables, 8/15 carry Red Flags (15 = installed copy incl. the `using-superpowers` router; analyzed corpus = 14 skills).
 
 **Example:** | 'Too tedious to test' | Testing is less tedious than debugging bad skill in production. |
 

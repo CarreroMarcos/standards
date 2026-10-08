@@ -42,7 +42,7 @@ Each item is phrased as something a doc author can **do**. For each: what it is,
 
 **Do:** For every load-bearing rule, write down the exact sentence the agent will think when tempted to break it — in the agent's own voice, in quotes — and pair it with a one-sentence reality check. Format as an Excuse|Reality or Thought|Reality table, or a Red Flags list.
 
-**Evidence (Tier 1 method, Tier 2 penetration):** The red-flags list "Make[s] it easy for agents to self-check when rationalizing" — it converts an unobservable internal state (rationalizing) into a **pattern-matchable string**. An agent can grep its own chain-of-thought against quoted strings. Library-wide: 10 of 15 skills carry rationalization tables, 8 carry Red Flags sections. The objections are harvested from real baseline tests (watch the agent fail without the guidance, log what it says).
+**Evidence (Tier 1 method, Tier 2 penetration):** The red-flags list "Make[s] it easy for agents to self-check when rationalizing" — it converts an unobservable internal state (rationalizing) into a **pattern-matchable string**. An agent can grep its own chain-of-thought against quoted strings. Library-wide: 10 of 15 skills carry rationalization tables, 8 carry Red Flags sections (15 = installed copy including the `using-superpowers` router; the analyzed corpus is otherwise described as 14 skills). The objections are harvested from real baseline tests (watch the agent fail without the guidance, log what it says).
 
 **Corpus example:** "| 'Too tedious to test' | Testing is less tedious than debugging bad skill in production. |" (writing-skills). "Thinking 'skip TDD just this once'? Stop. That's rationalization." (test-driven-development)
 
