@@ -44,7 +44,8 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
 **New non-trivial logic leaves one small test.** Any new branch, loop, parser, money or security logic, data write, bug fix, or whole new script/app gets one small test — or an assert-based self-check for throwaway code. Trivial changes are explicitly exempt: no test theater.
 *Why: the parenthesized trigger list is mechanically checkable — "did I write a branch?" needs no risk judgment — and the explicit exemption is what stops the rule from generating test theater.*
 *Boundary: code explicitly marked throwaway gets no test suite at all — tests are polish the prototype's purpose (learning fast) doesn't need. It must still run; it need not be verified.*
-*Scope limit: that exemption covers* writing *tests only. Separately, a diagnostic that cannot run is still "could not verify," never a pass (→ DEBUGGING.md §8).*
+*Scope limit: that exemption covers* writing *tests only.*
+*Separately: a diagnostic that cannot run is still "could not verify," never a pass (→ DEBUGGING.md §8).*
 
 ## 4. One good test beats coverage
 
