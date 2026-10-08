@@ -1,6 +1,6 @@
 ---
 title: Workflow Standard
-version: "3.0"
+version: "3.1"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
 last_reviewed: 2026-10-07
@@ -173,6 +173,11 @@ Fix all `[CRITICAL]` and `[HIGH]` findings before proceeding to Phase 7 — or r
 Agent-generated code gets two extra checks: hallucinated dependencies (verify every suggested package at the registry — `SUPPLY-CHAIN.md`) and over-permissioned tool use (does the code grant the agent more authority than the task needs?).
 
 When a recurring bug class surfaces, **propose** the rule addition to the human or orchestrator (what the class is, where it bit, the exact wording) — do not write it into the agent's rules file (`AGENTS.md` / `CLAUDE.md`) yourself. Editing your own governing instructions mid-task is out of scope and a bad write corrupts the file that governs you.
+
+**New rules clear the observed-failure bar.** Every rule-addition proposal cites an observed agent failure — the session, what the agent did, what was expected. A hypothetical "would be better if" never clears the bar alone.
+- Why: hypothetical-only rules sediment into dead weight; the citation forces the failing scenario to be written down — which is also the future eval case for that rule.
+- Bad: "agents should probably confirm before deleting" — added because it sounds safer. Good: "2026-10-03 session: agent deleted the staging config unasked; expected: ask-first on destructive ops" → rule proposed.
+- Boundary: emergency guardrails still ship fast; the failure citation gets backfilled, not skipped.
 
 Full review vocabulary and procedure: `CODE-REVIEW.md`.
 

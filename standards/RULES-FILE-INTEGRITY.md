@@ -1,6 +1,6 @@
 ---
 title: Rules-File Integrity
-version: "2.4"
+version: "2.5"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
 consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — 'it's just a formatting tweak', 'the bot's PR, just merge it'."
 last_reviewed: 2026-10-07
@@ -76,6 +76,10 @@ If you find a violation:
 4. Write a brief post-mortem documenting how the compromise occurred.
 5. Rotate credentials the compromised file gave the agent a path to — directives touching secrets, or secrets within the agent's working scope while it was active.
 
+**Loosening is loud; tightening is silent.** A change that loosens a rule — moves a threshold, eases a test, silences a checker, adds an exception — never rides in the same commit or PR as the change it gates. Tightening may bundle freely.
+- Why: agents don't craft clever loopholes; they hit a red check and take the cheapest road to green. Bundling makes one review see one "coherent" change instead of two suspicious ones.
+- Boundary: the asymmetry is the point — tightening never needs this ceremony.
+
 ## §3. Threat model (2024–2026)
 
 | Attack | Evidence | Mitigation |
@@ -98,6 +102,24 @@ If you find a violation:
 2. **Give every instruction file a learnings section.** Distilled postmortems, one line each: the incident, then the rule it earned (vscode's `## Learnings` section: "Minimize the amount of assertions in tests — prefer one snapshot-style `assert.deepStrictEqual`"; "Do not stub globals in tests — make the dependency injectable instead").
    - Why: a rule with a scar behind it gets followed; a rule asserted from nowhere gets negotiated away.
    - Boundary: learnings record what was learned, not what was done — no changelogs, no war stories past two lines.
+
+3. **Write the description as a trigger, never as a summary.** Skill and rule descriptions say what the rule provides and when to activate it, in the user's vocabulary — never a summary of the workflow inside.
+   - Why: agents discover skills by lexical routing, not comprehension; a workflow summary teaches the agent to follow the summary instead of reading the skill. One added clause of user vocabulary moved a measured trigger rate from 7/27 to 21/27 (one skill, one model — the mechanism generalizes, the numbers don't transfer).
+   - Bad: description summarizes the six review steps → the agent follows the summary and never opens the skill. Good: description names the trigger condition ("applies even when the diff is pasted inline") → the agent reads the full skill.
+
+4. **Keep model-specific workarounds out of shared rules.** If a step can't be justified without naming a model, a model version, or one agent's private tool name, it belongs in an issue or a per-agent adapter — never the shared rule. Describe the capability ("run the focused test command"), not the mechanism one runtime exposes.
+   - Why: a step justified by one model's failure constrains every *other* model to its level — a stronger model has measured *worse with* such a skill than without it. This is also the prune test: "does this rule survive without naming a model?"
+   - Bad: shared skill carries "always call run_command with shell=False because Model X mangles quoting." Good: shared skill says "run the focused test command"; the Model X adapter carries the quoting workaround.
+   - Boundary: per-agent adapters and issues are the right home — this rule governs the shared corpus only.
+
+5. **A threshold ships with number, reason, and verdict-command.** Every numeric threshold in a rules file states three things: the number, the reason it exists, and the command that produces its verdict. A number without a command is an aspiration, not a constraint.
+   - Why: thresholds are attacked the moment they bind — the reason is the threshold's armor (without it, the next person who hits it deletes it for free), and the verdict-command is what makes the number mechanical instead of prose.
+   - Bad: "keep functions small." Good: "functions ~50 lines max — line counts catch size after the fact, so the split decision belongs up front (CODE-QUALITY §8); verdict: line-count on the diff."
+   - Boundary: aspirational targets are allowed only when explicitly labeled measured-not-enforced — never mixed into the enforced list.
+
+6. **Name the excuse; refute it inline.** Every skip-worthy step carries its rationalization: the excuse an agent will reach for, refuted in one line next to the step.
+   - Why: the corpus already uses this as house style (starter Thought/Reality tables); required structure means the refutation ships with the rule instead of living in a reviewer's head.
+   - Boundary: required only for steps with explicit skip conditions — not every rule needs a table.
 
 ## References
 
