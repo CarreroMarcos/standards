@@ -1,6 +1,6 @@
 ---
 name: followable-docs
-description: "Use when writing or revising agent-facing docs — standards files, skills, rules docs, AGENTS.md — and agents keep ignoring them: rules get skimmed, hedged with 'should', or rationalized away mid-task. Rewrites docs with 18 evidence-distilled techniques from the superpowers skill-library analysis so the rules actually get followed."
+description: "Use when writing or revising agent-facing docs — standards files, skills, rules docs, AGENTS.md — and agents keep ignoring them: rules get skimmed, hedged with 'should', or rationalized away mid-task. Rewrites the doc so its rules get followed under pressure, not just when freshly read."
 ---
 
 # Followable Docs
