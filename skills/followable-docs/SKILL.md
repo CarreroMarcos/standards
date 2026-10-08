@@ -58,7 +58,7 @@ Apply `references/techniques.md` as the checklist. The load-bearing moves, in or
 
 ## Operating Rules
 
-- **His voice wins.** These docs are Marcos's; every rule keeps his voice — tight, direct, dry where funny. Techniques change the *form*, never the *voice*.
+- **The doc's voice wins.** Every rule keeps the target doc's existing voice — techniques change the *form*, never the *voice*.
 - **One topic per file, single source of truth per file.** New content goes in the file whose scope already covers it; never create a near-duplicate file.
 - **Don't invent evidence.** Techniques carry their Tier 1/2/3 marking in the reference. Tier 1 claims are upstream's self-reported evals (harness not independently replicated) — say so if asked, don't oversell.
 - **Don't copy workflow machinery into rule docs.** No announce-at-start lines, no phase gates between reference sections, no todo-per-item, no worked transcripts as closers — the full do-not-transfer list is in `references/techniques.md`. Exception: WORKFLOW.md genuinely is a procedure; gates belong there.
