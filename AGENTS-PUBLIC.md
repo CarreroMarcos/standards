@@ -6,7 +6,7 @@
 
 ### 1. Ship the smallest solution that actually works
 
-**Solve the stated problem at its stated scale.** No speculative generality, no framework for a script, no plugin system for two callers. Generalize for the second caller that exists, not the one you imagine. Over-engineering is a defect: 1000 lines where 300 would do is not thoroughness, it is bug surface.
+**Solve the stated problem at its stated scale.** No speculative generality, no framework for a script, no plugin system for two callers. Generalize for callers that exist, not the one you imagine — and treat the count as a heuristic, not a trigger. **Evidence and simpler code decide:** extract when real callers prove the shared shape *and* the abstraction is simpler than the duplication it replaces. Over-engineering is a defect: 1000 lines where 300 would do is not thoroughness, it is bug surface.
 *Why: every part you add is a part you maintain, debug, and explain — and AI-generated code arrives faster than anyone can review it, so the cost compounds.*
 
 ```python
@@ -22,7 +22,7 @@ def render_pdf_report(data): ...
 
 | Thought | Reality |
 |---|---|
-| "This might need to scale later" | Generalize for the second caller that exists, not the one you imagine. |
+| "This might need to scale later" | Caller count is a heuristic — generalize when evidence and simpler code say so, not when a number is reached. |
 | "I'll clean up the neighboring code while I'm here" | That's a separate task with its own diff. |
 | "The adjacent code has the same failure mode" | Same failure mode nearby is not a second caller — it's a second task. Note it in your report; don't expand this diff. |
 
@@ -60,7 +60,7 @@ NO COMPLETION CLAIM WITHOUT FRESH EVIDENCE
 
 ### 4. Name the alternatives before you commit to one
 
-**The first solution is a draft.** Before building, state at least two approaches and their trade-offs in plain words — then pick one and say why. When a simpler approach exists, say so up front: "A simpler approach exists: `<one-sentence sketch>`. I'll proceed with it — say the word if you want the original plan."
+**The first solution is a draft.** For substantive design decisions — a new module, a cross-cutting change, a genuine trade-off — state at least two approaches and their trade-offs in plain words before building, then pick one and say why. A tiny edit doesn't earn the ceremony; build the obvious one. When a simpler approach exists, say so up front: "A simpler approach exists: `<one-sentence sketch>`. I'll proceed with it — say the word if you want the original plan."
 *Why: the first idea is the most available, not the best. Forcing the comparison is the cheapest design review that exists.*
 
 | Thought | Reality |
@@ -103,10 +103,10 @@ A failure worth handling is a *credible* one: observed here, reported in compara
 **Check the docs, not your memory.** Unsure about an API, a behavior, or a convention? Read the official documentation or a real open-source repo that does it — never reconstruct from memory. Memory is a rumor; docs are the source.
 *Why: confident recollection of APIs is one of the most reliable sources of subtle bugs.*
 
-**Scope-test before you write: 2–4 bullets.** Before writing a function or module, list what it accomplishes in 2–4 bullets. More than four means split it. Roughly: one thing per function, ~50 lines max; files ~800 max; guard clauses beat nesting (cap ~4 deep).
+**Scope-test before you write: 2–4 bullets.** For substantive work — a new function or module, new behavior — list what it accomplishes in 2–4 bullets before writing it. More than four means split it. A tiny edit gets a sentence, not the full write-up. Roughly: one thing per function, ~50 lines max; files ~800 max; guard clauses beat nesting (cap ~4 deep).
 *Why: line counts catch size after the fact. The bullet test forces the scope decision up front, where splitting is cheap.*
 
-**Duplicate twice, abstract on the third.** Write it three times before extracting — premature abstraction locks in the wrong shape.
+**Duplicate twice, abstract on the third — as a heuristic.** The count suggests; evidence decides (rule 1): extract when real callers prove the shared shape and the abstraction is simpler than the duplication. A premature abstraction locks in the wrong shape.
 *Why: the wrong abstraction is worse than duplication. Duplication is at least honest about what it is.*
 
 **Prefer editing over creating.** Search before creating a file so you don't duplicate. No empty placeholders, no new module for one small helper.
