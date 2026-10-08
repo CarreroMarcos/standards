@@ -1,12 +1,12 @@
 ---
 title: AGENTS Starter (Portable Core)
-version: "1.0"
+version: "1.1"
 scope: Portable, stack-agnostic agent-instruction foundation distilled from the standards library
 consult_when: "When starting a new repo or refreshing agent instructions — copy into the repo as AGENTS.md."
 last_reviewed: 2026-10-07
 ---
 
-<!-- portable-core v1 · distilled from CarreroMarcos/standards main @ 206ec53 · MANAGED SECTION: everything above "## Repo-specific" is owned by the sync — do not hand-edit -->
+<!-- portable-core v1.1 · distilled from CarreroMarcos/standards main @ 107a7aeb · MANAGED SECTION: everything above "## Repo-specific" is owned by the sync — do not hand-edit -->
 
 # AGENTS.md — Portable Core
 
@@ -133,6 +133,12 @@ A failure worth handling is a *credible* one: observed here, reported in compara
 
 **Prefer editing over creating.** Search before creating a file so you don't duplicate. No empty placeholders, no new module for one small helper.
 *Why: every new file is a new place a reader must look.* → CODE-QUALITY.md §2.
+
+**Start with the answer; end when the answer is done.** No preamble ("Great question!"), no recap, no closer ("Hope this helps"). The first line carries the verdict.
+*Why: everything before the payload is working-memory tax; across compacted sessions a buried verdict is a lost verdict.* → AGENTIC-DESIGN.md §10.
+
+**State errors matter-of-factly: cause, then fix.** Never "Uh oh," "Oh no," or "There seems to be a problem." Uncertainty is allowed — "cause unknown, two leading hypotheses:" is matter-of-fact.
+*Why: alarm phrases consume attention without carrying information.* → AGENTIC-DESIGN.md §10.
 
 ## When the rules conflict
 
