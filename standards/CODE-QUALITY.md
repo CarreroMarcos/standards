@@ -230,8 +230,9 @@ result = legacy_parse(data)  # type: ignore[no-untyped-call]
 **A deliberate shortcut names its ceiling and its upgrade trigger.** A
 shortcut with a known limit gets a `shortcut:` comment naming the limit
 *and* the condition that forces the real fix — so "later" is a defined
-condition, not a hope. Markers with no trigger are rot: greppable, and the
-debt scan's mechanical signal.
+condition, not a hope. The marker is always exactly `shortcut:` — one grep
+pattern finds every marker, with or without a trigger. Markers with no
+trigger are rot: greppable, and the debt scan's mechanical signal.
 
 *Example:* `// shortcut: inlines the one live path; upgrade to strategy pattern if a second caller appears`
 
