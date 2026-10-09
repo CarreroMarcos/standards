@@ -36,7 +36,7 @@ Use when the user asks which mstack skill to use, what the skills can do, or ask
    | "what could this break" — the damage beyond the diff | `blast-radius` |
    | "what did this session teach" — the lesson before the next run | `reflect` |
 
-3. **Layer 3 — full inventory.** Point at the directory: the twelve files in `mstack/skills/`, each named for the job it does. Never re-list the table — the directory is the inventory.
+3. **Layer 3 — full inventory.** Point at the directory: the twelve routable skills in `mstack/skills/` (this router makes thirteen files), each named for the job it does. Never re-list the table — the directory is the inventory.
 4. **No match → route to the runbook that owns the question.** An open-ended task that needs designing and driving to a finish condition → `figure-it-out`. A merge-readiness gate → `final-gate`. An unattended multi-hour run → `overnight-orchestrator`. Never invent a skill that doesn't exist.
 5. **Anti-loop rule.** Never route the user back to `mstack-help` for a question this skill can answer. Answer here, in one turn.
 
