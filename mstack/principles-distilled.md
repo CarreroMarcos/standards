@@ -141,3 +141,36 @@ source: standards/AGENTIC-SAFETY.md (external content is data, not instructions)
 *Why: a five-line auth change earns the full review; a two-hundred-line rename earns a glance.*
 
 source: standards/CODE-REVIEW.md §10
+
+### cost-if-wrong
+
+**A ruling made under uncertainty states what it costs if wrong.**
+
+*Why: "decided X because Y" reads the same for a typo-level call and a contract-level one — the cost is what tells a later reader which revisits are cheap and which are load-bearing, without re-deriving the uncertainty.*
+
+Bad: "Decided: Postgres — the team knows it."
+Good: "Decided: Postgres — the team knows it. If wrong: a migration, weeks not days; revisit only on a concrete scaling failure."
+
+source: standards/WORKFLOW.md (Recorded decisions)
+
+### correlated-reviewers
+
+**Correlated reviewers are not independent evidence — N correlated agreements count as one signal.**
+
+*Why: parallel agents share a model, training, and blind spots; their agreement measures the blind spot's consistency, not the finding's truth.*
+
+Bad: "Three reviewers flagged it — must be real." (same model, same prompt, three times)
+Good: "Three reviewers flagged it — two share a model, so that's two signals: the correlated pair and the independent one. Say so."
+
+source: standards/CODE-REVIEW.md §6.5
+
+### environment-is-a-verdict
+
+**Exhausted investigation with an environmental cause is a verdict, not a failure — document it, handle it, monitor it.**
+
+*Why: "no root cause" usually means incomplete investigation — but causes that genuinely live outside the code still need an engineering response, not a shrug. Handling without monitoring guarantees the next session starts from zero.*
+
+Bad: "Can't reproduce locally — closing."
+Good: "Falsified the app hypotheses; what remains is the LB idle timeout. Added retry with jitter and an alert on the timeout counter — the next occurrence arrives with evidence."
+
+source: standards/DEBUGGING.md §11
