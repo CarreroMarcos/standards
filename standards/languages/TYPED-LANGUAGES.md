@@ -76,11 +76,15 @@ function total(items: NonEmpty<number>): number {
 // The plain list is already total for sum: the narrower type buys nothing
 // and rejects valid input — total([]) should be 0.
 
-// Good: the strength is earned — `!` was the symptom
+// Good: no narrowing needed — the plain type stays total
 function firstOrDefault<T>([head]: T[], fallback: T): T {
-  return head ?? fallback;  // total on the plain type: no narrowing needed
+  return head ?? fallback;  // load-bearing under noUncheckedIndexedAccess (TYPESCRIPT.md §1)
 }
-function firstStrict<T>([head]: [T, ...T[]]): T { ... }         // head has no answer on [] → narrow here
+
+// Good: the strength is earned — `!` was the symptom
+function firstStrict<T>([head]: [T, ...T[]]): T {
+  return head;  // head has no answer on [] → narrow here
+}
 ```
 
 - Why: the type system's job is to track the cases each use site must handle, not to describe the data as precisely as possible — maximal precision without a totality reason is annotation theater that every reader pays to parse.
