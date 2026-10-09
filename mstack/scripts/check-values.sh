@@ -18,6 +18,14 @@ if command -v rg >/dev/null 2>&1; then
   hitgrep() { rg -o "$1"; }
 else
   hitgrep() { grep -E -o "$1"; }
+  # Portability guard: the fallback grep must understand \b and \s in ERE
+  # (GNU extensions). BSD/macOS grep does not — fail loudly instead of
+  # silently passing or misfiring.
+  probe=$(printf 'sleep 120s\n' | grep -E -o '\b[0-9]+\s*(s|ms)\b' 2>/dev/null || true)
+  if [ "$probe" != "120s" ]; then
+    echo "check-values.sh: requires ripgrep, or a grep with \\b/\\s ERE support (BSD/macOS grep lacks it)." >&2
+    exit 2
+  fi
 fi
 
 pat='\b[0-9]+\s*(s|ms|sec|secs|seconds|min|mins|minutes|round|rounds|retr|retries|times|x)\b'
