@@ -23,6 +23,14 @@ FX="$dir/fixtures"; VM="$dir/../values.md"
 # rg-less stub PATH: symlink everything except rg, so the scripts take
 # their grep-fallback branches and we assert those behave identically.
 # (Defined before first use — norv is called by expect lines below.)
+# The default-path expects exercise the preferred tool (rg when present);
+# the norv block deterministically covers the fallback.
+if command -v rg >/dev/null 2>&1; then
+  RG_PRESENT=1
+else
+  RG_PRESENT=0
+  echo "test-lints: WARNING — rg not found; default-path expects exercise the grep branch (fallback covered deterministically via norv)"
+fi
 noroot=$(mktemp -d)
 for f in /usr/bin/* /bin/*; do
   b=$(basename "$f"); [ "$b" = "rg" ] && continue
@@ -37,6 +45,13 @@ printf '#!/usr/bin/env bash\nexit 1\n' > "$badroot/grep"
 chmod +x "$badroot/grep"
 badgv() { PATH="$badroot:$noroot" "$@"; }
 expect 2 "check-values portability guard fires" badgv bash "$VV" "$VM" "$FX/check-values/clean.md"
+# Wrong-token probe: a grep that returns a plausible-but-wrong token must
+# still trip the guard's != "120s" comparison.
+wrongroot=$(mktemp -d)
+printf '#!/usr/bin/env bash\necho "999x"\n' > "$wrongroot/grep"
+chmod +x "$wrongroot/grep"
+wrongv() { PATH="$wrongroot:$noroot" "$@"; }
+expect 2 "check-values guard fires on wrong probe" wrongv bash "$VV" "$VM" "$FX/check-values/clean.md"
 # The portability guard's exit-2 arm needs a BSD grep to fire; GNU hosts
 # always pass the probe, so that arm is untestable here by construction.
 
@@ -91,6 +106,9 @@ expect_output "check-refs mixed targets report" "violation.md:3:" bash "$RV" "$F
 expect 1 "check-values no values file"  bash "$VV" "$FX/does-not-exist.md" "$FX/check-values/clean.md"
 expect_output "check-values zero args usage" "usage:" bash "$VV"
 expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"
+expect 0 "decades allowlisted" bash "$VV" "$FX/check-values/values-allow-1970s.md" "$FX/check-values/decades.md"
+expect 1 "decades flagged without allowlist" bash "$VV" "$VM" "$FX/check-values/decades.md"
+expect 0 "tbd suppresses number" bash "$VV" "$VM" "$FX/check-values/tbd-number.md"
 
 echo "test-lints: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
