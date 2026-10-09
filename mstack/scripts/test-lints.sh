@@ -44,5 +44,21 @@ expect_output "values unknown ref named"      "unknown values.md reference 'none
 # The portability guard's exit-2 arm needs a BSD grep to fire; GNU hosts
 # always pass the probe, so that arm is untestable here by construction.
 
+# rg-less stub PATH: symlink everything except rg, so the scripts take
+# their grep-fallback branches and we assert those behave identically.
+noroot=$(mktemp -d)
+for f in /usr/bin/* /bin/*; do
+  b=$(basename "$f"); [ "$b" = "rg" ] && continue
+  [ -e "$noroot/$b" ] || ln -s "$f" "$noroot/$b" 2>/dev/null || true
+done
+norv() { PATH="$noroot" "$@"; }
+expect 1 "check-refs no-rg violation"   norv bash "$RV" "$FX/check-refs/violation.md"
+expect 0 "check-refs no-rg clean"       norv bash "$RV" "$FX/check-refs/clean.md"
+expect 1 "check-values no-rg violation" norv bash "$VV" "$VM" "$FX/check-values/violation.md"
+expect 0 "check-values no-rg clean"     norv bash "$VV" "$VM" "$FX/check-values/clean.md"
+expect 1 "check-values no values file"  bash "$VV" "$FX/does-not-exist.md" "$FX/check-values/clean.md"
+expect_output "check-values zero args usage" "usage:" bash "$VV"
+expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"
+
 echo "test-lints: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

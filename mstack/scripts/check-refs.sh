@@ -34,10 +34,11 @@ for target in "$@"; do
       echo "$target:$lineno: outside-repo reference '$hit'"; fail=1
     done < <(printf '%s\n' "$line" | hitgrep "$pat" || true)
     if printf '%s\n' "$line" | grep -qE '/tmp/'; then
-      case "$line" in
-        *[Ss][Cc][Rr][Aa][Tt][Cc][Hh]*) ;;
-        *) echo "$target:$lineno: outside-repo reference '/tmp/'"; fail=1 ;;
-      esac
+      scratch_ok=1
+      while IFS= read -r p; do
+        case "$p" in *[Ss][Cc][Rr][Aa][Tt][Cc][Hh]*) ;; *) scratch_ok=0 ;; esac
+      done < <(printf '%s\n' "$line" | grep -oE '/tmp/[^[:space:]]*' || true)
+      [ "$scratch_ok" -eq 0 ] && { echo "$target:$lineno: outside-repo reference '/tmp/'"; fail=1; }
     fi
   done < "$target"
 done
