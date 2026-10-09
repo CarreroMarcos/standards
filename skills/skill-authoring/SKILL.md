@@ -38,7 +38,7 @@ Per paragraph, ask: would the agent get this wrong without this instruction? If 
 
 ### 3. Verify: RED-GREEN-REFACTOR
 
-**Iron Law: no skill ships without a failing test first — no edit either.** Edit without its failing test? Delete it. Start over.
+**Iron Law: no skill ships without a failing test first — no edit either.** Untested edit? Delete it. Tested edit? Normal cycle.
 
 Micro-test wording first: fresh-context sample, no-guidance control, 5+ reps, read every match. Control doesn't fail? Nothing to fix — stop.
 *Why: full scenario runs are slow and expensive; wording tests are the cheap gate.*

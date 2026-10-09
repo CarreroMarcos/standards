@@ -97,6 +97,8 @@ Two rules for whichever form you pick:
 - **Red flags:** a self-check list ("Code before test", "I'll test after", "Keep as reference"…). All of them mean: stop, start over.
 - **Update the description** with violation symptoms — triggers for when you're *about* to break the rule.
 
+*Beyond discipline skills: violation symptoms belong in the description as triggers (`discovery_guide.md`) — the skill should load when the failure tempts, not just when the task names it.*
+
 ## Verification log
 
 Tally per round — rounds run, tokens spent, pass/fail — in the skill's PR or run notes. Verification costlier than expected lifetime use = overkill; drop a tier.

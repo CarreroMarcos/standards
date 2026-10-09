@@ -95,5 +95,5 @@ Long endpoint catalogs, full schema dumps, repeated auth snippets, tutorials, ba
 - Commands, paths, and auth flows real for this runtime — nothing invented?
 - Auth has its own section, not buried in operating rules?
 - Helpers own their mechanics — no duplicated protocol in prose?
-- `includeInPrompt` (or your runtime's always-load flag) unset unless the skill must load into every conversation?
+- Always-load flag (`includeInPrompt` in frontmatter `metadata`, or your runtime's equivalent) unset unless the skill must load into every conversation?
 - `wc -w SKILL.md` within budget (≤ 500)?
