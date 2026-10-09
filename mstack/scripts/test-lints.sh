@@ -29,6 +29,14 @@ for f in /usr/bin/* /bin/*; do
   [ -e "$noroot/$b" ] || ln -s "$f" "$noroot/$b" 2>/dev/null || true
 done
 norv() { PATH="$noroot" "$@"; }
+# The portability guard's exit-2 arm needs a BSD grep to fire. Simulate it
+# with a stub grep that always fails the probe (exit 1 → empty probe →
+# guard fires exit 2).
+badroot=$(mktemp -d)
+printf '#!/usr/bin/env bash\nexit 1\n' > "$badroot/grep"
+chmod +x "$badroot/grep"
+badgv() { PATH="$badroot:$noroot" "$@"; }
+expect 2 "check-values portability guard fires" badgv bash "$VV" "$VM" "$FX/check-values/clean.md"
 # The portability guard's exit-2 arm needs a BSD grep to fire; GNU hosts
 # always pass the probe, so that arm is untestable here by construction.
 
@@ -60,6 +68,24 @@ expect 1 "check-refs no-rg violation"   norv bash "$RV" "$FX/check-refs/violatio
 expect 0 "check-refs no-rg clean"       norv bash "$RV" "$FX/check-refs/clean.md"
 expect 1 "check-values no-rg violation" norv bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect 0 "check-values no-rg clean"     norv bash "$VV" "$VM" "$FX/check-values/clean.md"
+expect 0 "check-refs no-rg tmp-scratch" norv bash "$RV" "$FX/check-refs/tmp-scratch.md"
+expect 1 "check-refs no-rg tmp-bare"   norv bash "$RV" "$FX/check-refs/tmp-bare.md"
+expect 1 "check-refs no-rg tmp-mixed"   norv bash "$RV" "$FX/check-refs/tmp-mixed.md"
+expect 1 "check-refs no-rg src-violation" norv bash "$RV" "$FX/check-refs/source-violation.md"
+expect 1 "check-values no-rg unknown-ref" norv bash "$VV" "$VM" "$FX/check-values/unknown-ref.md"
+expect 0 "check-values no-rg allowlisted" norv bash "$VV" "$VM" "$FX/check-values/allowlisted.md"
+expect 1 "check-values cofire"          bash "$VV" "$VM" "$FX/check-values/cofire.md"
+expect_output "check-values cofire ref" "unknown values.md reference 'nope.value'" bash "$VV" "$VM" "$FX/check-values/cofire.md"
+expect_output "check-values cofire num" "undeclared magic number '90s'" bash "$VV" "$VM" "$FX/check-values/cofire.md"
+expect 1 "check-values tbd-ref"         bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
+expect_output "check-values tbd-ref named" "unknown values.md reference 'missing.entry'" bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
+# Self-hosting: the lints must pass on the shipped docs themselves.
+expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "values lint clean on runbooks" bash "$VV" "$VM" "$dir"/../runbooks/*.md
+expect 0 "values lint clean on skills" bash "$VV" "$VM" "$dir"/../skills/*.md
+expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "refs lint clean on runbooks" bash "$RV" "$dir"/../runbooks/*.md
+expect 0 "refs lint clean on skills" bash "$RV" "$dir"/../skills/*.md
 expect 1 "check-refs mixed targets" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect_output "check-refs mixed targets report" "violation.md:3:" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect 1 "check-values no values file"  bash "$VV" "$FX/does-not-exist.md" "$FX/check-values/clean.md"

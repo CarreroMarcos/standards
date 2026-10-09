@@ -7,6 +7,10 @@
 # section. Lines with an explicit TBD (...) marker are tolerated.
 # The values file itself is skipped: its Value: lines are declarations.
 # `values.md#<name>` references must name a declared entry.
+#
+# Known limitation: the digit+unit pattern also matches decade-style prose
+# like "1970s". There is no regex-only way to tell "120s" from "1970s";
+# allowlist such tokens when they appear.
 set -u
 
 values_file="${1:?usage: check-values.sh <values-file> <target>...}"
@@ -46,7 +50,7 @@ for target in "$@"; do
   while IFS= read -r line || [ -n "$line" ]; do
     lineno=$((lineno + 1))
     for ref in $(printf '%s\n' "$line" | grep -o 'values\.md#[A-Za-z0-9_.-]*' || true); do
-      name=${ref#values.md#}
+      name=$(printf '%s' "${ref#values.md#}" | sed 's/[.-]*$//')
       known=0
       for d in ${declared[@]+"${declared[@]}"}; do [ "$d" = "$name" ] && { known=1; break; }; done
       [ "$known" -eq 0 ] && { echo "$target:$lineno: unknown values.md reference '$name'"; fail=1; }
