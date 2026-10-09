@@ -23,9 +23,9 @@ Why: Stop the recheck loop when the review count is unchanged for 2 consecutive 
 Used-in: bot-review-loop.md
 
 ### heartbeat.interval
-Value: TBD (set when the runbook that owns it is written)
-Unit: minutes
-Why: Fallback wake interval for the overnight orchestrator when no event watcher exists. Sized to when the result is worth re-checking, not to a fixed cadence.
+Value: 300
+Unit: seconds
+Why: Outer-loop condition poll for the overnight orchestrator's wake design. The inner bot-review loop already polls tighter at mars-law.interval (120s), so the heartbeat stays the slower portable baseline.
 Used-in: overnight-orchestrator.md
 
 ### flake-retry.count
@@ -47,9 +47,9 @@ Why: A mistake class counts when seen twice. One occurrence is an anecdote, not 
 Used-in: correct.md
 
 ### audit-tick.interval
-Value: TBD (set when the runbook that owns it is written)
-Unit: minutes
-Why: Supervisor tick that re-reads the runbook and audits the overnight operation for drift. Judges progress by side effects only.
+Value: 3600
+Unit: seconds
+Why: The spec mandates an hourly audit tick with runbook re-read as the anti-drift mechanism for the overnight orchestrator. Judges progress by side effects only.
 Used-in: overnight-orchestrator.md
 
 ### intake-gate.max-question-rounds
