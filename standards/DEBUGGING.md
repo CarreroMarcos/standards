@@ -142,6 +142,6 @@ Two stop rules: (1) stop fixing and re-examine the premise after the second fail
 **Exhausted investigation with an environmental cause is a verdict, not a failure.** When the loop is tight, the hypotheses are falsified, and what remains is timing, environment, or an external system — document what you investigated, implement the handling the cause calls for (retry, timeout, degraded path, clearer error), and add monitoring or logging so the next occurrence arrives with evidence.
 *Why: "no root cause" usually means incomplete investigation — but the cases where the cause genuinely lives outside the code still need an engineering response, not a shrug. Handling without monitoring guarantees the next session starts from zero again.*
 
-*Boundary: this section is reached only after the §1–§9 discipline, not instead of it. A cause declared "environmental" without the loop and the falsified hypotheses is incomplete investigation wearing a verdict's clothes.*
+*Boundary: this section is reached only after the §1–§9 discipline, not instead of it. A cause declared "environmental" without the loop and the falsified hypotheses is incomplete investigation wearing a verdict's clothes. A disputed "environmental" goes to the reviewer with the loop log as evidence — no log, no verdict.*
 
 ---

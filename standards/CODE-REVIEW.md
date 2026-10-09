@@ -160,7 +160,7 @@ A passing opposition review answers all four. A general statement that none appl
 **Correlated reviewers are not independent evidence.** "Independent reviewers flag the same issue" counts only when the reviewers are actually independent — different models, different prompts, different angles. Two instances of the same reviewer agreeing is one signal wearing a trench coat; discount it accordingly and say so.
 
 - Why: parallel agents share a model, training, and blind spots — their agreement measures the blind spot's consistency, not the finding's truth.
-- Boundary: correlated agreement still beats a single opinion for typos and mechanical issues; the discount applies to judgment calls, where shared blind spots live.
+- Boundary: treat N correlated agreements as one signal. Correlated agreement still beats a single opinion for typos and mechanical issues; the discount applies to judgment calls, where shared blind spots live.
 
 ---
 
