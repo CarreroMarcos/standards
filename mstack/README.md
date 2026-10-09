@@ -35,4 +35,4 @@ Copy the `mstack/` folder into the target repo. Nothing references outside the f
 
 ## Design rationale
 
-See `~/workspace/docs/superpowers/specs/2026-10-09-mstack-design.md` — decisions, the three-layer architecture, holds-as-blocking-steps, and the audit trail that shaped v0.0.1.
+See the mstack design spec (`2026-10-09-mstack-design.md`) — decisions, the three-layer architecture, holds-as-blocking-steps, and the audit trail that shaped v0.0.1.
