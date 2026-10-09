@@ -15,8 +15,8 @@ last_reviewed: 2026-10-08
 1. [Name the limiter](#1-name-the-limiter)
 2. [Tune every side before picking a winner](#2-tune-every-side-before-picking-a-winner)
 3. [Check the number against the limits](#3-check-the-number-against-the-limits)
-4. [Count the errors, verify the outputs](#4-count-the-errors-verify-the-outputs)
-5. [Reproduce it: 5 runs, alternating sides](#5-reproduce-it-5-runs-alternating-sides)
+4. [Count errors and verify outputs](#4-count-errors-and-verify-outputs)
+5. [Reproduce with 5 alternating runs](#5-reproduce-with-5-alternating-runs)
 6. [Weigh it against what the user waits on](#6-weigh-it-against-what-the-user-waits-on)
 7. [Confirm the work ran inside the timed region](#7-confirm-the-work-ran-inside-the-timed-region)
 8. [Rule out what else the number could be](#8-rule-out-what-else-the-number-could-be)
@@ -56,12 +56,12 @@ last_reviewed: 2026-10-08
    something else changed. Re-checking what the timed region measured."
 ```
 
-## 4. Count the errors, verify the outputs
+## 4. Count errors and verify outputs
 
 **Count failures and non-success responses, and check that outputs are correct — not just present.** Rejections are often fast; timeouts and retries are slow; errors behave differently from successes. If the harness does not count errors, add the count before reporting.
 *Why: a fast error is still a number. A run with 20% timeouts prints a latency distribution that looks like a performance improvement — it is a failure report wearing a benchmark's clothes.*
 
-## 5. Reproduce it: 5 runs, alternating sides
+## 5. Reproduce with 5 alternating runs
 
 **Run each side at least 5 times, alternating the sides (A, B, A, B, …) so warmup, lazy initialization, caches, and drift cannot favor one side.** Report the median and the range. A gap smaller than the run-to-run variation is no measurable difference.
 *Why: one run is a weather report. Alternation distributes the machine's mood — thermal drift, cache warmth, a noisy neighbor — evenly across both sides, so the median compares implementations instead of luck. When the call is close, use the harness's own statistics.*

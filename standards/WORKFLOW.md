@@ -70,8 +70,6 @@ End the plan with an acceptance contract: checkable pass/fail criteria, not *vag
 
 **Unattended mode.** When operating unattended, phase approvals are replaced by recorded decisions + the loop contract's blast-radius limits: proceed, record what you decided and why, let the human veto async. "Explicit human approval" = PR approval, recorded decision, or pre-registered policy covering the case — the agent never self-approves. (ENGINEERING_PRINCIPLES.md §8 "prefer proceeding to asking" is the tiebreaker when the loop contract is silent.)
 
-: append-only decision log (extends "Recorded decisions")
-
 **The decision log is append-only — supersede, never edit.** A wrong or outdated decision gets a new entry that supersedes it; the old entry stays. The log is the source of truth for why the design is what it is — a reviewer reading it a month later follows the reasoning trail, not the polished outcome.
 
 - Why: editing history turns the log into the story the author wishes were true. Append-only keeps it the story that actually happened.
@@ -213,8 +211,6 @@ Update the changelog in the same commit — Keep-a-Changelog sections (Added/Cha
 Deprecating a published contract: three phases — warn (name the replacement and the removal version) → document (changelog entry in the same commit) → remove in a major version after a real warning window. Principle: `ENGINEERING_PRINCIPLES.md` §6 "Preserve Backward Compatibility".
 
 This standard ends at a clean commit. What happens between push and merge — review rounds, gates, merge discipline — is the dev loop (`DEV-LOOP.md`).
-
-: rerunnable artifacts (new subsection after Phase 7)
 
 ### Rerunnable artifacts
 

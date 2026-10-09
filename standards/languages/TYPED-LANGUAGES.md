@@ -76,7 +76,9 @@ function total(items: number[]): number {
 // (No change needed. The plain list is already total for sum.)
 
 // Good: the strength is earned — `!` was the symptom
-function firstOrDefault<T>([head = fallback]: T[]): T { ... }  // still total: fine
+function firstOrDefault<T>([head]: T[], fallback: T): T {
+  return head ?? fallback;  // total on the plain type: no narrowing needed
+}
 function firstStrict<T>([head]: [T, ...T[]]): T { ... }         // head has no answer on [] → narrow here
 ```
 

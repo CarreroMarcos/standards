@@ -236,8 +236,6 @@ Escalate when:
 
 **The common failure:** asking for broad approval at workflow start and then allowing the agent to choose a materially different destructive action several steps later.
 
-: the AskQuestion classifier (appended to §8)
-
 **Never ask the human what you can determine by running something.** Before escalating a "which approach" or "what should this do" question, classify it: if the answer is a fact you could observe by running a command — behavior, timing, layout, output, performance, even whether an eval separates two options — it is not the human's to answer. Run it, observe it, let the result decide. Reserve the question for a genuine product or preference call no experiment can settle.
 
 - Why: a question that can be answered by observation taxes the human's scarcest resource — attention. An experiment answers it with evidence instead of opinion, and "the agent lacks required information" (§8 escalation) only fires for information no command can produce.

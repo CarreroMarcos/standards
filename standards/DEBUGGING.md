@@ -1,7 +1,7 @@
 ---
 title: Debugging Discipline
 version: "1.1"
-scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, cleanup"
+scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, premise attacks when fixes keep failing, cleanup"
 consult_when: "When something is broken and you're tempted to theorize first — 'I think the bug is probably in…', 'let me just try changing…' — or when a debug session is spiraling and nothing is converging."
 last_reviewed: 2026-10-08
 ---
@@ -122,8 +122,6 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 - [ ] Throwaway prototypes deleted or moved to a clearly-marked debug location
 - [ ] The hypothesis that turned out correct is stated in the commit message — so the next debugger learns
 - [ ] No secrets in anything shown or pasted during the session (§8)
-
-: new §10 "Attack the premise when fixes keep failing"
 
 ## 10. Attack the premise when fixes keep failing
 

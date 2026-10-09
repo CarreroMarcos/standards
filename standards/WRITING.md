@@ -96,10 +96,10 @@ Boundary: a complex PR earns more than a minute of reading, but never as pasted 
 
 ## 7. Rules have stable numbers
 
-**A retired rule leaves a gap. Never renumber.**
+**A retired rule leaves a gap. Never renumber — in files that use numbered rules.**
 
-Rule numbers in this file are stable IDs other rules cite. When a rule is removed, its number stays empty rather than shifting every rule after it. New rules take the next unused number.
+In a file with a numbered-rule catalog, rule numbers are stable IDs other rules cite. When a rule is removed, its number stays empty rather than shifting every rule after it. New rules take the next unused number.
 *Why: renumbering silently breaks every citation. A gap is honest — it says something used to live here and was deliberately removed.*
-*Bad:* deleting §5 and renumbering §6 to §5, orphaning every "see §6" pointer.
-*Good:* §5 is removed and the header reads "## 5. [retired]" until the next edit cycle; then the number simply stays empty.
-Boundary: new files start at 1 with no gaps — gaps appear only through retirement, never through authoring.
+*Bad:* deleting rule 12 and renumbering 13 to 12, orphaning every "see rule 13" pointer.
+*Good:* rule 12 is removed and its entry reads "[retired]" until the next edit cycle; then the number simply stays empty.
+Boundary: this file's own sections are prose sections (§§1–7), not a numbered-rule catalog — the rule binds when this file or any file grows one. New files start at 1 with no gaps — gaps appear only through retirement, never through authoring.
