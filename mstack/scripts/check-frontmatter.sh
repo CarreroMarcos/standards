@@ -16,7 +16,7 @@ if not text or text[0].strip() != "---":
 try:
     end = text.index("---", 1)
 except ValueError:
-    print("1: frontmatter never closed (missing closing ---)")
+    print(f"{len(text)}: frontmatter never closed (missing closing ---)")
     sys.exit(1)
 try:
     yaml.safe_load("\n".join(text[1:end]))

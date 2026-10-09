@@ -63,5 +63,5 @@ One instantiation of the machinery above — read it as a filled-in form, not as
   - unmasked verify held for every done-claim;
   - coordination off-thread — no agent posts in the PR thread; only the review bot and the human post there;
   - the review bot's infra-failure confident-stop is honored where it fired.
-- **Adversarial pass:** a different model family reviews the fixer work (the "Oracle" setup in this loop); on a single-family harness the verdict carries the caveat from step 8.
+- **Adversarial pass:** a different model family reviews the fixer work (the "Oracle" setup in this loop); on a single-family harness the verdict carries the caveat from step 7.
 - **Merge gate:** the review bot's verdict is advisory — the human's click is the gate.
