@@ -10,6 +10,12 @@ expect() { # expect <want-exit> <description> <command...>
   if [ "$got" -eq "$want" ]; then pass=$((pass + 1))
   else fail=$((fail + 1)); echo "FAIL: $desc (want exit $want, got $got)"; fi
 }
+expect_output() { # expect_output <description> <grep-pattern> <command...>
+  local desc=$1; shift; local pat=$1; shift
+  out=$("$@" 2>&1 || true)
+  if printf '%s\n' "$out" | grep -q "$pat"; then pass=$((pass + 1))
+  else fail=$((fail + 1)); echo "FAIL: $desc (pattern '$pat' not in output)"; fi
+}
 
 RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
@@ -26,6 +32,15 @@ expect 1 "check-values unknown ref"     bash "$VV" "$VM" "$FX/check-values/unkno
 expect 0 "check-values TBD tolerated"   bash "$VV" "$VM" "$FX/check-values/tbd.md"
 expect 0 "check-values self-skip"       bash "$VV" "$VM" "$VM"
 expect 1 "check-values missing target"  bash "$VV" "$VM" "$FX/does-not-exist.md"
+expect 1 "check-refs missing target"    bash "$RV" "$FX/does-not-exist.md"
+expect 1 "check-refs no args"           bash "$RV"
+expect_output "refs violation flags ../"      "outside-repo reference '\.\./"  bash "$RV" "$FX/check-refs/violation.md"
+expect_output "refs violation flags ~/"       "outside-repo reference '~/'"  bash "$RV" "$FX/check-refs/violation.md"
+expect_output "refs violation flags /root/"   "outside-repo reference '/root/'"  bash "$RV" "$FX/check-refs/violation.md"
+expect_output "refs violation flags blob URL" "outside-repo reference 'github"  bash "$RV" "$FX/check-refs/violation.md"
+expect_output "values violation flags 120s"   "undeclared magic number '120s'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
+expect_output "values violation flags 2 rounds" "undeclared magic number '2 rounds'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
+expect_output "values unknown ref named"      "unknown values.md reference 'nonexistent.value'"  bash "$VV" "$VM" "$FX/check-values/unknown-ref.md"
 # The portability guard's exit-2 arm needs a BSD grep to fire; GNU hosts
 # always pass the probe, so that arm is untestable here by construction.
 

@@ -5,10 +5,11 @@ description: Use when a performance claim needs a number you can trust: "is X fa
 
 ## Exit predicate
 
-The run ends with one of these — no third outcome:
+The run ends with one of these — no fourth outcome:
 
 - A named number with its limiter identified, or
-- an explicit "not measured".
+- an explicit "not measured", or
+- an `inconclusive` verdict with the overlapping ranges and evidence attached.
 
 A number without provenance is not a result. A limiter you cannot name is a limiter you did not find.
 
