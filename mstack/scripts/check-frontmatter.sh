@@ -13,9 +13,15 @@ path = sys.argv[1]
 text = open(path, encoding="utf-8").read().splitlines()
 if not text or text[0].strip() != "---":
     sys.exit(0)  # no frontmatter — nothing to validate
-try:
-    end = text.index("---", 1)
-except ValueError:
+# Closing delimiter: first column-0 line that strips to ---. Block-scalar
+# content is always indented in valid YAML, so a column-0 --- can never be
+# inside one — no scalar tracking needed. Trailing whitespace tolerated.
+end = None
+for i in range(1, len(text)):
+    if text[i].strip() == "---" and not text[i][:1].isspace():
+        end = i
+        break
+if end is None:
     print(f"{len(text)}: frontmatter never closed (missing closing ---)")
     sys.exit(1)
 try:

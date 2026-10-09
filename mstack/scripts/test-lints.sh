@@ -16,6 +16,12 @@ expect_output() { # expect_output <description> <grep-pattern> <command...>
   if printf '%s\n' "$out" | grep -q "$pat"; then pass=$((pass + 1))
   else fail=$((fail + 1)); echo "FAIL: $desc (pattern '$pat' not in output)"; fi
 }
+expect_no_output() { # expect_no_output <description> <grep-pattern> <command...>
+  local desc=$1; shift; local pat=$1; shift
+  out=$("$@" 2>&1 || true)
+  if printf '%s\n' "$out" | grep -q "$pat"; then fail=$((fail + 1)); echo "FAIL: $desc (pattern '$pat' found in output)"
+  else pass=$((pass + 1)); fi
+}
 
 RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
@@ -100,11 +106,18 @@ expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/..
 expect 0 "values lint clean on runbooks" bash "$VV" "$VM" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "values lint clean on skills" bash "$VV" "$VM" "$dir"/../skills/*.md
 expect 0 "frontmatter clean fixture" bash "$FF" "$FX/check-frontmatter/clean.md"
+expect 0 "frontmatter block-scalar rule not a delimiter" bash "$FF" "$FX/check-frontmatter/block-scalar-rule.md"
 expect 1 "frontmatter bad-colon fixture" bash "$FF" "$FX/check-frontmatter/bad-colon.md"
 expect_output "frontmatter bad-colon reports line" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/bad-colon.md"
 expect 1 "frontmatter missing file" bash "$FF" "$FX/check-frontmatter/nonexistent.md"
 expect 1 "frontmatter unclosed fixture" bash "$FF" "$FX/check-frontmatter/missing-close.md"
 expect_output "frontmatter unclosed reports" "never closed" bash "$FF" "$FX/check-frontmatter/missing-close.md"
+expect 0 "frontmatter no-frontmatter fixture" bash "$FF" "$FX/check-frontmatter/no-frontmatter.md"
+expect_no_output "frontmatter no-frontmatter silent" "no-frontmatter.md" bash "$FF" "$FX/check-frontmatter/no-frontmatter.md"
+expect 0 "frontmatter empty file" bash "$FF" "$FX/check-frontmatter/empty.md"
+expect 1 "frontmatter mixed files exit 1" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
+expect_output "frontmatter mixed reports bad file" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
+expect_no_output "frontmatter mixed silent on clean file" "clean.md" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
 expect 0 "frontmatter clean on docs" bash "$FF" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
 expect 0 "frontmatter clean on runbooks" bash "$FF" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "frontmatter clean on skills" bash "$FF" "$dir"/../skills/*.md
