@@ -103,7 +103,7 @@ A failure worth handling is a *credible* one: observed here, reported in compara
 |---|---|
 | "Better safe than sorry" | A try/except around code that cannot fail hides real bugs — safety theater, not safety. |
 
-→ Deep cut: CODE-QUALITY.md §3, PYTHON.md §5.
+→ Deep cut: CODE-QUALITY.md §3, languages/PYTHON.md §5.
 
 ## Equally binding, shorter stated
 

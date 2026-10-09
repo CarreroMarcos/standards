@@ -1,9 +1,9 @@
 ---
 title: Agentic Design
-version: "1.3"
+version: "1.4"
 scope: "Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation"
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-08
 ---
 
 # Agentic Design
@@ -235,6 +235,16 @@ Escalate when:
 | "We have human-in-the-loop" | Approval on every harmless read is ceremony, not control. Approval belongs where it changes risk: the consequential action a human can actually review. |
 
 **The common failure:** asking for broad approval at workflow start and then allowing the agent to choose a materially different destructive action several steps later.
+
+: the AskQuestion classifier (appended to §8)
+
+**Never ask the human what you can determine by running something.** Before escalating a "which approach" or "what should this do" question, classify it: if the answer is a fact you could observe by running a command — behavior, timing, layout, output, performance, even whether an eval separates two options — it is not the human's to answer. Run it, observe it, let the result decide. Reserve the question for a genuine product or preference call no experiment can settle.
+
+- Why: a question that can be answered by observation taxes the human's scarcest resource — attention. An experiment answers it with evidence instead of opinion, and "the agent lacks required information" (§8 escalation) only fires for information no command can produce.
+- Bad: asking the human whether the cache should be per-request or per-worker, when a two-command timing check settles it. Good: run the check, report the numbers, decide — and ask the human only about the call no experiment settles.
+- Boundary: observation is never a license to do the irreversible thing. Deploys, deletions, and customer messages still pause for the human — and a posted message can't be un-posted: team chat, ticket updates, and anything externally visible are consequential actions, not free experiments. Under a full-autonomy grant, decide-and-report; under the grant's limits, the human still owns the call.
+
+---
 
 ## 9. Orchestrating Multiple Agents
 

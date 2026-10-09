@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.1"
+version: "3.2"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-08
 ---
 
 # Workflow Standard
@@ -69,6 +69,16 @@ End the plan with an acceptance contract: checkable pass/fail criteria, not *vag
 **A pinned decision is executed, not re-litigated.** Reopening one is itself a decision — it needs a new framed question and a new log entry, not a quiet reinterpretation mid-task.
 
 **Unattended mode.** When operating unattended, phase approvals are replaced by recorded decisions + the loop contract's blast-radius limits: proceed, record what you decided and why, let the human veto async. "Explicit human approval" = PR approval, recorded decision, or pre-registered policy covering the case — the agent never self-approves. (ENGINEERING_PRINCIPLES.md §8 "prefer proceeding to asking" is the tiebreaker when the loop contract is silent.)
+
+: append-only decision log (extends "Recorded decisions")
+
+**The decision log is append-only — supersede, never edit.** A wrong or outdated decision gets a new entry that supersedes it; the old entry stays. The log is the source of truth for why the design is what it is — a reviewer reading it a month later follows the reasoning trail, not the polished outcome.
+
+- Why: editing history turns the log into the story the author wishes were true. Append-only keeps it the story that actually happened.
+- Bad: the framed question on the database choice quietly rewritten after the migration proved it wrong. Good: new entry — "2026-10-08: supersedes DB-choice-03; the migration showed X; switching to Y."
+- Boundary: fix typos and broken links in place — that is hygiene, not history. A decision's substance changes only through a superseding entry, and reopening one is itself a decision (new framed question, new entry — never a quiet reinterpretation mid-task).
+
+---
 
 ## Phase 3.5 — Independent Plan Review (advisory — not one of the seven counted phases)
 
@@ -144,7 +154,7 @@ Boundary: when callers genuinely need different behavior, that's the signal to s
 
 - **One test per observable behavior — write, implement, verify, commit — before starting the next.** Do not write a batch of tests up front and implement them as a batch. *Why:* batching hides which test is driving which code.
 - The remaining design rules live in `ENGINEERING_PRINCIPLES.md` §4: "Test Observable Behavior" (test the seam), "Independent Expected Values" (expected values from a source independent of the code), "Tracer Bullet" (one end-to-end test first).
-- **Property-based tests for domains with properties** — the worked shape lives in PYTHON.md §16; keep concrete example tests alongside.
+- **Property-based tests for domains with properties** — the worked shape lives in languages/PYTHON.md §16; keep concrete example tests alongside.
 
 ## Phase 5 — Simplify
 
@@ -203,6 +213,18 @@ Update the changelog in the same commit — Keep-a-Changelog sections (Added/Cha
 Deprecating a published contract: three phases — warn (name the replacement and the removal version) → document (changelog entry in the same commit) → remove in a major version after a real warning window. Principle: `ENGINEERING_PRINCIPLES.md` §6 "Preserve Backward Compatibility".
 
 This standard ends at a clean commit. What happens between push and merge — review rounds, gates, merge discipline — is the dev loop (`DEV-LOOP.md`).
+
+: rerunnable artifacts (new subsection after Phase 7)
+
+### Rerunnable artifacts
+
+**Non-trivial work ships the tool that proves it.** When a claim rests on repetition — every caller checked, every migration site touched, every seed case run — the artifact goes into the diff: the script, the codemod, the generator, or the delegate skill the subagents followed. A deterministic script turns "trust me" into "run this."
+
+- Why: hand-done changes can only be re-verified by redoing them. A rerunnable artifact lets the reviewer check the work by running it — and rerunning is free.
+- Bad: the plan claims all 40 call sites were audited — no script in the diff, so the claim is unverifiable. Good: `tools/audit_callers.py` in the diff; the reviewer reruns it and the output matches the committed evidence.
+- Boundary: trivial work does not earn a lever — a couple of obvious edits you can see at a glance get done by hand. The bar is checkability, not repetition: a one-off still earns a script when the script is what makes the work reviewable. A cited lever with no artifact in the diff means the rule wasn't applied.
+
+---
 
 ## Handoff
 
