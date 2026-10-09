@@ -45,13 +45,13 @@ for target in "$@"; do
   lineno=0
   while IFS= read -r line || [ -n "$line" ]; do
     lineno=$((lineno + 1))
-    case "$line" in *"TBD ("*) continue ;; esac
     for ref in $(printf '%s\n' "$line" | grep -o 'values\.md#[A-Za-z0-9_.-]*' || true); do
       name=${ref#values.md#}
       known=0
       for d in "${declared[@]}"; do [ "$d" = "$name" ] && { known=1; break; }; done
       [ "$known" -eq 0 ] && { echo "$target:$lineno: unknown values.md reference '$name'"; fail=1; }
     done
+    case "$line" in *"TBD ("*) continue ;; esac
     while IFS= read -r hit; do
       [ -z "$hit" ] && continue
       ok=0
