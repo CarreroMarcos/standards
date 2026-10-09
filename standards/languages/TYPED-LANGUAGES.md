@@ -73,8 +73,8 @@ The distinguishing test: "Am I strengthening this type to keep an operation tota
 function total(items: NonEmpty<number>): number {
   return items.reduce((a, b) => a + b, 0);
 }
-// (No change needed: the plain list is already total for sum.
-// The narrower type buys nothing and rejects valid input — total([]) is 0.)
+// The plain list is already total for sum: the narrower type buys nothing
+// and rejects valid input — total([]) should be 0.
 
 // Good: the strength is earned — `!` was the symptom
 function firstOrDefault<T>([head]: T[], fallback: T): T {

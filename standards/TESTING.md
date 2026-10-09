@@ -1,7 +1,7 @@
 ---
 title: Testing Discipline
 version: "1.1"
-scope: "Test creation for agents: what to measure, seam agreement, when tests are required, anti-cheating, cost placement, suppression guards, mocking design, test shape"
+scope: "Test creation for agents: what to measure, seam agreement, when tests are required, anti-cheating, cost placement, suppression guards, mocking design, test shape, red-first discipline, dead-test detection, verification runs"
 consult_when: "When writing tests and tempted to test everything or nothing — 'do I need a test for this?', 'what should I mock?', 'is this test actually proving anything?' — or when a suite is slow, flaky, or green-but-meaningless."
 last_reviewed: 2026-10-08
 ---

@@ -26,7 +26,7 @@ last_reviewed: 2026-10-08
 
 **Answer "why not double?" with a named resource or code path, taken from a profile or system counters during a run — never from reading the code.** A guess from reading the code is not a limiter. If a change did not move the number, the limiter explains why — find it before calling the change useless. Watch the load generator too: if it saturates first, you measured the load generator.
 *Why: "why isn't it twice as fast" forces the claim to name what holds it back — a core, a lock, the disk, the network, the generator. A limiter you can point at is a number you understand; a limiter you inferred is a story you told yourself.*
-*Boundary: profiling happens on a throwaway run, not the run you report — profilers and tracers slow the work they observe.*
+*Boundary: profiling happens on a throwaway run, not the run you report — profilers and tracers slow the work they observe. Where profiling is impractical (short-lived processes, distributed paths), log counters structurally — or call the verdict inconclusive per §9. Never substitute a guess from reading the code.*
 
 ```text
 ❌ "export is faster because the new code is more efficient."
