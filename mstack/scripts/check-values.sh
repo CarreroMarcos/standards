@@ -3,7 +3,7 @@
 #
 # Usage: check-values.sh <values-file> <target>...
 # A magic-looking number (digits + unit, e.g. 120s, 2 rounds) in a target
-# fails unless the hit text appears in the values file's ## Allowlist
+# fails when the hit text is absent from the values file's ## Allowlist
 # section. Lines with an explicit TBD (...) marker are tolerated.
 # The values file itself is skipped: its Value: lines are declarations.
 # `values.md#<name>` references must name a declared entry.

@@ -3,9 +3,9 @@
 #
 # Usage: check-refs.sh <target>...
 # Fails (exit 1, file:line) on: ../, ~/, /home/, /root/, bare repo blob
-# URLs (github.com/<org>/<repo>/blob/). /tmp/ fails unless the line
+# URLs (github.com/<org>/<repo>/blob/). A /tmp/ line passes only when it
 # explicitly mentions scratch. Lines starting with `source:` are provenance
-# metadata: they pass unless they contain a relative path (../).
+# metadata: they pass only when free of any relative path (../).
 set -u
 
 [ "$#" -gt 0 ] || { echo "check-refs.sh: no targets" >&2; exit 1; }
