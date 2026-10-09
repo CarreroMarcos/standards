@@ -20,6 +20,18 @@ expect_output() { # expect_output <description> <grep-pattern> <command...>
 RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
 
+# rg-less stub PATH: symlink everything except rg, so the scripts take
+# their grep-fallback branches and we assert those behave identically.
+# (Defined before first use — norv is called by expect lines below.)
+noroot=$(mktemp -d)
+for f in /usr/bin/* /bin/*; do
+  b=$(basename "$f"); [ "$b" = "rg" ] && continue
+  [ -e "$noroot/$b" ] || ln -s "$f" "$noroot/$b" 2>/dev/null || true
+done
+norv() { PATH="$noroot" "$@"; }
+# The portability guard's exit-2 arm needs a BSD grep to fire; GNU hosts
+# always pass the probe, so that arm is untestable here by construction.
+
 expect 0 "check-refs clean"            bash "$RV" "$FX/check-refs/clean.md"
 expect 1 "check-refs violation"         bash "$RV" "$FX/check-refs/violation.md"
 expect 0 "check-refs tmp-scratch pass"  bash "$RV" "$FX/check-refs/tmp-scratch.md"
@@ -40,22 +52,16 @@ expect_output "refs violation flags /root/"   "outside-repo reference '/root/'" 
 expect_output "refs violation flags blob URL" "outside-repo reference 'github"  bash "$RV" "$FX/check-refs/violation.md"
 expect_output "values violation flags 120s"   "undeclared magic number '120s'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect_output "values violation flags 2 rounds" "undeclared magic number '2 rounds'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
+expect_output "values violation flags 30 times" "undeclared magic number '30 times'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect_output "values unknown ref named"      "unknown values.md reference 'nonexistent.value'"  bash "$VV" "$VM" "$FX/check-values/unknown-ref.md"
-# The portability guard's exit-2 arm needs a BSD grep to fire; GNU hosts
-# always pass the probe, so that arm is untestable here by construction.
-
-# rg-less stub PATH: symlink everything except rg, so the scripts take
-# their grep-fallback branches and we assert those behave identically.
-noroot=$(mktemp -d)
-for f in /usr/bin/* /bin/*; do
-  b=$(basename "$f"); [ "$b" = "rg" ] && continue
-  [ -e "$noroot/$b" ] || ln -s "$f" "$noroot/$b" 2>/dev/null || true
-done
-norv() { PATH="$noroot" "$@"; }
+expect_output "refs no-rg flags ../" "outside-repo reference" norv bash "$RV" "$FX/check-refs/violation.md"
+expect_output "values no-rg flags 120s" "undeclared magic number '120s'" norv bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect 1 "check-refs no-rg violation"   norv bash "$RV" "$FX/check-refs/violation.md"
 expect 0 "check-refs no-rg clean"       norv bash "$RV" "$FX/check-refs/clean.md"
 expect 1 "check-values no-rg violation" norv bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect 0 "check-values no-rg clean"     norv bash "$VV" "$VM" "$FX/check-values/clean.md"
+expect 1 "check-refs mixed targets" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
+expect_output "check-refs mixed targets report" "violation.md:3:" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect 1 "check-values no values file"  bash "$VV" "$FX/does-not-exist.md" "$FX/check-values/clean.md"
 expect_output "check-values zero args usage" "usage:" bash "$VV"
 expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"

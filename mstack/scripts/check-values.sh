@@ -48,14 +48,14 @@ for target in "$@"; do
     for ref in $(printf '%s\n' "$line" | grep -o 'values\.md#[A-Za-z0-9_.-]*' || true); do
       name=${ref#values.md#}
       known=0
-      for d in "${declared[@]}"; do [ "$d" = "$name" ] && { known=1; break; }; done
+      for d in ${declared[@]+"${declared[@]}"}; do [ "$d" = "$name" ] && { known=1; break; }; done
       [ "$known" -eq 0 ] && { echo "$target:$lineno: unknown values.md reference '$name'"; fail=1; }
     done
     case "$line" in *"TBD ("*) continue ;; esac
     while IFS= read -r hit; do
       [ -z "$hit" ] && continue
       ok=0
-      for a in "${allowlist[@]}"; do [ "$a" = "$hit" ] && { ok=1; break; }; done
+      for a in ${allowlist[@]+"${allowlist[@]}"}; do [ "$a" = "$hit" ] && { ok=1; break; }; done
       [ "$ok" -eq 0 ] && { echo "$target:$lineno: undeclared magic number '$hit'"; fail=1; }
     done < <(printf '%s\n' "$line" | hitgrep "$pat" || true)
   done < "$target"
