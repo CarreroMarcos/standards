@@ -4,6 +4,8 @@ Distilled from a forensic analysis of a production agent-skills library (14 skil
 
 **Evidence tiers:** Tier 1 = controlled wording A/B tests (the library authors' self-reported evals — not independently replicated). Tier 2 = observed across the whole corpus. Tier 3 = strong but situational. Technique counts are analyst measurements — re-grep before citing as fact. Full honesty notes at the end of this file.
 
+**Ordering coupling:** `SKILL.md` §3 applies these techniques in a fixed sequence (T5 → T9 → T6 → T2 → T7 → T8 → T3 → T12 → T13 → T10). If you renumber, reorder, or remove techniques here, update that list in the same change.
+
 ---
 
 ### T1. Match the form to the failure — never default to "don't" (Tier 1)
@@ -56,7 +58,7 @@ Distilled from a forensic analysis of a production agent-skills library (14 skil
 
 ### T6. Bare second-person imperatives; ration MUST/NEVER; delete "should" (Tier 2)
 
-**Do:** Default mood imperative, subjectless where it reads as law. MUST only for genuine gates, NEVER only for identity-level violations — force comes from scarcity (5 MUSTs in 3,765 words). Never "should" in a rule; it survives only inside quoted rationalizations you're about to kill. Hedges at ~zero; replace uncertainty with a decision procedure.
+**Do:** Default mood imperative, subjectless where it reads as law. MUST only for genuine gates, NEVER only for identity-level violations — force comes from scarcity (3 MUSTs in 3,765 words at time of writing; re-grep before citing). Never "should" in a rule; it survives only inside quoted rationalizations you're about to kill. Hedges at ~zero; replace uncertainty with a decision procedure.
 
 **Evidence:** 0–3 hedges per file measured across 12 files. Ladder: Iron Law > NEVER > don't > (never "avoid" — 0×).
 
