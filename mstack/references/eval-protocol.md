@@ -14,10 +14,7 @@ Then the artifact itself passes four audits:
 1. **Bold-skeleton read.** Read only the bold lines top to bottom. The
    skeleton reads as coherent imperatives. A skeleton that doesn't make
    sense means the steps don't either.
-2. **Hedge grep.** `rg -i '\b(should|generally|consider|try to|where
-   possible|unless)\b'` — every hit is either inside a quoted
-   rationalization, inside this step's own pattern line, or a bug. Fix
-   the bugs.
+2. **Hedge grep.** Run `rg -i '\b(should|generally|consider|try to|where possible|unless)\b'` — every hit is either inside a quoted rationalization, inside this step's own pattern line, or a bug. Fix the bugs.
 3. **`check-values.sh` clean.** `bash scripts/check-values.sh values.md
    <file>` exits 0. Every magic number is a named entry in `values.md`;
    markdown references it by name, never inline.

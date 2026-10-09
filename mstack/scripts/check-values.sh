@@ -22,8 +22,10 @@ fi
 
 pat='\b[0-9]+\s*(s|ms|sec|secs|seconds|min|mins|minutes|round|rounds|retr|retries|times|x)\b'
 
-mapfile -t declared < <(grep -E '^### ' "$values_file" | sed 's/^### //')
-mapfile -t allowlist < <(awk '/^## Allowlist/{f=1;next} /^## /{f=0} f' "$values_file" | grep -o '"[^"]*"' | tr -d '"')
+declared=()
+while IFS= read -r d; do declared+=("$d"); done < <(grep -E '^### ' "$values_file" | sed 's/^### //')
+allowlist=()
+while IFS= read -r a; do allowlist+=("$a"); done < <(awk '/^## Allowlist/{f=1;next} /^## /{f=0} f' "$values_file" | grep -o '"[^"]*"' | tr -d '"')
 
 vreal=$(realpath "$values_file" 2>/dev/null || readlink -f "$values_file" 2>/dev/null || printf '%s' "$values_file")
 fail=0
@@ -45,7 +47,7 @@ for target in "$@"; do
     while IFS= read -r hit; do
       [ -z "$hit" ] && continue
       ok=0
-      for a in "${allowlist[@]}"; do case "$a" in *"$hit"*) ok=1; break ;; esac; done
+      for a in "${allowlist[@]}"; do [ "$a" = "$hit" ] && { ok=1; break; }; done
       [ "$ok" -eq 0 ] && { echo "$target:$lineno: undeclared magic number '$hit'"; fail=1; }
     done < <(printf '%s\n' "$line" | hitgrep "$pat" || true)
   done < "$target"

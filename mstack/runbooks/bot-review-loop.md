@@ -15,7 +15,7 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 
 ## Requires
 
-- A review bot posting canonical comments carrying the marker `<!-- pr-reviewer:canonical:v1 -->`.
+- A review bot posting canonical comments carrying a versioned marker (`<!-- pr-reviewer:canonical:v1 -->`, `v2`, … — match the `pr-reviewer:canonical:v` prefix, never the literal).
 - A human merge gate: only the human merges standards-repo PRs.
 - CI that reports per-commit status on the PR.
 
@@ -34,7 +34,7 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 
 ## Steps
 
-1. Poll the PR thread for the latest comment carrying `<!-- pr-reviewer:canonical:v1 -->`. When several exist, the newest one is canonical; older ones are history. When the bot errors repeatedly, emits stale reviews, or stops posting canonical comments, go to step 13.
+1. Poll the PR thread for the latest comment carrying a `pr-reviewer:canonical:v` marker — any version counts; the newest one is canonical and older ones are history. (Match the prefix, never the literal: a version bump in the marker must not silently break this step.) When the bot errors repeatedly, emits stale reviews, or stops posting canonical comments, go to step 13.
 2. Triage every finding against the shared dismissal rubric — skeptical by default. Read the cited code before judging the finding (`loop-before-theory`); match triage depth to finding severity (`scale-ceremony`).
 
    **Shared dismissal rubric.** Dismiss a finding only with evidence attached:

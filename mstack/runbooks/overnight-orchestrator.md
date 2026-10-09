@@ -47,7 +47,7 @@ A predicate bent to fit the run is not an exit. When the run cannot reach either
 5. Arm the wake design for every wait on an external condition (`HARNESS.md` §2): the event-watcher arm where the harness exposes one, and the heartbeat arm — re-checking the condition every `values.md#heartbeat.interval` with each tick logged, so a stalled loop is distinguishable from a quiet one. The heartbeat is the portable baseline; the watcher is an optimization.
 6. Run the audit tick every `values.md#audit-tick.interval`: re-read this runbook, then audit the run for drift — predicate still intact, holds still held, decision log current. A drifted run pauses until the drift is corrected.
 7. Hold per-iteration decision-log checkpoints: after each unit, append what was decided, what was tried, and what the evidence showed, using the `show-work` skill's log format. The log is the run's memory; a new session resumes from the log, never from recollection (`recorded-decisions`).
-8. Probe worker liveness on a cadence tighter than the worker's TIMEBOX. A worker with no output and no state change across a full probe window is dead: kill it and respawn fresh with the same brief — never inherit a dead session's confusion.
+8. Probe worker liveness on a cadence tighter than the worker's TIMEBOX. A worker with no output and no state change across a full probe window is dead: kill it and respawn fresh with the same brief — never inherit a dead session's confusion. (First respawn keeps the brief; if the respawned worker goes silent again, the retry table's "Worker stall" row takes over: respawn with narrowed scope.)
 9. Retry by mode, never by hope:
 
    | Failure mode | Retry rule |
