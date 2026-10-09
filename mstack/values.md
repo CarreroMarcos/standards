@@ -78,3 +78,4 @@ each carries its reason so the list stays honest.
 - "7 runbooks" — the v0.0.1 file count; structural, not a tuned threshold.
 - "step 1" (and other step numbers) — document numbering, not a quantity.
 - "v0.0.1" — the version string, not a measurement.
+- "3 times" — small fixed procedural counts in prose, not tuned thresholds.
