@@ -1,6 +1,6 @@
 ---
 title: Standards
-version: "2.0"
+version: "2.1"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
 last_reviewed: 2026-10-08
@@ -24,10 +24,14 @@ These are best practices, not laws. Context matters — some rules don't fit cer
 | Writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — even "just a formatting tweak" or a bot's PR | RULES-FILE-INTEGRITY.md | Skip when not touching instruction files. Rules files are code — every diff gets human review. |
 | Adding or changing log/telemetry statements, or deciding whether a field is safe to log | LOGGING.md | Skip when not emitting telemetry. Never log secrets — SECRETS.md owns why. |
 | Reviewing a diff — yours, a bot's, or another agent's | CODE-REVIEW.md | Skip when not reviewing. Advisory — the owning gate defines pass/fail. |
+| Writing anything a human reads — documentation, PR descriptions, reports, commit messages | WRITING.md | Skip when the output is code or a terse status. Response shape lives in AGENTIC-DESIGN §10. |
 | Writing or changing code — especially when tempted to skip the small stuff ('just a quick fix', 'the diff is obvious') — or preempting review nits (proof of completion, file hygiene, error handling) | CODE-QUALITY.md | Skip when a specific standard already answers the question. Design principles live in ENGINEERING_PRINCIPLES. |
 | Writing tests — unit, integration, edge cases, e2e — or deciding what to mock, what coverage to require, or whether a test is actually proving anything | TESTING.md | Skip when not writing tests. Philosophy lives in ENGINEERING_PRINCIPLES.md §4; the TDD loop in WORKFLOW.md Phase 4. |
-| Debugging a failure — building the repro, minimizing it, testing hypotheses, instrumenting — or when a debug session is spiraling | DEBUGGING.md | Skip when nothing is broken. The gates (red-capable repro, three-strikes) live in AGENTIC-DESIGN.md §4 and DEV-LOOP.md. |
-| Writing Python — style, typing, async, errors, tooling, or performance | PYTHON.md | Skip when not writing Python. Language-neutral principles live in ENGINEERING_PRINCIPLES; per-task quality rules in CODE-QUALITY. |
+| Trusting a number you measured — a speedup, a regression, a throughput, a latency, or an eval result — before reporting or acting on it | MEASUREMENT.md | Skip when no number is being trusted. A number without a named limiter is a rumor. |
+| Debugging a failure — building the repro, minimizing it, testing hypotheses, instrumenting, attacking the premise when fixes keep failing — or when a debug session is spiraling | DEBUGGING.md | Skip when nothing is broken. The gates (red-capable repro, three-strikes) live in AGENTIC-DESIGN.md §4 and DEV-LOOP.md. |
+| Writing Python — style, typing, async, errors, tooling, or performance | languages/PYTHON.md | Skip when not writing Python. Language-neutral principles live in ENGINEERING_PRINCIPLES; per-task quality rules in CODE-QUALITY. |
+| Writing TypeScript — strictness, narrowing, casts, guards, schemas | languages/TYPESCRIPT.md | Skip when not writing TypeScript. Shared type-system discipline lives in TYPED-LANGUAGES.md. |
+| Designing with a type system — sum types, branding, exhaustive matching, parse-at-boundary | languages/TYPED-LANGUAGES.md | Skip when the language is untyped. Language mechanics live in the language files under languages/. |
 | Starting or planning a unit of work, from idea through clean commit | WORKFLOW.md | Skip when the work is already ticketed inside the dev loop. Ends at commit — DEV-LOOP owns push to merge. |
 | Operating the ticket → implement → verify → review → gate → merge loop | DEV-LOOP.md | Skip for one-off changes on the verbal go-ahead path. Documents the loop as operated. |
 | Designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or when the diagram is getting drawn before the failure modes | ARCHITECTURE.md | Skip when not making architectural decisions. |

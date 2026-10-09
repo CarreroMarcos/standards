@@ -1,9 +1,9 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "2.0"
+version: "2.1"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When running the ticket → implement → verify → review → gate → merge loop — especially when tempted to treat a bot verdict or green CI as the merge decision."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-08
 ---
 
 # Dev Loop — the agentic build loop, as operated
@@ -185,7 +185,7 @@ the credentials were. Scrub traces and audit logs with a check independent of th
 
 ## Test discipline
 
-**Tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise. Test discipline lives in PYTHON.md §16 — the loop enforces it, doesn't restate it.
+**Tests run against the installed package** (src layout) — a test that passes against repo-root files but fails against the packaged artifact is a release-day surprise. Test discipline lives in languages/PYTHON.md §16 — the loop enforces it, doesn't restate it.
 
 ## Environment
 

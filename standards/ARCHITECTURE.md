@@ -1,9 +1,9 @@
 ---
 title: Architecture
-version: "1.1"
+version: "1.2"
 scope: "Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation"
 consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-08
 ---
 
 # Architecture
@@ -27,6 +27,7 @@ last_reviewed: 2026-10-03
 - **13. Design for Operability** — observe and operate what you ship
 - **14. Graceful Degradation** — defined fallback behavior
 - **15. Overload Protection, Rate Limiting & Circuit Breakers** — shed load, don't amplify it
+- **16. Design red flags** — checkable design anti-shapes and idempotent lifecycle operations
 
 ## 1. Start With Critical Flows and Failure Modes
 
@@ -251,5 +252,104 @@ Prefer rejecting excess work early and cheaply over accepting an unbounded amoun
 Circuit-breaker thresholds, rate limits, queue bounds, and concurrency settings must be based on the dependency's observed behavior or a documented initial assumption that can be measured and revised.
 
 **The common failure:** allowing every layer to queue and retry independently. One user request fans out, queues accumulate, timeouts fire, each layer retries, and protection mechanisms amplify the outage they were intended to prevent.
+
+## 16. Design red flags
+
+**Screen every candidate design before synthesis.** A red flag is a reason to revise or reject the shape, not a style nit. Each flag below is a symptom tripwire: when you see the symptom, fix the shape.
+
+### 16.1. Shallow module
+
+**Symptom tripwire:** callers chain 3+ of your methods to complete one operation, or your option flags name internal stages (`skip_validation`, `phase="load"`).
+
+**Why:** the interface taxes every caller with coordination work the module should own. A wide surface backed by thin behavior is a call chain, not a capability — learning the interface doesn't save the caller from learning the implementation.
+
+**Bad:** `loader.load()`, `validator.validate(items)`, `saver.save(items)` called in that order by every caller — three modules, one operation, zero hidden complexity.
+
+**Good:** one `ingest(source)` that owns load → validate → save internally. The caller names the outcome, not the steps.
+
+**Boundary:** a thin wrapper that adapts a real boundary (foreign API shape, serialization mismatch) isn't shallow — it hides genuine complexity. Judge by hidden behavior: if removing the layer costs callers nothing, remove the layer.
+
+### 16.2. Information leakage
+
+**Symptom tripwire:** a change to a wire format, storage schema, or framework object forces edits in 2+ modules.
+
+**Why:** every module that depends on a representation is coupled to it. One representation change becomes a coordinated edit across call sites you cannot enumerate.
+
+**Bad:** a service returns `requests.Response` to callers who read `.json()["fields"]` — every caller's fate is tied to the transport library's object model.
+
+**Good:** parse external data into domain types behind the interface — `parse_payload(raw) -> Order` — and everything past the boundary speaks `Order`. Transport, storage, and framework types stay private to the seam that owns them.
+
+**Boundary:** your own published wire types (the §8 contract you agreed with consumers) are the contract, not leakage. This flag targets transport/framework internals leaking *past* the seam.
+
+### 16.3. Temporal decomposition
+
+**Symptom tripwire:** modules named after pipeline stages (Load / Validate / Transform / Save) that all manipulate the same representation and its invariants.
+
+**Why:** execution order is not knowledge. Stages organized by time repeat one representation and its rules across N boundaries, so one invariant change touches every stage.
+
+**Bad:** `Loader`, `Validator`, `Transformer`, `Saver` each holding their own copy of the `Order` field invariants.
+
+**Good:** one `OrderIngestion` module owning `Order` and its rules; load/validate/transform are methods that run at different times inside it. Group code around domain knowledge owned, not the clock.
+
+**Boundary:** genuine pipeline boundaries — different owners, deploys, or rate limits (per §3) — can stay separate. Group around knowledge; split only on a real isolation need.
+
+### 16.4. Two ways to do one task
+
+**Symptom tripwire:** grep finds 2+ live paths performing the same task (`send_via_queue()` and `send_direct()` both in use).
+
+**Why:** agents and new code copy whichever way they find first, so every way keeps gaining callers and behavior drifts between the copies. One task with two implementations is a bug waiting for divergence.
+
+**Bad:** keeping both paths because "migration is risky" — the migration never happens, the callers split, the behaviors drift.
+
+**Good:** one live path per task. This flag is the detector — CODE-QUALITY §5 is the procedure (inventory callers, move them, delete the old API in the same change).
+
+**Boundary:** a deliberate compatibility shim with a documented removal date (a §8 contract sunsetting) isn't two ways — it's one way with a deadline. The shim's expiry follows the CODE-QUALITY §5 adapter rule at the contract level.
+
+### 16.5. Importable internals
+
+**Symptom tripwire:** anything outside the module imports a `_private` name, a submodule-internal class, or a helper from under `internal/`.
+
+**Why:** agents take the shortest path that compiles, so they import internals directly — and the imported internal becomes part of the interface. Every internal change turns into a compatibility event.
+
+**Bad:** `from worker.pool import _pick_slot` — the pool's slot-picking algorithm is now public API.
+
+**Good:** make internals unreachable from outside the module, so an import from outside fails the build — package exports, `__init__` boundaries, or lint that rejects private imports from outside the package.
+
+**Boundary:** tests may reach internals to pin behavior (see TESTING.md) — that's a sanctioned exception, not an invitation for production code.
+
+### 16.6. Hand-synced list
+
+**Symptom tripwire:** adding one item means editing 2+ lists — event names in code plus docs, supported types in the handler plus the schema, flags in the CLI plus the config reference.
+
+**Why:** whoever sees one list updates only that one. The lists disagree silently until a user hits the gap.
+
+**Bad:** `SUPPORTED = [...]` in code and a matching list maintained by hand in the README — every addition is a two-edit ritual with no enforcement.
+
+**Good:** keep one authoritative list and derive the others from it (codegen, doc build). If a list genuinely can't be derived, add a build/test check that fails when the lists disagree — the check *is* the derivation.
+
+**Boundary:** intentionally redundant lists with a machine-checked consistency test satisfy this. The guarantee matters, not the mechanism.
+
+### 16.7. Idempotent lifecycle operations
+
+**Make startup, teardown, and scheduled loops converge to the same end state regardless of partial prior runs.**
+
+**Why:** commands, lifecycle steps, and processing loops run where crashes, restarts, and retries are normal. If leftover state from a crashed run changes the next run's outcome, every restart becomes a debugging session. (§7 covers per-job idempotency at worker boundaries; this covers the process lifecycle around the jobs.)
+
+**The recipe:**
+
+- **Convergent startup:** on start, scan for existing state, clean stale artifacts, adopt or reclaim live sessions — never assume a clean boot.
+- **Content-based cleanup:** recognize leftovers by content equivalence, not creation order, so a half-written artifact from a crashed run is identifiable as incomplete rather than valid.
+- **Self-healing locks:** a lock file records the holder's PID; on lock contention, check whether that PID is still alive before treating the lock as held. A dead holder means a stale lock — release it, don't wait on it.
+- **Idempotent scheduling:** failed work respawns cleanly; fresh input is regenerated after each cycle rather than accumulated from leftovers.
+
+**The test — run before merge:**
+
+1. What happens if this runs twice in a row?
+2. What happens if the previous run crashed at every possible point?
+3. Does re-execution converge to the same end state?
+
+If any answer is "it depends on what state was left behind," the operation needs a reconciliation step.
+
+**Boundary:** spend the reconciliation budget on operations that mutate shared state. Read-only and pure operations converge trivially — don't armor what can't break.
 
 ---

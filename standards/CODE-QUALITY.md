@@ -1,9 +1,9 @@
 ---
 title: Code Quality
-version: "2.11"
+version: "2.12"
 scope: "Code quality rules: comments, dead code, testing, verification"
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-08
 ---
 
 # Code Quality
@@ -68,6 +68,27 @@ deterministic re-scoring IS the re-run — do not re-capture to verify a capture
 
 **The law, restated:** no fresh evidence, no "done".
 
+**When verification fails, suspect the observation method before suspecting
+the system.** A failing check means the check *or* the system is wrong —
+re-read the check first: stale fixture, wrong assertion, cached state, test
+harness drift. Debugging the system from a broken instrument wastes the whole
+session.
+*Why: agents trust their own test code uncritically and chase system bugs that
+don't exist. The instrument is written by the same fallible author as the
+code.*
+
+**A scripted check saved as an artifact beats a narrated one.** When the
+verification matters enough to re-run — a migration, a perf claim, a subtle
+bug — write the check as a deterministic script and keep its output as an
+artifact a reviewer can re-run, not a one-time eyeball narrated in the
+report.
+*Why: "I ran it and it looked right" is a claim; a committed script plus its
+output is evidence. The artifact re-runs on the next diff — the narration
+doesn't.*
+Boundary: commit the script for large or complex work where the trail must be
+auditable later. For a routine unit test, the test suite itself is the
+artifact — don't commit one-off scripts for checks the suite already covers.
+
 ## 2. Be Conservative with Files
 
 **Prefer editing over creating files.** Don't create empty placeholder files.
@@ -99,7 +120,7 @@ except ValueError as e:
     raise
 ```
 
-→ PYTHON.md §5 "Errors and exceptions" (structured exception hierarchies, `raise DomainError(...) from err`, one retry wrapper per boundary).
+→ languages/PYTHON.md §5 "Errors and exceptions" (structured exception hierarchies, `raise DomainError(...) from err`, one retry wrapper per boundary).
 
 **Handle errors at the boundary, not everywhere.** Error handling belongs where
 the program meets the untrusted or unreliable: user input, file I/O, network
@@ -151,6 +172,24 @@ if installation is None:
 If the skip rate itself goes anomalous — every item suddenly "bad" — that's a systemic failure, not per-item noise. Alert on skip volume and let the overload path own it (→ ARCHITECTURE.md §15), rather than warning-logging your way through an outage.
 
 → ENGINEERING_PRINCIPLES.md §1 "Simplicity vs. resilience mechanisms" (credible failures).
+
+**Do not re-export wire/framework types through the public surface.** Validate
+at the boundary, then translate into domain types — and expose only the
+domain. A public signature that names a framework's request object, an ORM
+model, or a transport envelope leaks the boundary's private representation
+into every caller's code.
+*Why: the boundary's types are the boundary's business. Re-exporting them
+means every consumer couples to the framework, every framework upgrade
+becomes a breaking change, and business logic can't be tested without the
+framework.*
+*Bad:* `def create_invoice(req: HttpRequest) -> DbInvoice:` in a service
+module — callers must import the web framework and the ORM to use it.
+*Good:* `def create_invoice(draft: InvoiceDraft) -> Invoice:` — pure domain
+in, pure domain out; the HTTP layer translates at the edge.
+Boundary: this is the mirror of §3's "trust the types inside" — the inside
+types are domain types, and the translation happens exactly once, at the
+boundary. Thin mechanical adapters at the edge that do the translation are
+the sanctioned place for framework knowledge.
 
 ## 4. Comment the WHY, Keep Provenance Honest
 
@@ -238,6 +277,21 @@ trigger are rot: greppable, and the debt scan's mechanical signal.
 
 Boundary: for genuinely throwaway code, the trigger can be "delete with the
 experiment."
+
+**Encode the constraint, then delete the comment.** A constraint comment
+("do not remove", "do not change wording", "talk to X before changing") is a
+claim the code should enforce — so enforce it: as a type, a lint rule, or a
+test that fails when the constraint is violated. Then delete the comment.
+*Why: a comment asks the next reader for obedience; an encoding makes
+violation impossible or loud. Comments rot — the reader who needs the warning
+is the one who never read the comment.*
+*Bad:* `# DO NOT REMOVE — the deploy pipeline depends on this column name`
+sitting above a migration.
+*Good:* a test asserting the pipeline's expected column name, and no comment.
+Boundary: encode only what the code can actually check. A constraint about
+something outside the code's reach (a human process, a vendor behavior) keeps
+its comment — the encoding discipline governs claims the code *could*
+enforce, not claims it can't.
 
 ## 5. Keep Changes Surgical and Small
 
@@ -329,6 +383,37 @@ that under-touches (breaks a caller) and the eager one that over-touches (adds
 features).
 Boundary: the enumeration is author-time, one pass — not a design doc.
 
+**If answering a question requires tracing through more than 3 files or
+layers, flatten it.** A rich interface that hides substantial work is not a
+deep call chain — the tripwire is the *reader's* trace, not the depth of the
+implementation behind an honest boundary.
+*Why: every indirection is a file the next reader opens and a jump the next
+debugger steps through. Depth that doesn't hide a decision is just distance
+between the question and the answer.*
+*Bad:* `handle_request` → `dispatch` → `route_event` → `apply_policy` →
+`execute_action` where each layer forwards the same arguments unchanged.
+*Good:* the honest boundaries stay (parse at the edge, execute the action);
+the forwarding middles inline.
+Boundary: flattening means removing layers that add no decision — never
+merging distinct failure domains or trust boundaries into one function.
+
+**Migrate callers, then delete the legacy API — adapters are exceptional and
+time-boxed.** When a new internal API is the right design, inventory the
+callers, migrate them, and delete the old API in the same wave — not behind a
+compatibility layer. A temporary adapter gets an expiry (a dated TODO, a
+ticket, a version ceiling), not permanent residence.
+*Why: keeping both paths creates dual-path complexity and makes the codebase
+feel append-only. An adapter with no expiry date is a second API, not a
+bridge.*
+*Bad:* `old_create_user()` kept alive "until everyone migrates," with the
+migration never scheduled.
+*Good:* callers migrated in the same diff; where a staged rollout truly needs
+an adapter, it carries `# TODO(expires 2026-11-08): drop after rollout` — and
+the date is a real commitment.
+Boundary: applies when no external users depend on backward compatibility.
+Published APIs with external consumers get the deprecation policy in
+ARCHITECTURE.md, not this rule.
+
 ## 6. State Assumptions, Verify Goals
 
 **State assumptions before coding.** Say what you assumed when it affects the
@@ -351,7 +436,7 @@ human confirmation. Full policy: `ENGINEERING_PRINCIPLES.md` §3 "Dead-Code Remo
 
 **Name for meaning, not mechanics.** Nouns for variables, verbs for functions. `pending_refunds` beats `data2`; `dedupe_preserve_order` beats `proc`. Developers over-abbreviate far more often than they over-lengthen — keep domain-meaning names ≥3 letters so the call site reads as a sentence; conventional shorts (`i`, `x`/`y`, `e`, `id`, `db`) are fine. The rule targets cryptic abbreviations (`procData`, `tmpUsr`), not established shorthand — judge by whether a new reader can expand the name.
 
-**Mark deliberate escape hatches explicitly** — a leading underscore signals "I chose this"; the full convention lives in PYTHON.md §10.
+**Mark deliberate escape hatches explicitly** — a leading underscore signals "I chose this"; the full convention lives in languages/PYTHON.md §10.
 
 **One thing per function, one level of abstraction.** Roughly under 50 lines; files under ~800. The top function reads as an outline; details live one call down. Long functions mix abstraction levels, which makes the bug surface the entire function.
 
@@ -404,6 +489,92 @@ process(order)
 extracting — premature abstraction locks in the wrong shape. The deliberate
 exception: a shared contract at a published boundary is designed up front; see
 `ARCHITECTURE.md` §8.
+
+**Model the domain; don't scatter it across booleans and branches.** When the
+code branches on state — lifecycle phases, feature flags, modes — encode the
+domain in a structure instead of scattering conditionals. Scattered booleans,
+repeated shape assumptions, and branching spread across files are accidental
+complexity; a structure that matches the domain makes invalid states
+unrepresentable and deletes branches.
+*Why: §8's boolean-parameter rule covers booleans as arguments. This covers
+booleans as state — the case where "just one more flag" compounds with every
+feature. Choosing the structure at write time is cheap; recovering it later
+reads as a refactor and gets deferred.*
+
+Reach for the smallest structure that fits:
+- **State machine** instead of scattered booleans, phases, or lifecycle checks.
+- **Typed object/model** instead of loose parameters or repeated shape assumptions.
+- **Registry/map/lookup table** instead of branching spread across files.
+- **Reducer or event model** instead of ad hoc state mutations.
+
+```python
+# ❌ BAD - two booleans that must stay in sync, branches everywhere
+def send(invoice, is_finalized, is_overdue):
+    if is_finalized and is_overdue:
+        ...
+    elif is_finalized:
+        ...
+    # is_overdue=True with is_finalized=False is nonsense —
+    # nothing in the code says so
+
+# ✅ GOOD - the domain states are the only states
+@dataclass(frozen=True)
+class InvoiceState:
+    status: Literal["draft", "finalized", "overdue"]   # overdue implies finalized
+
+def send(invoice, state: InvoiceState):
+    ...
+```
+
+**Do not force an abstraction.** If the current shape is already clear, local,
+and unlikely to grow, boring code wins. Be skeptical of an abstraction that
+adds indirection without removing branches, duplicated rules, invalid states,
+or lifecycle risk.
+*Bad:* wrap a two-branch conditional in a registry "for extensibility" with one
+registered handler.
+*Good:* leave the two branches alone — and notice the next feature that wants
+to add a third branch, because that feature is the symptom you skipped this.
+Boundary: the tripwire is the symptom — a new feature growing an existing
+if/else chain by one more branch, or a second boolean that must stay in sync
+with the first. No symptom, no structure; symptom, model it then.
+
+**The 30-second reader test.** After shaping a change, ask: can a new reader
+answer "where does X come from?" and "what can change X?" in under 30 seconds?
+If not, cut layers or cut state.
+*Why: line counts, cyclomatic complexity, and "clean architecture" are proxies.
+Reader load — the layers to trace times the state to hold — is the thing that
+matters. A flat file with 50 globals can be as hard to reason about as a
+6-layer adapter stack; guard both.*
+*Bad:* a call chain where answering "what changed this value?" means opening
+five files and holding a flag through three of them.
+*Good:* the value's origin and mutation points fit in one screen of search.
+Boundary: applies to code a stranger will maintain — not to throwaway
+experiments, which get deleted anyway.
+
+**Adjacent layers must change the abstraction.** A layer that repeats the same
+methods and arguments adds reader load without compression — collapse it.
+*Why: every layer is a comprehension tax the next reader pays; a pass-through
+layer taxes them and teaches nothing. A boundary that hides a meaningful
+decision pays for itself; one that echoes the interface below it doesn't.*
+*Bad:* `class OrderRepo` exposing `get(order_id)`, `save(order)` that do
+nothing but forward to the ORM with identical signatures.
+*Good:* the repository either encodes a real decision (tenant scoping,
+caching, mapping) or doesn't exist.
+Boundary: layers with one caller and zero behavioral delta die — this is §5's
+pass-through rule applied to readers, not to call counts.
+
+**Shrink state scope: derive instead of sync.** Prefer pure functions (returns
+over mutations); then locals over fields, fields over module state, module
+state over globals. When state can be derived, derive it — don't store a copy
+and keep the two in sync.
+*Why: every mutable holding is one more thing the reader must keep in their
+head, and every sync point is a bug waiting for a missed update.*
+*Bad:* `is_expired` stored on the object and refreshed by a caller that must
+remember to call `refresh()`.
+*Good:* `is_expired` is a property computed from `expires_at` — one truth, no
+sync.
+Boundary: caching is not sync — a derived value with a documented invalidation
+rule is a performance decision, not a second source of truth.
 
 ## 9. Rules Bow to Context
 

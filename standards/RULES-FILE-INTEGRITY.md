@@ -1,9 +1,9 @@
 ---
 title: Rules-File Integrity
-version: "2.5"
+version: "2.6"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
 consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — 'it's just a formatting tweak', 'the bot's PR, just merge it'."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-08
 ---
 
 # Rules-File Integrity
@@ -18,6 +18,7 @@ last_reviewed: 2026-10-07
 - **§2. Violation response** — stop, preserve, revert, post-mortem, rotate
 - **§3. Threat model (2024–2026)** — the attack table
 - **§4. Content architecture** — what belongs in the file and where: layered structure, learnings section
+- **§5. Admitting new rules** — what earns a learning a place in the corpus, and what mechanism it gets encoded in
 - **References**
 
 ## §1. Write plain, visible Markdown
@@ -122,6 +123,25 @@ If you find a violation:
 6. **Name the excuse; refute it inline.** Every skip-worthy step carries its rationalization: the excuse an agent will reach for, refuted in one line next to the step.
    - Why: the corpus already uses this as house style (starter Thought/Reality tables); required structure means the refutation ships with the rule instead of living in a reviewer's head.
    - Boundary: required only for steps with explicit skip conditions — not every rule needs a table.
+
+## §5. Admitting new rules
+
+§§1–4 protect the file and keep it followed. This section is the admission gate: what earns a rule a place in the corpus, and what it gets encoded in. Admit a learning only if it clears the filter; encode it in the strongest mechanism that can carry it.
+
+1. **Clear the filter before codifying a learning.** A learning earns a place when it passes three checks: durable — still true after paths, SHAs, tool versions, and code shapes have changed (the 6-month test); decision-changing — a future agent does something different because of it, not just reads more text; mechanism-free — no lint rule, script, metadata flag, or runtime check already enforces it or could enforce it cheaply.
+   - Why: every line in a rules file competes for the agent's attention budget — prose that repeats what a checker enforces costs attention and gains nothing.
+   - Bad: a Learnings section grows to 40 lines while CI enforces every one of them. Good: prose carries only the judgment calls no checker can carry ("a function that reads as 'do X then do Y' wants two names").
+   - Boundary: one-off operational notes stay in the incident report, not the rules file — if nobody acts on it in 6 months, it was a note, not a rule.
+
+2. **Pick the strongest mechanism that can carry the rule.** When more than one mechanism would work, choose the strongest the situation allows: an unrepresentable state that cannot compile, then a lint or banned-API rule that fails CI, then a canonical helper, then a runtime check. Skill prose is the last resort.
+   - Why: agents copy whatever the surrounding code already does — a prose instruction beside code that violates it becomes the next template, while a mechanism that fails CI cannot be copied around.
+   - Bad: "Never use module X" in AGENTS.md while the codebase imports it in 40 places. Good: a banned-API lint rule failing CI; the prose line is deleted because the checker carries it.
+   - Boundary: judgment calls with no mechanical expression (naming, API-design taste) keep prose — the hierarchy orders the choices, it never eliminates prose.
+
+3. **Ship the structural fix alone — the instruction is the symptom.** When the fix is structural, ship only the structural fix; do not also write the prose instruction.
+   - Why: keeping both doubles the maintenance surface and teaches readers that prose is the real rule — the next agent reads the prose, misses the lint, and the drift resumes.
+   - Bad: a ban in the lint config plus "remember not to use X" in AGENTS.md. Good: the lint rule; the prose line deleted.
+   - Boundary: when the mechanism's intent isn't self-evident, one line of prose may name the why — the enforcement still lives in the mechanism.
 
 ## References
 

@@ -1,8 +1,8 @@
 ---
 title: Engineering Principles
-version: "1.14"
+version: "1.15"
 scope: Core engineering principles and practices
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-08
 consult_when: "When making a judgment call no specific standard covers — 'the rules point both ways', 'this feels over-engineered but I can't say why', 'which principle wins here'."
 ---
 
@@ -24,7 +24,7 @@ consult_when: "When making a judgment call no specific standard covers — 'the 
 - **§3. Refactoring & Modernization** — smallest change, 3-phase deprecation
 - **§4. Testing Philosophy** — independent expected values, tracer bullets, property-based testing
 - **§6. Change Safety & Decision Discipline** — blast radius, decision records
-- **§7. Python Practice** — pointer to PYTHON.md
+- **§7. Python Practice** — pointer to languages/PYTHON.md
 - **§8. Spec-First Workflow** — for significant work
 - **Engineering Decision Flow** — the question sequence for applying all of the above
 
@@ -517,7 +517,7 @@ For consequential migrations, correctness takes precedence over making rollback 
 
 ## §7. Python Practice
 
-Python-specific mechanics live in `PYTHON.md` — tooling, style, typing, async discipline, errors, packaging, and performance. This section states only the principle: the sections above state principles, not implementations — the examples are Python because that is the working language; translate the mechanics when the stack differs. The failure modes are easy to write, hard to see in review, and often invisible until load.
+Python-specific mechanics live in `languages/PYTHON.md` — tooling, style, typing, async discipline, errors, packaging, and performance. This section states only the principle: the sections above state principles, not implementations — the examples are Python because that is the working language; translate the mechanics when the stack differs. The failure modes are easy to write, hard to see in review, and often invisible until load.
 
 ## §8. Spec-First Workflow (for significant work)
 

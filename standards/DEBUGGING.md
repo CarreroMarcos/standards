@@ -1,7 +1,7 @@
 ---
 title: Debugging Discipline
-version: "1.0"
-scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, cleanup"
+version: "1.1"
+scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, premise attacks when fixes keep failing, cleanup"
 consult_when: "When something is broken and you're tempted to theorize first — 'I think the bug is probably in…', 'let me just try changing…' — or when a debug session is spiraling and nothing is converging."
 last_reviewed: 2026-10-08
 ---
@@ -19,7 +19,7 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 - **Grep every caller, fix the root cause once in the shared code** → WORKFLOW.md
 - **Prefer fixes that delete code** → CODE-QUALITY.md §5
 - **Finish every part the change breaks** → CODE-QUALITY.md §5
-- **A diagnostic that cannot run is "could not verify," never a pass** → PYTHON.md (0/1/2 guard contract)
+- **A diagnostic that cannot run is "could not verify," never a pass** → languages/PYTHON.md (0/1/2 guard contract)
 - **Redact before rendering; rotate on exposure** → SECRETS.md
 
 ## 1. Build the loop before the theory
@@ -111,7 +111,7 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 → SECRETS.md owns the why; this is the debug-session application.
 
 **A diagnostic that cannot run is "could not verify" — never a pass.** A repro harness that errors on setup (bad fixture, unreachable env) and gets read as "bug not reproduced" converts ignorance into assurance.
-*Why: the most dangerous verdict a debug gate can emit is assurance from ignorance.* (Companion to PYTHON.md's 0/1/2 guard contract.)
+*Why: the most dangerous verdict a debug gate can emit is assurance from ignorance.* (Companion to languages/PYTHON.md's 0/1/2 guard contract.)
 
 ## 9. Clean up and record
 
@@ -122,3 +122,17 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 - [ ] Throwaway prototypes deleted or moved to a clearly-marked debug location
 - [ ] The hypothesis that turned out correct is stated in the commit message — so the next debugger learns
 - [ ] No secrets in anything shown or pasted during the session (§8)
+
+## 10. Attack the premise when fixes keep failing
+
+**Two or more fixes failed the same gate → suspect the shared premise, not the fixes.** Stop fixing. Write the premise down — the one sentence every failed fix assumed — and take a census before the next fix: count how the imbalance distributes across actors, not how large it is. Each failure under a shared premise is evidence about the premise.
+
+Two stop rules: (1) stop fixing and re-examine the premise after the second failed fix — no third fix on the same assumption; (2) do not start the next fix before the premise is written down and the census exists.
+
+*Why: fixing under a wrong premise converges on the wrong shape. The third fix assumes the same thing the first two already disproved.*
+
+*Bad:* a third patch tuning the same retry knob after two identical failures. *Good:* "Premise: the load is evenly distributed. Census: one worker holds 90% of the backlog on every run — the premise is the bug; remove the assignment, don't compensate for it."
+
+*Boundary: the census is the exit. If it comes back even across actors, the premise is not the cause — look elsewhere and keep the census as evidence. One failure is just debugging; two failures on the same assumption trigger the rule. When a correct seam for the census doesn't exist, the census itself is a rerunnable script (one artifact the reviewer reruns).*
+
+---

@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.7"
+version: "2.8"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-08
 ---
 
 # Code Review Standard
@@ -73,6 +73,30 @@ For attribution, show the decomposition summing to the measured whole — *"N ne
 
 Run the command before writing its output. An unrun example is the same defect as an unrun test.
 
+## 3.5 The evidence ladder
+
+**Turn Basis from a classification into a procedure.** For each fact a finding depends on, climb as far down the ladder as is cheap — and state where you stopped.
+
+| Rung | What it is | What it earns |
+|---|---|---|
+| 1 | You said so. Worthless on its own. | Prose — not evidence. |
+| 2 | You pointed at the line. A real `file:line`, or the library's own source. | The citation every Basis requires. |
+| 3 | You showed the bad case can't happen. You walked the failure step by step and it doesn't reach. | The reasoning chain that earns `INFERRED`. |
+| 4 | You ran it. A script or test that calls the real code and fails loud if you're wrong. | `VERIFIED`, by observation. |
+| 5 | You reproduced it in the running app. | `VERIFIED`, by reproduction. |
+
+A `SPECULATIVE` finding is a ladder stopped at rung 2 — the trigger line is cited and the report states why the climb can't continue.
+
+**Find the one fact it's safe because of.** Most findings rest on a single load-bearing fact — "this call only touches already-dead entries", "the input is validated upstream". Name that fact and climb the ladder on it. One climbed fact clears more maybes than ten listed risks.
+
+**Point at what a symbol search misses.** Rung 2 is not only grep. The line that decides the finding may live in the library's own source, the pinned version, a wire format, a DB column, a feature flag, or code three hops downstream. A symbol search that misses these leaves the rung unreached.
+
+- Bad — the claim without the climb: *"The retry can't loop forever — `MAX_ATTEMPTS` bounds it."* (Rung 1: said so.)
+- Good — the fact climbed: *"The retry can't loop forever — the load-bearing fact is `MAX_ATTEMPTS=3` bounding the loop at `worker/poller.py:41`; walked the exit path and the bad case doesn't reach (rung 3). Callers of `poll()` checked — all three pass the bounded config."*
+
+- Why: the Basis classification says what the finding is; the ladder records what you did to earn it — a second reader sees exactly how far the claim was pushed, and where it stopped.
+- Boundary: stop where the next rung costs more than the finding's severity justifies, and state the stopping rung. The stopping point is part of the evidence, not a weakness. A cheap rung-4 script usually beats a long argument for rung 3.
+
 ## 4. Blocking semantics
 
 **`Blocking: true` requires `Severity >= High` AND `Basis != SPECULATIVE`.**
@@ -91,6 +115,8 @@ Run the command before writing its output. An unrun example is the same defect a
 
 **Predicted Risks** — SPECULATIVE findings. Omit this section entirely when no SPECULATIVE findings exist.
 
+**Verdict** — carries the Act On / Consider / Dismissed lists (§6.5).
+
 ## 6. Opposition review
 
 **Answer all four explicitly — this is not a summary pass:**
@@ -101,6 +127,33 @@ Run the command before writing its output. An unrun example is the same defect a
 4. What cross-domain risk did no single domain catch?
 
 A passing opposition review answers all four. A general statement that none apply is a failure.
+
+## 6.5 Reviewer judgment
+
+**Apply judgment to the findings list before writing the report.** Opposition review asks whether any finding is overstated; this section is the filter that decides what survives.
+
+**Watch for nitpick gravity.** Reviewers, especially adversarial ones, fill their review — find nothing critical and the nits inflate to fill the space. If every finding is a nit or a style preference, the code is probably fine. Say so in the verdict, and shrink the report to match.
+
+**Trace the call site before raising a hypothetical.** "What if someone passes null here?" is a finding only when a caller can actually pass null. Read the callers — a reviewer working from a diff can't always see the call chain; you can. Validated upstream or blocked by the type system means the finding dies there.
+
+- Bad — the hypothetical without the trace: *"What if `user` is null?"* — no caller examined.
+- Good — the trace that makes it real: *"What if `user` is null?"* — traced to `api/handlers.py:88`, which passes unvalidated input. Or the trace that kills it: `middleware/validate.py:12` rejects nulls — dismissed, reason stated.
+
+**Dismiss the different-approach finding.** "I prefer a different approach" is not a bug, not a design flaw, and not actionable — unless the reviewer shows a concrete problem with the current approach. No concrete problem means dismissal, with the reason stated.
+
+- Bad — a preference wearing a finding's clothes: *"Extract this into a helper for readability."*
+- Good — dismissed with the reason: *"Extract this into a helper — no concrete problem shown with the inline version; 12 lines, one caller. Kept as is."*
+
+**Keep findings that name a concrete execution path.** Three signals a finding survives the filter: independent reviewers flag the same issue, the finding walks a real call path instead of a hypothetical, or it exposes a gap in your own mental model of the code. Security and correctness findings get this scrutiny even when they come from a single reviewer — discomfort is not a filter.
+
+**Cap the Act On list at five.** A verdict the reader can act on in one sitting is the goal. More than five "Act On" items means the filter isn't filtering — push the rest to Consider or Dismissed.
+
+**Show the Dismissed section — it's the trust mechanism.** The verdict carries Act On, Consider, and Dismissed. Showing what you rejected and why lets the reader override your judgment where they disagree; hidden rejections force the reader to redo the review to check your work.
+
+- Why: adversarial energy produces noise — judgment is what turns a findings dump into a review you can ship after.
+- Boundary: this section filters the independent reviewer's report; self-review fixes its own findings (§9). Judgment never overrides evidence — a finding with a concrete path survives the filter, however uncomfortable.
+
+---
 
 ## 7. Evidence integrity
 
