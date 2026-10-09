@@ -22,7 +22,7 @@ Give the goal and a checkable finish condition. Leave out the how and your theor
 | `HARNESS.md` | Per-harness translation notes (Muse agents, Claude Code, OpenCode, Cursor, Codex). Runbooks stay harness-neutral |
 | `runbooks/` | Nine loop procedures: bot-review-loop, overnight-orchestrator, skill-authoring-run, biweekly-standards-research, measurement-eval, final-gate, figure-it-out (fallback), deep-work, debugging |
 | `runbooks/examples/` | Worked examples — concrete instantiations of a portable runbook, labeled non-portable |
-| `skills/` | Fifteen situational tools invoked by runbook steps: validate, measure, prove-it, interrogate, show-work, correct, verify-app, architect, how, why, blast-radius, reflect, mstack-help, tdd, verification-planning |
+| `skills/` | Fifteen situational tools invoked by runbook steps, one directory per skill (`skills/<name>/SKILL.md`, the standard Agent Skills layout): validate, measure, prove-it, interrogate, show-work, correct, verify-app, architect, how, why, blast-radius, reflect, mstack-help, tdd, verification-planning |
 | `scripts/` | `check-values.sh` (magic-number lint), `check-refs.sh` (self-containment lint), `check-frontmatter.sh` (YAML frontmatter lint), `test-lints.sh` (asserts the lints behave) |
 | `references/` | `eval-protocol.md` — how a runbook or skill earns its place |
 
