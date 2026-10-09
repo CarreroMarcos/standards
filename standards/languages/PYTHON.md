@@ -1,9 +1,9 @@
 ---
 title: Python Standard
-version: "1.9"
+version: "1.10"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python and reaching for the old habits — bare `except`, mutable defaults, sync calls in async code, 'just pip install it' — or when the code runs but a Python review would flag it."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-09
 ---
 
 # Python Standard
@@ -252,6 +252,11 @@ Handle a narrow, named exception with a defined recovery. Surface a broad failur
 **Exceptions carry structured data, not just text.** Follow the httpx pattern: a small hierarchy per domain (`HTTPError → RequestError → TimeoutException → ConnectTimeout`), with the relevant objects attached (`.request`, `.response`) — not just a message string. Callers catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure), and structured attributes beat message-parsing. Put the object on the exception, not just text in the message.
 
 **Retry lives in one wrapper per boundary.** All hand-rolled retry logic in a single `_request_with_retry` — never scattered at call sites. If the SDK already retries correctly (boto3's standard mode), configure it instead of wrapping it. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry policy: ARCHITECTURE.md §6 — retry what can self-heal, never blind-retry 4xx. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
+
+**Budget retries against the deadline — retries multiply the timeout.** Every retry re-spends the per-call timeout, so the worst-case wall clock is `timeout × (max_retries + 1)`. Size attempts so that product fits inside the request deadline, not just the per-call bound.
+- Why: a 30s timeout with 4 retries is a 150s commitment wearing a 30s costume. The deadline holder never sees the per-attempt number — only the product can blow their budget.
+- Bad: `timeout=30, max_retries=5` under a 60s worker deadline. Good: `timeout=10, max_retries=2` — 30s worst case, budget left for the rest of the pipeline.
+- Boundary: when the SDK owns the retry loop, configure its budget knobs instead of doing this math yourself (same rule as the wrapper above).
 
 ## 6. Correctness traps agents repeat
 
