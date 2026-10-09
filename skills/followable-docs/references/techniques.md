@@ -4,7 +4,7 @@ Distilled from a forensic analysis of a production agent-skills library (14 skil
 
 **Evidence tiers:** Tier 1 = controlled wording A/B tests (the library authors' self-reported evals — not independently replicated). Tier 2 = observed across the whole corpus. Tier 3 = strong but situational. Technique counts are analyst measurements — re-grep before citing as fact. Full honesty notes at the end of this file.
 
-**Ordering coupling:** `SKILL.md` §3 applies these techniques in a fixed sequence (T5 → T9 → T6 → T2 → T7 → T8 → T3 → T12 → T13 → T10). If you renumber or reorder techniques here, update that list in the same change.
+**Ordering coupling:** `SKILL.md` §3 applies these techniques in a fixed sequence (T5 → T9 → T6 → T2 → T7 → T8 → T3 → T12 → T13 → T10). If you renumber, reorder, or remove techniques here, update that list in the same change.
 
 ---
 
