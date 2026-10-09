@@ -56,7 +56,7 @@ Distilled from a forensic analysis of a production agent-skills library (14 skil
 
 ### T6. Bare second-person imperatives; ration MUST/NEVER; delete "should" (Tier 2)
 
-**Do:** Default mood imperative, subjectless where it reads as law. MUST only for genuine gates, NEVER only for identity-level violations — force comes from scarcity (5 MUSTs in 3,765 words). Never "should" in a rule; it survives only inside quoted rationalizations you're about to kill. Hedges at ~zero; replace uncertainty with a decision procedure.
+**Do:** Default mood imperative, subjectless where it reads as law. MUST only for genuine gates, NEVER only for identity-level violations — force comes from scarcity (3 MUSTs in 3,765 words). Never "should" in a rule; it survives only inside quoted rationalizations you're about to kill. Hedges at ~zero; replace uncertainty with a decision procedure.
 
 **Evidence:** 0–3 hedges per file measured across 12 files. Ladder: Iron Law > NEVER > don't > (never "avoid" — 0×).
 

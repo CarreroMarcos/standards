@@ -26,22 +26,11 @@ Read the target doc end to end. For each rule that isn't working, name the failu
 
 ### 2. Fix the triggers first
 
-Rewrite every `consult_when` / description line as symptoms and temptations, never a content summary. Name the moment ("about to write code and tempted to skip tests"), quote the agent's own excuse phrases ("'it's just a quick fix'"), include error strings. A description that summarizes the doc teaches the agent to follow the summary *instead of* the doc — upstream measured this failure directly.
+Rewrite triggers per T4 (`references/techniques.md`) — symptoms, temptations, error strings; never a content summary. Upstream measured the failure directly: a summarizing description gets followed *instead of* the doc.
 
 ### 3. Rewrite rule by rule
 
-Apply `references/techniques.md` as the checklist — `references/appendix.md` carries a worked before→after for each technique plus adjudicated edge cases. The load-bearing moves, in order:
-
-1. **Thesis first.** H1 → one-paragraph framing → one bolded core-principle line. No background essays.
-2. **Bold is the rule-marker.** Every rule a bolded lead; skimming bold alone yields the full argument.
-3. **Imperatives; ration MUST/NEVER; delete "should".** Hedges are exit ramps. Real uncertainty becomes a decision procedure, not "consider".
-4. **No nuance clauses.** "Keep X short, unless…" → flat rule + the real exception as its own conditional on an observable predicate.
-5. **Bad/good pair under every load-bearing rule.** ❌ shows the exact sin the agent commits, captioned; ✅ shows the fix. Real paths, real commands, real output — no foo/bar.
-6. **One-line why after the rule.** Mechanistic or evidentiary ("a real session's dispatch hit 42k chars of which 99% was pasted history"). Never a lecture before the rule.
-7. **Rationalization table for every rule agents break under pressure.** Quote the thought verbatim ("'Too small to need a test'"), rebut in one sentence. This turns unobservable rationalizing into pattern-matchable text.
-8. **Quantified tripwires.** "If ≥ 3 fix attempts failed: STOP…" — numbers, not vibes.
-9. **Named exception routes, named authority.** "Four things stop you, and only these" + who grants the exception. Never "use your judgment".
-10. **Close with the next action.** Checklist with a failure clause, restated law, or killed excuses. Never a summary.
+Apply `references/techniques.md` as the checklist, in this order: T5 thesis first · T9 bold rule-markers · T6 imperatives, MUST/NEVER rationed, no "should" · T2 no nuance clauses · T7 bad/good pair per load-bearing rule · T8 one-line why after the rule · T3 rationalization tables · T12 quantified tripwires · T13 named exception routes and authority · T10 close with the next action. `references/appendix.md` carries a worked before→after per technique plus adjudicated edge cases.
 
 ### 4. Verify the rewrite
 
