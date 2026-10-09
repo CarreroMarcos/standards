@@ -30,7 +30,7 @@ Rewrite every `consult_when` / description line as symptoms and temptations, nev
 
 ### 3. Rewrite rule by rule
 
-Apply `references/techniques.md` as the checklist. The load-bearing moves, in order:
+Apply `references/techniques.md` as the checklist — `references/appendix.md` carries a worked before→after for each technique plus adjudicated edge cases. The load-bearing moves, in order:
 
 1. **Thesis first.** H1 → one-paragraph framing → one bolded core-principle line. No background essays.
 2. **Bold is the rule-marker.** Every rule a bolded lead; skimming bold alone yields the full argument.
