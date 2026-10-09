@@ -9,7 +9,7 @@ Detail for the Draft and Deploy steps. Adapted from the Hatch `skill-creator` sk
 | Hatch workspace | `kebab-case` | `snake_case` |
 | agentskills.io (Claude etc.) | `kebab-case` | hyphenated, letters/numbers/hyphens only |
 
-Keep names short, concrete, capability-based, verb-first: `skill_authoring`, not `skill_stuff`. Namespace by provider or domain when it sharpens the trigger (`google-calendar`).
+Keep names short, concrete, capability-based, verb-first: `skill-authoring`, not `skill-stuff`. Namespace by provider or domain when it sharpens the trigger (`google-calendar`).
 *Why: the name is half the trigger — a vague name never gets loaded.*
 
 ## Resource split
@@ -25,7 +25,7 @@ Use the smallest structure that carries the skill reliably:
 
 ```yaml
 ---
-name: "my_skill"
+name: "my-skill"
 description: "Use when [trigger conditions + capability-as-outcome]."
 ---
 ```
