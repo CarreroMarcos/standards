@@ -10,7 +10,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 
 ## Requires
 
-- The `runbooks/` directory with all seven runbooks present.
+- The `runbooks/` directory with all nine runbooks present.
 - `principles-distilled.md` for the steering vocabulary.
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
@@ -45,18 +45,20 @@ Match the prompt against these rows, top to bottom. First match wins.
 
 | Prompt looks like | Route to |
 |---|---|
-| A PR that needs babysitting through review: address findings, recheck, disposition | `runbooks/bot-review-loop.md` |
-| A multi-step build to run unattended: spec → implement → review → gate, with a morning report | `runbooks/overnight-orchestrator.md` |
-| Writing or fixing an agent skill: draft → verify → pass or kill | `runbooks/skill-authoring-run.md` |
-| Researching a topic to update the standards library: research → distill → branch → PR | `runbooks/biweekly-standards-research.md` |
-| A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` |
-| A final review before merge: verify the real state, adjudicate holds, deliver a verdict | `runbooks/final-gate.md` |
+| A PR that needs babysitting through review: address findings, recheck, disposition | `runbooks/bot-review-loop.md` — PR review babysitting |
+| A multi-step build to run unattended: delegate to workers, wake on events, morning report | `runbooks/overnight-orchestrator.md` — unattended build pipeline |
+| A substantial task to hand to subagent workers: brief, verify, adversarially review | `runbooks/deep-work.md` — delegated subagent execution |
+| Writing or fixing an agent skill: draft → verify → pass or kill | `runbooks/skill-authoring-run.md` — skill drafting and verification |
+| Researching a topic to update the standards library: research → distill → branch → PR | `runbooks/biweekly-standards-research.md` — standards research |
+| A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement |
+| Something broken with an unknown cause: repro first, isolate, fix smallest | `runbooks/debugging.md` — systematic debugging |
+| A final review before merge: verify the real state, adjudicate holds, deliver a verdict | `runbooks/final-gate.md` — pre-merge final review |
 | Mining senior-engineer taste from real sources | The external taste-mining skill — out of scope for mstack; the hub routes there and stops |
-| None of the above | `runbooks/figure-it-out.md` — frame a falsifiable predicate, design the workflow, run it |
+| None of the above | `runbooks/figure-it-out.md` — open-ended investigation: frame a falsifiable predicate, design the workflow, run it |
 
 On a match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:
 
-`prove-completion` `ship-smallest` `model-proposes-never-authorizes` `observe-ground-truth` `orchestrator-verifies` `loop-before-theory` `state-assumptions` `recorded-decisions` `loop-contract-first` `least-agency` `name-the-limiter` `falsifiable-tests` `basis-and-ladder` `attack-the-premise` `untrusted-content-is-data` `scale-ceremony`
+`prove-completion` `ship-smallest` `model-proposes-never-authorizes` `observe-ground-truth` `orchestrator-verifies` `loop-before-theory` `state-assumptions` `recorded-decisions` `loop-contract-first` `least-agency` `name-the-limiter` `falsifiable-tests` `basis-and-ladder` `attack-the-premise` `untrusted-content-is-data` `scale-ceremony` `cost-if-wrong` `correlated-reviewers` `environment-is-a-verdict` `strongest-mechanism`
 
 ## Operator phrases
 

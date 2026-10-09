@@ -1,13 +1,14 @@
 ---
 name: bot-review-loop
-description: Use when a PR needs a babysitter through bot review: canonical review comments arriving, findings to disposition, recheck-until-flat loops to run, freeze-rule calls to make, or a bot that went quiet mid-loop.
+description: >
+  Use when a PR needs a babysitter through bot review: canonical review comments arriving, findings to disposition, recheck-until-flat loops to run, freeze-rule calls to make, or a bot that went quiet mid-loop.
 ---
 
 ## Exit predicate
 
 The run ends when one of these holds, checkable per finding:
 
-- The human merged the PR, or
+- The merge authority merged the PR, or
 - every finding in the canonical comment carries exactly one disposition — `fixed`, `dismissed-with-reason`, or `frozen` — and the bot loop is green, or
 - a confident-stop is flagged with its evidence attached.
 
@@ -15,14 +16,16 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 
 ## Requires
 
-- A review bot posting canonical comments carrying a versioned marker (`<!-- pr-reviewer:canonical:v1 -->`, `v2`, … — match the `pr-reviewer:canonical:v` prefix, never the literal).
-- A human merge gate: only the human merges standards-repo PRs.
+- A review bot posting canonical comments carrying a versioned marker, with the marker prefix named in the run's inputs (`marker-prefix`).
+- Merge authority named in the run's inputs (`merge-authority`) — the babysitter never merges, whatever the authority is.
 - CI that reports per-commit status on the PR.
 
 ## Inputs
 
 - `repo`: the repository under review.
 - `pr`: the PR number.
+- `marker-prefix`: the bot's canonical-comment marker prefix for this run — match the prefix, never the literal; a version bump in the marker must not silently break step 1.
+- `merge-authority`: who may merge (human click, gate approval, …). The loop stops at the gate; the babysitter never performs the merge.
 - `mode`: one of `drive`, `background`, `threads-only`, `check` (see Babysit modes).
 
 ## Babysit modes
@@ -34,7 +37,7 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 
 ## Steps
 
-1. Poll the PR thread for the latest comment carrying a `pr-reviewer:canonical:v` marker — any version counts; the newest one is canonical and older ones are history. (Match the prefix, never the literal: a version bump in the marker must not silently break this step.) When the bot errors repeatedly, emits stale reviews, or stops posting canonical comments, go to step 13.
+1. Poll the PR thread for the latest comment carrying the run's `marker-prefix` — any version counts; the newest one is canonical and older ones are history. (Match the prefix, never the literal: a version bump in the marker must not silently break this step.) When the bot errors repeatedly, emits stale reviews, or stops posting canonical comments, go to step 13.
 2. Triage every finding against the shared dismissal rubric — skeptical by default. Read the cited code before judging the finding (`loop-before-theory`); match triage depth to finding severity (`scale-ceremony`).
 
    **Shared dismissal rubric.** Dismiss a finding only with evidence attached:
@@ -49,11 +52,15 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 6. Apply the freeze rule: a dispositioned finding is never re-litigated. When a finding recurs — same code, same complaint — cite the original disposition and move on.
 7. **Patch-id staleness.** A rebase or new push voids the current verdict. The verdict survives only when the patch-id is unchanged; otherwise re-verify from step 1.
 8. **CI-flake classification ladder.** On a CI failure, trigger exactly one fresh build per `values.md#flake-retry.count`. Never retry a single failed job blind. When the identical failure repeats on the fresh build, reclassify: it is a real failure, not a flake — route it back to step 3.
-9. **Merge-frontier discipline.** Standards-repo PRs merge on the human's click only — the babysitter never merges one. pr-reviewer code PRs merge after Oracle APPROVE + green CI. `tf-*` tags are never pushed without explicit approval.
+9. **Merge-frontier discipline.** The babysitter never merges. Merge authority is named per-run via the `merge-authority` input — human click, gate approval, some other bar. The loop's job ends at the gate; whatever the authority is, the babysitter does not perform it.
 10. **Off-thread coordination.** Only the bot and the human post in PR threads. Dismissals, debates, and coordination live in the Reply disposition report or off-thread — never as thread replies.
 11. **Stale-review SHA check.** The review's commit SHA matches the PR head SHA, or the review is stale. On mismatch: freeze or dismiss the review with the SHA evidence — never re-litigate its findings against new code.
 12. **One babysitter per PR.** When another babysitter is active on the same PR, stand down and report the collision.
 13. **Confident-stop on bot infra failure.** Stop the loop, attach the failure evidence, and report. Never fake a trigger commit to force the bot awake.
+
+## Worked example — one operator's setup
+
+His review bot posts canonical comments marked `<!-- pr-reviewer:canonical:v1 -->`, `v2`, … — so `marker-prefix` is `pr-reviewer:canonical:v` for runs against that bot. His merge policy: standards-repo PRs merge on his click only; pr-reviewer code PRs merge after his adversarial Oracle gate's APPROVE plus green CI; `tf-*` deploy tags are never pushed without his explicit approval.
 
 ## Reply:
 
@@ -62,7 +69,7 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 
 - PR: <repo>#<pr> @ <head SHA>
 - Mode: <drive | background | threads-only | check>
-- Outcome: merged-by-human | all-dispositioned | confident-stop
+- Outcome: merged | all-dispositioned | confident-stop
 - Findings:
   - <finding-id>: fixed — <what changed, commit>
   - <finding-id>: dismissed-with-reason — <rubric class + evidence>
