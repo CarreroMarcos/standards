@@ -1,9 +1,9 @@
 ---
 title: Agentic Design
-version: "1.4"
+version: "1.5"
 scope: "Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation"
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-09
 ---
 
 # Agentic Design
@@ -112,6 +112,11 @@ Do not depend on the model eventually deciding to stop.
 For destructive, irreversible, privilege-expanding, externally visible, financial, security-sensitive, or otherwise high-impact actions, enforce authorization outside the model and require human approval where policy or risk calls for it.
 
 Scope the sandbox to the tool call, not the agent. One sandbox shared across tools grants the union of every tool's permissions — confine each invocation to its declared capabilities so the isolation is real, not nominal.
+
+**Declare each tool's safety properties as metadata the harness can read.** Read-only, destructive, idempotent, open-world — as structured annotations (MCP's `readOnlyHint` / `destructiveHint` / `idempotentHint` / `openWorldHint`), not prose buried in the description. The harness decides retry and approval policy from the annotations.
+- Why: an agent deciding whether a failed tool call is safe to retry should not have to parse a paragraph — it needs a flag it can branch on. Metadata makes "safe to retry" a lookup, not an inference.
+- Bad: "This tool is idempotent and safe to retry" in the description text. Good: `idempotentHint: true` on the tool definition, so the retry policy reads the flag.
+- Boundary: annotations describe the tool's contract, not its implementation — a wrong `idempotentHint` is worse than none, because the harness will trust it. Set them from the tool's actual semantics, verified by test.
 
 Break the lethal trifecta (AGENTIC-SAFETY.md, "Break the lethal trifecta"): never combine private-data access, untrusted content, and external communication in one unattended session.
 
