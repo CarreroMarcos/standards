@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.2"
+version: "3.3"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-09
 ---
 
 # Workflow Standard
@@ -75,6 +75,11 @@ End the plan with an acceptance contract: checkable pass/fail criteria, not *vag
 - Why: editing history turns the log into the story the author wishes were true. Append-only keeps it the story that actually happened.
 - Bad: the framed question on the database choice quietly rewritten after the migration proved it wrong. Good: new entry — "2026-10-08: supersedes DB-choice-03; the migration showed X; switching to Y."
 - Boundary: fix typos and broken links in place — that is hygiene, not history. A decision's substance changes only through a superseding entry, and reopening one is itself a decision (new framed question, new entry — never a quiet reinterpretation mid-task).
+
+**A ruling made under uncertainty states what it costs if wrong.** When you decide without full evidence — a plan conflict, an ambiguous spec, a judgment call the loop contract leaves to you — record the decision, why you made it, and what it costs if you're wrong. The cost line is what lets a later reader (or your future self) tell a cheap-to-reverse call from a load-bearing one without re-deriving the uncertainty.
+
+- Why: "decided X because Y" without the cost reads the same for a typo-level call and a contract-level one — the cost is the information that prioritizes revisits.
+- Boundary: only for rulings under genuine uncertainty; a decision fully determined by the spec or the evidence needs no cost line — stating the obvious is noise.
 
 ---
 

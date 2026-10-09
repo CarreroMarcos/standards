@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.8"
+version: "2.9"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-09
 ---
 
 # Code Review Standard
@@ -153,6 +153,15 @@ A passing opposition review answers all four. A general statement that none appl
 - Why: adversarial energy produces noise — judgment is what turns a findings dump into a review you can ship after.
 - Boundary: this section filters the independent reviewer's report; self-review fixes its own findings (§9). Judgment never overrides evidence — a finding with a concrete path survives the filter, however uncomfortable.
 
+**Re-grade findings by effect, not by the spec's silence.** A finding's grade is what a reasonable person using this software gets if it ships — not whether the spec names the input that triggers it. A reviewer who set Minor because the spec was silent graded the spec, not the effect.
+
+- Bad: Minor — "the spec doesn't cover this input." Good: Important — "a user hitting this input gets silent data loss; the spec's silence is the gap, not the grade."
+
+**Correlated reviewers are not independent evidence.** "Independent reviewers flag the same issue" counts only when the reviewers are actually independent — different models, different prompts, different angles. Two instances of the same reviewer agreeing is one signal wearing a trench coat; discount it accordingly and say so.
+
+- Why: parallel agents share a model, training, and blind spots — their agreement measures the blind spot's consistency, not the finding's truth.
+- Boundary: treat N correlated agreements as one signal. Correlated agreement still beats a single opinion for typos and mechanical issues; the discount applies to judgment calls, where shared blind spots live.
+
 ---
 
 ## 7. Evidence integrity
@@ -191,6 +200,11 @@ A Testing assessment that reports "suite passes" without having established that
 ## 9. Remediation
 
 **An *independent* reviewer identifies and recommends; it doesn't remediate unasked.** When you're reviewing your own diff, fixing your own findings is the job.
+
+**Critical and Important findings enter exactly one fix pass; Minors never do.** Minors go to the ledger as deferred — they never become rulings and never enter the fix pass. There is no second fix pass: a fix pass that isn't green at the end isn't over, and a finding you decline to fix is a recorded decision with its cost (WORKFLOW.md "Recorded decisions"), not a quiet drop.
+
+- Why: every minor pulled into the fix pass is a test, a fix, and a suite run nobody asked for — the pass sprawls until the review never closes.
+- Boundary: a "Minor" that keeps reappearing across reviews is misgraded, not deferred — re-grade it by effect (§6.5) instead of carrying it forever.
 
 ## 10. Scale the ceremony to the diff
 
