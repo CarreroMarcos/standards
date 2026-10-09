@@ -73,6 +73,7 @@ expect_output "refs violation flags ../"      "outside-repo reference '\.\./"  b
 expect_output "refs violation flags ~/"       "outside-repo reference '~/'"  bash "$RV" "$FX/check-refs/violation.md"
 expect_output "refs violation flags /root/"   "outside-repo reference '/root/'"  bash "$RV" "$FX/check-refs/violation.md"
 expect_output "refs violation flags blob URL" "outside-repo reference 'github"  bash "$RV" "$FX/check-refs/violation.md"
+expect_output "refs violation flags /home/" "outside-repo reference '/home/'"  bash "$RV" "$FX/check-refs/violation.md"
 expect_output "values violation flags 120s"   "undeclared magic number '120s'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect_output "values violation flags 2 rounds" "undeclared magic number '2 rounds'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
 expect_output "values violation flags 30 times" "undeclared magic number '30 times'"  bash "$VV" "$VM" "$FX/check-values/violation.md"
@@ -101,6 +102,12 @@ expect 0 "values lint clean on skills" bash "$VV" "$VM" "$dir"/../skills/*.md
 expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
 expect 0 "refs lint clean on runbooks" bash "$RV" "$dir"/../runbooks/*.md
 expect 0 "refs lint clean on skills" bash "$RV" "$dir"/../skills/*.md
+expect 0 "refs lint no-rg clean on runbooks" norv bash "$RV" "$dir"/../runbooks/*.md
+expect 0 "refs lint no-rg clean on skills" norv bash "$RV" "$dir"/../skills/*.md
+expect 0 "values lint no-rg clean on runbooks" norv bash "$VV" "$VM" "$dir"/../runbooks/*.md
+expect 0 "values lint no-rg clean on skills" norv bash "$VV" "$VM" "$dir"/../skills/*.md
+expect 1 "check-values no-rg tbd-ref" norv bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
+expect_output "check-values no-rg tbd-ref named" "unknown values.md reference 'missing.entry'" norv bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 expect 1 "check-refs mixed targets" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect_output "check-refs mixed targets report" "violation.md:3:" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect 1 "check-values no values file"  bash "$VV" "$FX/does-not-exist.md" "$FX/check-values/clean.md"
