@@ -1,6 +1,7 @@
 ---
 name: skill-authoring-run
-description: Use when a skill draft needs to earn its place: a technique that might be a reference section in disguise, a draft needing the RED-GREEN-REFACTOR verification loop, trigger probes to run, or a pass-or-kill verdict to deliver.
+description: >
+  Use when a skill draft needs to earn its place: a technique that might be a reference section in disguise, a draft needing the RED-GREEN-REFACTOR verification loop, trigger probes to run, or a pass-or-kill verdict to deliver.
 ---
 
 ## Exit predicate

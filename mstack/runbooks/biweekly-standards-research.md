@@ -1,6 +1,7 @@
 ---
 name: biweekly-standards-research
-description: Use when the biweekly standards research run is due: a rotating topic to research, ranked deltas to fold in, the portable core to re-distill, or a research PR to drive through the bot loop to a clean stop.
+description: >
+  Use when the biweekly standards research run is due: a rotating topic to research, ranked deltas to fold in, the portable core to re-distill, or a research PR to drive through the bot loop to a clean stop.
 ---
 
 ## Exit predicate

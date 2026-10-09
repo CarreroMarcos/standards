@@ -1,6 +1,7 @@
 ---
 name: measurement-eval
-description: Use when a performance claim needs a number you can trust: "is X faster than Y", a benchmark result to validate, a before/after comparison to run, or a headline number that still needs its limiter named.
+description: >
+  Use when a performance claim needs a number you can trust: "is X faster than Y", a benchmark result to validate, a before/after comparison to run, or a headline number that still needs its limiter named.
 ---
 
 ## Exit predicate

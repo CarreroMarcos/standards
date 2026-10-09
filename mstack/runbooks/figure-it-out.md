@@ -1,6 +1,7 @@
 ---
 name: figure-it-out
-description: Use when no runbook matches the goal and the path forward is unknown: an unfamiliar failure with no procedure, a vague "make it work" that needs a designed workflow first, a problem where the fix cannot be attempted until the mechanism is understood.
+description: >
+  Use when no runbook matches the goal and the path forward is unknown: an unfamiliar failure with no procedure, a vague "make it work" that needs a designed workflow first, a problem where the fix cannot be attempted until the mechanism is understood.
 ---
 
 ## Exit predicate
