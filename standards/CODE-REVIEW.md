@@ -201,7 +201,7 @@ A Testing assessment that reports "suite passes" without having established that
 
 **An *independent* reviewer identifies and recommends; it doesn't remediate unasked.** When you're reviewing your own diff, fixing your own findings is the job.
 
-**Critical and Important findings enter exactly one fix pass; Minors never do.** Minors go to the ledger as deferred — they never become rulings and never enter the fix pass. There is no second fix pass: a fix pass that isn't green at the end isn't over, and a finding you decline to fix is a recorded decision with its cost, not a quiet drop.
+**Critical and Important findings enter exactly one fix pass; Minors never do.** Minors go to the ledger as deferred — they never become rulings and never enter the fix pass. There is no second fix pass: a fix pass that isn't green at the end isn't over, and a finding you decline to fix is a recorded decision with its cost (WORKFLOW.md "Recorded decisions"), not a quiet drop.
 
 - Why: every minor pulled into the fix pass is a test, a fix, and a suite run nobody asked for — the pass sprawls until the review never closes.
 - Boundary: a "Minor" that keeps reappearing across reviews is misgraded, not deferred — re-grade it by effect (§6.5) instead of carrying it forever.
