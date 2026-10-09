@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# check-values.sh — fail on bare magic numbers not declared in values.md.
+#
+# Usage: check-values.sh <values-file> <target>...
+# A magic-looking number (digits + unit, e.g. 120s, 2 rounds) in a target
+# fails when the hit text is absent from the values file's ## Allowlist
+# section. Lines with an explicit TBD (...) marker are tolerated.
+# The values file itself is skipped: its Value: lines are declarations.
+# `values.md#<name>` references must name a declared entry.
+#
+# Known limitation: the digit+unit pattern also matches decade-style prose
+# like "1970s". There is no regex-only way to tell "120s" from "1970s";
+# allowlist such tokens when they appear.
+set -u
+
+values_file="${1:?usage: check-values.sh <values-file> <target>...}"
+shift
+[ "$#" -gt 0 ] || { echo "check-values.sh: no targets" >&2; exit 1; }
+[ -f "$values_file" ] || { echo "check-values.sh: no such values file: $values_file" >&2; exit 1; }
+
+if command -v rg >/dev/null 2>&1; then
+  hitgrep() { rg -o "$1"; }
+else
+  hitgrep() { grep -E -o "$1"; }
+  # Portability guard: the fallback grep must understand \b and \s in ERE
+  # (GNU extensions). BSD/macOS grep does not — fail loudly instead of
+  # silently passing or misfiring.
+  probe=$(printf 'sleep 120s\n' | grep -E -o '\b[0-9]+\s*(s|ms)\b' 2>/dev/null || true)
+  if [ "$probe" != "120s" ]; then
+    echo "check-values.sh: requires ripgrep, or a grep with \\b/\\s ERE support (BSD/macOS grep lacks it)." >&2
+    exit 2
+  fi
+fi
+
+pat='\b[0-9]+\s*(s|ms|sec|secs|seconds|min|mins|minutes|round|rounds|retr|retries|times|x)\b'
+
+declared=()
+while IFS= read -r d; do declared+=("$d"); done < <(grep -E '^### ' "$values_file" | sed 's/^### //')
+allowlist=()
+while IFS= read -r a; do allowlist+=("$a"); done < <(awk '/^## Allowlist/{f=1;next} /^## /{f=0} f' "$values_file" | grep -o '"[^"]*"' | tr -d '"')
+
+vreal=$(realpath "$values_file" 2>/dev/null || readlink -f "$values_file" 2>/dev/null || printf '%s' "$values_file")
+fail=0
+
+for target in "$@"; do
+  if [ ! -f "$target" ]; then echo "$target: not found" >&2; fail=1; continue; fi
+  treal=$(realpath "$target" 2>/dev/null || readlink -f "$target" 2>/dev/null || printf '%s' "$target")
+  [ "$treal" = "$vreal" ] && continue
+  lineno=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    lineno=$((lineno + 1))
+    for ref in $(printf '%s\n' "$line" | grep -o 'values\.md#[A-Za-z0-9_.-]*' || true); do
+      name=$(printf '%s' "${ref#values.md#}" | sed 's/[.-]*$//')
+      known=0
+      for d in ${declared[@]+"${declared[@]}"}; do [ "$d" = "$name" ] && { known=1; break; }; done
+      [ "$known" -eq 0 ] && { echo "$target:$lineno: unknown values.md reference '$name'"; fail=1; }
+    done
+    case "$line" in *"TBD ("*) continue ;; esac
+    while IFS= read -r hit; do
+      [ -z "$hit" ] && continue
+      ok=0
+      for a in ${allowlist[@]+"${allowlist[@]}"}; do [ "$a" = "$hit" ] && { ok=1; break; }; done
+      [ "$ok" -eq 0 ] && { echo "$target:$lineno: undeclared magic number '$hit'"; fail=1; }
+    done < <(printf '%s\n' "$line" | hitgrep "$pat" || true)
+  done < "$target"
+done
+
+exit "$fail"
