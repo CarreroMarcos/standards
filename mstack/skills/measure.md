@@ -5,7 +5,7 @@ description: Use when a headline number needs vetting before anyone trusts it �
 
 ## When to use
 
-A number is about to be reported or acted on: a PR's before-and-after, a
+A number is about to be reported or acted on: a before-and-after PR run, a
 regression claim, a config choice. Reach for `measure` when the claim is
 "X is faster" and the evidence is a run someone did. This skill is the
 validity gate that `runbooks/measurement-eval.md` runs before trusting any
@@ -16,41 +16,42 @@ number.
 1. **Name the limiter.** Ask "why not double?" — what resource or code path
    bounds the result: a core, a lock, the disk, the network, the load
    generator itself. Get it from a profile or system counters taken during
-   a run you do not report, then map the hot spot to source. **A guess from
+   a sacrificial run you never report, then trace the hot spot back to
+   source. **A guess from
    reading the code is not a limiter** (`name-the-limiter`). If one side's
    limiter is a setting — a debug build, a missing index, a commit per row —
-   that side is untuned: tune it and measure again, or pick no winner from
+   that side runs untuned: retune it and re-measure, or pick no winner from
    this run.
-2. **Check parity.** Run every side the way production runs it: release
-   builds, production flags and env, batching and transaction settings,
-   connection pools, caches as warm or cold as production sees them, same
-   versions and data. **If one side runs on defaults, you compared
-   configurations, not implementations.**
+2. **Check parity.** Match production on every side: production binaries,
+   live flags and environment, the batching and transaction knobs, the
+   connection pools, caches warmed or cold exactly the way production hits
+   them, identical versions and identical data. **Defaults on one side
+   means you benchmarked settings, not code.**
 3. **Count and interleave.** Run each side at least
    `values.md#eval.run-floor` times, alternating sides (A, B, A, B) so
    warmup, lazy init, caches, and drift hit both equally. **Never
-   all-A-then-all-B.** Report the median and the range. **A gap smaller
-   than the run-to-run variation is no measurable difference.**
-4. **Check relevance.** Next to any micro result, measure the end-to-end
-   path a user waits on, with realistic data sizes and concurrency. **A
+   all-A-then-all-B.** Give the median with the range. **A gap under
+   the run-to-run variation is no measurable difference.**
+4. **Check relevance.** Pair every micro number with the full user-facing
+   path it lives in, driven at realistic data sizes and concurrency. **A
    helper that takes a sliver of a request can speed up the request by at
-   most that sliver, however fast the helper gets.** Report the micro
-   result as a share of the whole.
+   most that sliver, however fast the helper gets.** Express the micro
+   number as a fraction of the whole path.
 5. **Rule out the usual suspects.** Count errors — failures and non-success
-   responses behave differently from successes (rejections are fast;
-   timeouts and retries are slow). Confirm the work ran inside the timed
-   region: the request reached the server, the rows were written, the bytes
-   were read, the code used the result. **Lazy work nobody awaited and
-   timeouts both print numbers for work that never happened.** A check that
+   responses skew differently from successes (rejections run fast;
+   timeouts and retries are slow). Prove the timed region did the work: the
+   request landed on the server, the rows hit storage, the bytes came back,
+   the code consumed the result. **Lazy work nobody awaited and
+   timeouts both print numbers for work that did not happen.** A check that
    cannot fail does not count (`falsifiable-tests`).
 6. **Report the uncertainty with the headline.** Every number ships with its
    run count, its range, and its limiter. **A number without a limiter is a
    rumor.**
 
-**Inconclusive is a valid verdict.** Call it when you cannot name the
-limiter, when a side ran untuned, or when a question above cannot be
-checked — and name the blocking question. **A forced number is a defect: it
-poisons every future comparison that trusts it.**
+**Inconclusive is a valid verdict.** Call it when the limiter stays
+unnamed, when one side ran untuned, or when one of the questions above
+cannot be checked — and name the blocking question. **A forced number is a
+defect: it poisons every future comparison that trusts it.**
 
 ## Output
 
