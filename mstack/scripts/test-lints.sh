@@ -16,8 +16,14 @@ expect_output() { # expect_output <description> <grep-pattern> <command...>
   if printf '%s\n' "$out" | grep -q "$pat"; then pass=$((pass + 1))
   else fail=$((fail + 1)); echo "FAIL: $desc (pattern '$pat' not in output)"; fi
 }
+expect_no_output() { # expect_no_output <description> <grep-pattern> <command...>
+  local desc=$1; shift; local pat=$1; shift
+  out=$("$@" 2>&1 || true)
+  if printf '%s\n' "$out" | grep -q "$pat"; then fail=$((fail + 1)); echo "FAIL: $desc (pattern '$pat' found in output)"
+  else pass=$((pass + 1)); fi
+}
 
-RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"
+RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
 
 # rg-less stub PATH: symlink everything except rg, so the scripts take
@@ -97,14 +103,30 @@ expect 1 "check-values tbd-ref"         bash "$VV" "$VM" "$FX/check-values/tbd-r
 expect_output "check-values tbd-ref named" "unknown values.md reference 'missing.entry'" bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 # Self-hosting: the lints must pass on the shipped docs themselves.
 expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
-expect 0 "values lint clean on runbooks" bash "$VV" "$VM" "$dir"/../runbooks/*.md
+expect 0 "values lint clean on runbooks" bash "$VV" "$VM" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "values lint clean on skills" bash "$VV" "$VM" "$dir"/../skills/*.md
+expect 0 "frontmatter clean fixture" bash "$FF" "$FX/check-frontmatter/clean.md"
+expect 0 "frontmatter block-scalar rule not a delimiter" bash "$FF" "$FX/check-frontmatter/block-scalar-rule.md"
+expect 1 "frontmatter bad-colon fixture" bash "$FF" "$FX/check-frontmatter/bad-colon.md"
+expect_output "frontmatter bad-colon reports line" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/bad-colon.md"
+expect 1 "frontmatter missing file" bash "$FF" "$FX/check-frontmatter/nonexistent.md"
+expect 1 "frontmatter unclosed fixture" bash "$FF" "$FX/check-frontmatter/missing-close.md"
+expect_output "frontmatter unclosed reports" "never closed" bash "$FF" "$FX/check-frontmatter/missing-close.md"
+expect 0 "frontmatter no-frontmatter fixture" bash "$FF" "$FX/check-frontmatter/no-frontmatter.md"
+expect_no_output "frontmatter no-frontmatter silent" "no-frontmatter.md" bash "$FF" "$FX/check-frontmatter/no-frontmatter.md"
+expect 0 "frontmatter empty file" bash "$FF" "$FX/check-frontmatter/empty.md"
+expect 1 "frontmatter mixed files exit 1" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
+expect_output "frontmatter mixed reports bad file" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
+expect_no_output "frontmatter mixed silent on clean file" "clean.md" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
+expect 0 "frontmatter clean on docs" bash "$FF" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "frontmatter clean on runbooks" bash "$FF" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
+expect 0 "frontmatter clean on skills" bash "$FF" "$dir"/../skills/*.md
 expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
-expect 0 "refs lint clean on runbooks" bash "$RV" "$dir"/../runbooks/*.md
+expect 0 "refs lint clean on runbooks" bash "$RV" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "refs lint clean on skills" bash "$RV" "$dir"/../skills/*.md
-expect 0 "refs lint no-rg clean on runbooks" norv bash "$RV" "$dir"/../runbooks/*.md
+expect 0 "refs lint no-rg clean on runbooks" norv bash "$RV" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "refs lint no-rg clean on skills" norv bash "$RV" "$dir"/../skills/*.md
-expect 0 "values lint no-rg clean on runbooks" norv bash "$VV" "$VM" "$dir"/../runbooks/*.md
+expect 0 "values lint no-rg clean on runbooks" norv bash "$VV" "$VM" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "values lint no-rg clean on skills" norv bash "$VV" "$VM" "$dir"/../skills/*.md
 expect 1 "check-values no-rg tbd-ref" norv bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 expect_output "check-values no-rg tbd-ref named" "unknown values.md reference 'missing.entry'" norv bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"

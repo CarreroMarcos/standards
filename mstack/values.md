@@ -70,6 +70,36 @@ Unit: occurrences
 Why: A new skill is admitted only when the same failure shows up twice. Guards the skill list against accretion by enthusiasm.
 Used-in: skills/reflect.md
 
+### deep-work.head-lines
+Value: 12
+Unit: lines
+Why: The pinned run head stays scannable — status, task, slug, phase, next, blockers, one line each. More lines and it stops being a head.
+Used-in: runbooks/deep-work.md
+
+### deep-work.progress-lines
+Value: 80
+Unit: lines
+Why: The progress file is rewritten in place, never appended — the line budget forces summarization instead of log growth.
+Used-in: runbooks/deep-work.md
+
+### deep-work.tombstone-lines
+Value: 15
+Unit: lines
+Why: A finished run compresses to status, conclusion, deliverable pointers, surviving constraints, date. Nothing more needs reading.
+Used-in: runbooks/deep-work.md
+
+### deep-work.lane-max-attempts
+Value: 3
+Unit: attempts
+Why: A lane that fails three attempts is not unlucky — the brief or the approach is wrong. Escalate instead of burning more attempts.
+Used-in: runbooks/deep-work.md
+
+### deep-work.gate-rereview-budget
+Value: 2
+Unit: re-reviews
+Why: A phase gate gets one initial review plus two re-reviews. Past that, the disagreement is about risk tolerance, not evidence — record the residual risk and ask the operator.
+Used-in: runbooks/deep-work.md
+
 ## Allowlist
 
 Structural literals that are not magic numbers. The lint ignores these;

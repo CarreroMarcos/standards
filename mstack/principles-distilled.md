@@ -174,3 +174,14 @@ Bad: "Can't reproduce locally — closing."
 Good: "Falsified the app hypotheses; what remains is the LB idle timeout. Added retry with jitter and an alert on the timeout counter — the next occurrence arrives with evidence."
 
 source: standards/DEBUGGING.md §11
+
+### strongest-mechanism
+
+**When several mechanisms would work, take the strongest one the situation permits — structure beats lint beats helper beats runtime check beats instruction.**
+
+*Why: agents imitate the code around them, so a weak guard becomes the next template. And when the fix is structural, the instruction is the symptom — ship only the structural fix.*
+
+Bad: "Added a comment telling agents not to mutate shared state." (the next agent copies the mutation, not the comment)
+Good: "Made the shared state immutable — the wrong code no longer compiles."
+
+source: pstack principle-encode-lessons-in-structure (adapted)
