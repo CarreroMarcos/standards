@@ -46,10 +46,10 @@ Apply `references/techniques.md` as the checklist — `references/appendix.md` c
 ### 4. Verify the rewrite
 
 - **Bold-skeleton test:** read only the bold text. If the argument doesn't survive, the markers are wrong.
-- **Hedge grep:** a rule sentence is any bolded lead, imperative line, or template slot outside quotes and code blocks — hedges are permitted only inside quoted rationalizations and examples. Verify with `rg -i '\b(should|generally|consider|try to|where possible|unless)\b'`; every hit outside quotes and examples is a bug.
+- **Hedge grep** (run against the target doc, not this skill): a rule sentence is any bolded lead, imperative line, or template slot outside quotes and code blocks — hedges are permitted only inside quoted rationalizations and examples. `rg -i '\b(should|generally|consider|try to|where possible|unless)\b'`; every hit outside quotes and examples is a bug.
 - **Trigger test:** does the description name a symptom or temptation? If it summarizes contents, rewrite it.
 - **Close test:** the last line directs action. If it recaps, replace it.
-- **Section-number check:** no renumbering of the target doc — its existing §N cross-references must stay valid.
+- **Section-number check:** no renumbering of the target doc — its existing §N cross-references must stay valid. Skip when the target doc has no numbered sections.
 
 ## Output Contract
 

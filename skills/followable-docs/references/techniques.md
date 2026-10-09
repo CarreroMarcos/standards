@@ -20,7 +20,7 @@ Distilled from a forensic analysis of a production agent-skills library (14 skil
 
 **Do:** Write the rule flat. Every real exception becomes its own conditional on an observable predicate — never "unless…", "generally…", "this doesn't apply to…".
 
-**Evidence:** Appending one nuance clause to a winning recipe degraded it from consistent to noisy. "Exemption clauses don't scope": "this limit doesn't apply to code blocks" still suppressed code blocks.
+**Evidence:** Appending one nuance clause to a winning recipe degraded it from consistent to noisy (Tier 1). "Exemption clauses don't scope" is a single observed case rather than a controlled test: "this limit doesn't apply to code blocks" still suppressed code blocks — treat as Tier 2.
 
 **Example:** "Steps 5–7 run only on their stated condition" — conditions separate, observable, outside the rule sentence.
 
