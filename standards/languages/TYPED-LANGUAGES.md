@@ -69,11 +69,12 @@ function first<T>([head]: NonEmpty<T>): T {
 The distinguishing test: "Am I strengthening this type to keep an operation total, or just to be more precise?" If nothing would otherwise panic or cast, keep the plain type.
 
 ```typescript
-// Bad: precision for its own sake — nothing here could fail on []
-function total(items: number[]): number {
+// Bad: precision for its own sake — narrowing a signature nothing forces
+function total(items: NonEmpty<number>): number {
   return items.reduce((a, b) => a + b, 0);
 }
-// (No change needed. The plain list is already total for sum.)
+// (No change needed: the plain list is already total for sum.
+// The narrower type buys nothing and rejects valid input — total([]) is 0.)
 
 // Good: the strength is earned — `!` was the symptom
 function firstOrDefault<T>([head]: T[], fallback: T): T {

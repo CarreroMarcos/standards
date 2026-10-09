@@ -119,6 +119,8 @@ function isOrder(x: unknown): x is Order {
   return typeof x === "object" && x !== null && (x as { kind?: unknown }).kind === "order";
 }
 ```
+// The `as` here is scaffolding for the check, not the check itself — §5 bans `as` as a substitute for verification; the discriminant comparison is the verification.
+
 
 Prefer the discriminant check over a field-by-field census — it's cheaper and it matches how the type is actually consumed (§4). And prefer a schema (§3) over any hand-written guard at all.
 
