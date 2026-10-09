@@ -212,7 +212,7 @@ Deprecating a published contract: three phases — warn (name the replacement an
 
 This standard ends at a clean commit. What happens between push and merge — review rounds, gates, merge discipline — is the dev loop (`DEV-LOOP.md`).
 
-### Rerunnable artifacts
+## Rerunnable artifacts
 
 **Non-trivial work ships the tool that proves it.** When a claim rests on repetition — every caller checked, every migration site touched, every seed case run — the artifact goes into the diff: the script, the codemod, the generator, or the delegate skill the subagents followed. A deterministic script turns "trust me" into "run this."
 

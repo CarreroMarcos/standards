@@ -153,6 +153,6 @@ For scripted verification runs — the harness that launches the app and proves 
 - [ ] Expected values from a source independent of the implementation (→ ENGINEERING_PRINCIPLES.md §4)
 - [ ] No suppression without a recorded reason (§6)
 - [ ] Changed-lines coverage didn't fall (§1)
-- [ ] New test: ran before the fix; failure read and confirmed for the intended reason (§9)
+- [ ] New test: ran before the fix; failure read and confirmed for the intended reason — or the skip was recorded with its reason (§9)
 - [ ] No dead-test shape — it would fail if every import returned nothing (§10)
 - [ ] Verification runs: drove the real user path; dry-run's skips observed, not assumed; proof survives cleanup (§11)

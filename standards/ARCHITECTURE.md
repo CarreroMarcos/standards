@@ -301,7 +301,7 @@ Circuit-breaker thresholds, rate limits, queue bounds, and concurrency settings 
 
 **Bad:** keeping both paths because "migration is risky" — the migration never happens, the callers split, the behaviors drift.
 
-**Good:** one live path per task. When a second path exists, the fix is a migration, not a debate — CODE-QUALITY §5 owns the mechanics (inventory the callers, move them, delete the old API in the same change; adapters exceptional and time-boxed). One way is a behavior guarantee, not a preference.
+**Good:** one live path per task. This flag is the detector — CODE-QUALITY §5 is the procedure (inventory callers, move them, delete the old API in the same change).
 
 **Boundary:** a deliberate compatibility shim with a documented removal date (a §8 contract sunsetting) isn't two ways — it's one way with a deadline. The shim's expiry follows the CODE-QUALITY §5 adapter rule at the contract level.
 

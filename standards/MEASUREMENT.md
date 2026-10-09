@@ -109,3 +109,4 @@ last_reviewed: 2026-10-08
 - [ ] The end-to-end share is stated next to any micro result (§6)
 - [ ] The work ran inside the timed region (§7)
 - [ ] Each alternative explanation ruled out with evidence (§8)
+- [ ] The evidence travels with the number — run count, spread, limiter stated; verdict called inconclusive where §9's tripwires fire (§9)
