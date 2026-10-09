@@ -1,5 +1,5 @@
 ---
-name: "skill_authoring"
+name: "skill-authoring"
 description: "Use when creating or editing a workspace skill — to produce one that is easy to trigger, cheap to load, and verified to work."
 ---
 
@@ -38,7 +38,7 @@ Per paragraph, ask: would the agent get this wrong without this instruction? If 
 
 ### 3. Verify: RED-GREEN-REFACTOR
 
-**Iron Law: no skill ships without a failing test first — no edit either.** Untested edit? Delete it. Start over.
+**Iron Law: no skill ships without a failing test first — no edit either.** Edit without its failing test? Delete it. Start over.
 
 Micro-test wording first: fresh-context sample, no-guidance control, 5+ reps, read every match. Control doesn't fail? Nothing to fix — stop.
 *Why: full scenario runs are slow and expensive; wording tests are the cheap gate.*
@@ -61,7 +61,7 @@ Deploy checklist (`references/authoring_guide.md`); commit on a branch — never
 
 Never force-load a reference — link it by name.
 
-Log verification tokens per skill. Verification costlier than lifetime use = overkill — drop a tier.
+Log verification tokens per skill (`references/testing_method.md`). Verification costlier than lifetime use = overkill — drop a tier.
 
 ## Target runtime
 

@@ -97,6 +97,11 @@ Two rules for whichever form you pick:
 - **Red flags:** a self-check list ("Code before test", "I'll test after", "Keep as reference"…). All of them mean: stop, start over.
 - **Update the description** with violation symptoms — triggers for when you're *about* to break the rule.
 
+## Verification log
+
+Tally per round — rounds run, tokens spent, pass/fail — in the skill's PR or run notes. Verification costlier than expected lifetime use = overkill; drop a tier.
+*Why: the cost check in the token budget needs data. Without the tally, "drop a tier" is a vibe.*
+
 ## Meta-testing
 
 After the agent chooses wrong WITH the skill, ask how the skill could have made the right answer unmistakable:
