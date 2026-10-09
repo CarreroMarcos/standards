@@ -1,9 +1,9 @@
 ---
 title: Debugging Discipline
-version: "1.1"
+version: "1.2"
 scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, premise attacks when fixes keep failing, cleanup"
 consult_when: "When something is broken and you're tempted to theorize first — 'I think the bug is probably in…', 'let me just try changing…' — or when a debug session is spiraling and nothing is converging."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-09
 ---
 
 # Debugging Discipline
@@ -134,5 +134,14 @@ Two stop rules: (1) stop fixing and re-examine the premise after the second fail
 *Bad:* a third patch tuning the same retry knob after two identical failures. *Good:* "Premise: the load is evenly distributed. Census: one worker holds 90% of the backlog on every run — the premise is the bug; remove the assignment, don't compensate for it."
 
 *Boundary: the census is the exit. If it comes back even across actors, the premise is not the cause — look elsewhere and keep the census as evidence. One failure is just debugging; two failures on the same assumption trigger the rule. When a correct seam for the census doesn't exist, the census itself is a rerunnable script (one artifact the reviewer reruns).*
+
+---
+
+## 11. When the cause is the environment, handle it and monitor it
+
+**Exhausted investigation with an environmental cause is a verdict, not a failure.** When the loop is tight, the hypotheses are falsified, and what remains is timing, environment, or an external system — document what you investigated, implement the handling the cause calls for (retry, timeout, degraded path, clearer error), and add monitoring or logging so the next occurrence arrives with evidence.
+*Why: "no root cause" usually means incomplete investigation — but the cases where the cause genuinely lives outside the code still need an engineering response, not a shrug. Handling without monitoring guarantees the next session starts from zero again.*
+
+*Boundary: this section is reached only after the §1–§9 discipline, not instead of it. A cause declared "environmental" without the loop and the falsified hypotheses is incomplete investigation wearing a verdict's clothes.*
 
 ---
