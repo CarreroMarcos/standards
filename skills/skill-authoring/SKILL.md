@@ -14,7 +14,7 @@ Write skills that are easy to trigger, cheap to load, and proven to work — ver
 
 ### 1. Scope: one skill, one job
 
-One skill = one coherent job — split unrelated jobs. Name it verb-first, capability-based: `skill_authoring`, not `skill_stuff`.
+One skill = one coherent job — split unrelated jobs. Name it verb-first, capability-based: `skill-authoring`, not `skill-stuff`.
 *Why: the description is the trigger surface — a vague name never gets loaded.* → `references/discovery_guide.md`
 
 ### 2. Draft: the smallest core that teaches
