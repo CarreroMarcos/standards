@@ -48,4 +48,4 @@ A number without provenance is not a result. A limiter you cannot name is a limi
 - Evidence: <where the raw run data lives>
 ```
 
-A "not measured" verdict names what blocked the measurement. An inconclusive verdict shows the overlapping ranges. A forced number is never a verdict.
+A "not measured" verdict names what blocked the measurement. An inconclusive verdict shows the overlapping ranges. A measured verdict requires a named limiter — "not identified" forces inconclusive, never measured. A forced number is never a verdict.

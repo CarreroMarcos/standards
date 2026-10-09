@@ -68,7 +68,7 @@ Used-in: interrogate.md
 Value: 2
 Unit: occurrences
 Why: A new skill is admitted only when the same failure shows up twice. Guards the skill list against accretion by enthusiasm.
-Used-in: references/eval-protocol.md, reflect.md
+Used-in: skills/reflect.md
 
 ## Allowlist
 

@@ -31,8 +31,8 @@ A run that researched and reported nothing is not a run. Silence is not an outco
 3. **Rank the deltas.** Rank each candidate change by impact, each with its why. The human vetoes line-by-line: present every delta with its reason, never a pre-filtered list.
 4. **Re-distill the portable core.** Fold accepted deltas into the distilled principles. **Never touch the sacred repo-specific section of the repo's AGENTS.md** — the sync owns everything above that line; nothing below it. No-change is a valid outcome — report it as such. Behavior-change edits are playground-validated before they ship.
 5. **Capture lessons with the `reflect` skill.** Mine the run's Accepted / Rejected / Backlog. Backlog entries feed the next run's theme list.
-6. **Open the dated branch + PR** via the harness push binding — never direct to main. Standards PRs merge on the human's click only.
-7. **Drive the bot-review loop to a clean stop.** Address or disposition every finding; the freeze rule holds — never re-litigate a dispositioned finding.
+6. **Open the dated branch + PR** via the harness push binding — **never direct to main**. **Standards PRs merge on the human's click only.**
+7. **Drive the bot-review loop to a clean stop.** Address or disposition every finding; **the freeze rule holds — never re-litigate a dispositioned finding.**
 8. **Update the checklist.** Record the mined sources and the shipped or rejected deltas. Update `references/distillation-record.json` on shipped changes — the runbook maintains it, creating it on first use.
 
 **A no-change run still reports.** Research performed, sources checked, nothing worth shipping — that is a REPORT line, not an empty run.

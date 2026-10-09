@@ -16,7 +16,8 @@ Then the artifact itself passes four audits:
    sense means the steps don't either.
 2. **Hedge grep.** `rg -i '\b(should|generally|consider|try to|where
    possible|unless)\b'` — every hit is either inside a quoted
-   rationalization or a bug. Fix the bugs.
+   rationalization, inside this step's own pattern line, or a bug. Fix
+   the bugs.
 3. **`check-values.sh` clean.** `bash scripts/check-values.sh values.md
    <file>` exits 0. Every magic number is a named entry in `values.md`;
    markdown references it by name, never inline.
