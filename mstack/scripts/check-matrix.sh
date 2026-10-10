@@ -9,18 +9,24 @@ set -u
 f=${1:?usage: check-matrix.sh HARNESS.md}
 
 # Extract only table bodies: rows between "| Harness | Cell |" headers and
-# the next "###" heading. Count cell statuses there.
-read -r full degraded unsupported < <(awk '
+# the next "###" heading. Count cell statuses there. Any data row with an
+# unrecognized status fails loudly — silent undercounting is worse than noise.
+read -r full degraded unsupported bad < <(awk '
   /^\| Harness \| Cell \|/ { in_table=1; next }
   /^### / { in_table=0 }
   in_table && /^\|/ && !/^\|---/ {
     if ($0 ~ /\| full([^[:alnum:]]|$)/) f++
     else if ($0 ~ /\| degraded([^[:alnum:]]|$)/) d++
     else if ($0 ~ /\| unsupported([^[:alnum:]]|$)/) u++
+    else { print "check-matrix: unrecognized cell status: " $0 > "/dev/stderr"; bad=1 }
   }
-  END { print f+0, d+0, u+0 }
+  END { print f+0, d+0, u+0, bad+0 }
 ' "$f")
 total=$((full + degraded + unsupported))
+
+# Unrecognized cell statuses fail before the notes comparison — a typo'd
+# status must never silently undercount.
+if [ "${bad:-0}" -eq 1 ]; then exit 1; fi
 
 # Parse the notes line: "- 45 cells filled: 32 full, 13 degraded, 0 unsupported."
 notes=$(grep -E '^[[:space:]]*-[[:space:]]*[0-9]+ cells filled:' "$f" | head -1)
