@@ -113,7 +113,7 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 
 ## State
 
-All run state lives in a run-scoped directory the operator names — never a fixed dot-path. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
+All run state lives in a run-scoped directory under `.mstack/` that the operator names — never outside `.mstack/`. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
 
 - **Pinned head** (≤ `values.md#deep-work.head-lines` lines): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. `files:` — one-line index of the run directory's artifacts (progress, ledger, gate records). `token:` — a fresh `resume-token`, unique per park and unguessable to anyone who cannot read the run directory (never a counter, timestamp, or slug-derived value), written here and into the `parked:` note whenever the run parks; a resume note without the matching token is unverified. The orchestrator keeps this current; it is the first thing read on resume.
 - **Progress file** (≤ `values.md#deep-work.progress-lines` lines, rewritten in place, never appended): status, open items, one-line verdicts per lane, pointers to topic files. Mid-run, on any conflict between state shapes, the progress file wins. At resume, the gate record wins for dispositions — a disposition is what the gate that made it recorded, and a re-review appends a new entry to the same gate-record file, never by rewriting the old entry; for lane and status state, the progress file still wins.
@@ -184,7 +184,7 @@ Good: adversary reports "Attacked the error paths and the migration ordering; th
 
 ## Tombstone
 
-On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone-lines` lines: `status: completed`, the final conclusion, deliverable pointers, surviving constraints, the date. A finished run directory is read by nothing and is kept by default — retention is the lifecycle, not deletion. A finished directory is pruned only with destructive-scope confirmation: state the exact scope — the run directory's actual path (`.mstack/runs/<slug>/` only when the operator named no directory, per ## State) — and its completion date from the tombstone, and wait for the human. No run deletes its own or a prior run's directory during normal execution. The license covers only the stated directory — nothing outside its path. A scope stated after the deletion is a confession, not a confirmation.
+On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone-lines` lines: `status: completed`, the final conclusion, deliverable pointers, surviving constraints, the date. A finished run directory is read by nothing and is kept by default — retention is the lifecycle, not deletion. A finished directory is pruned only with destructive-scope confirmation: state the exact scope — the run directory's actual path (always under `.mstack/`, per ## State) — and its completion date from the tombstone, and wait for the human. No run deletes its own or a prior run's directory during normal execution. The license covers only the stated directory — nothing outside its path. A scope stated after the deletion is a confession, not a confirmation.
 
 ## Reply:
 
