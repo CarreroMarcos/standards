@@ -28,6 +28,13 @@ if [ -z "$notes" ]; then echo "check-matrix: no 'cells filled' notes line in $f"
 read -r n_total n_full n_degraded n_unsupported < <(
   printf '%s\n' "$notes" | sed -E 's/^[^0-9]*([0-9]+) cells filled: ([0-9]+) full, ([0-9]+) degraded, ([0-9]+) unsupported.*/\1 \2 \3 \4/'
 )
+# A malformed notes line leaves sed's substitution unmatched: the whole line
+# lands in n_total and the rest stay unset. Fail explicitly instead of
+# tripping set -u (or integer-comparison errors) further down.
+for var in n_total n_full n_degraded n_unsupported; do
+  val=${!var:-}
+  case $val in ''|*[!0-9]*) echo "check-matrix: unparseable notes line: $notes"; exit 1;; esac
+done
 
 ok=1
 [ "$total" -eq "$n_total" ] || { echo "check-matrix: total mismatch: counted $total, notes say $n_total"; ok=0; }

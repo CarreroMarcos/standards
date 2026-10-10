@@ -138,9 +138,17 @@ expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"
 expect 0 "decades allowlisted" bash "$VV" "$FX/check-values/values-allow-1970s.md" "$FX/check-values/decades.md"
 expect 1 "decades flagged without allowlist" bash "$VV" "$VM" "$FX/check-values/decades.md"
 expect 0 "tbd suppresses number" bash "$VV" "$VM" "$FX/check-values/tbd-number.md"
-expect 0 "matrix totals match notes" bash "$MX" "$dir"/../HARNESS.md
+# Script-behavior tests use self-contained fixtures only, so a script
+# regression is distinguishable from documentation drift.
 expect 0 "matrix clean fixture" bash "$MX" "$FX/check-matrix/clean.md"
 expect 1 "matrix mismatch flagged" bash "$MX" "$FX/check-matrix/mismatch.md"
+expect 1 "matrix split mismatch flagged" bash "$MX" "$FX/check-matrix/split-mismatch.md"
+expect 0 "matrix unsupported cell clean" bash "$MX" "$FX/check-matrix/unsupported-clean.md"
+expect 1 "matrix missing notes flagged" bash "$MX" "$FX/check-matrix/no-notes.md"
+expect_output "matrix missing notes message" "no 'cells filled' notes line" bash "$MX" "$FX/check-matrix/no-notes.md"
+# Docs-consistency check (separate): the live HARNESS.md matrix must match
+# its own notes line. Fails on docs drift, not script bugs.
+expect 0 "docs: matrix totals match notes" bash "$MX" "$dir"/../HARNESS.md
 
 echo "test-lints: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
