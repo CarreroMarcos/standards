@@ -23,7 +23,7 @@ expect_no_output() { # expect_no_output <description> <grep-pattern> <command...
   else pass=$((pass + 1)); fi
 }
 
-RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"
+RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"; MX="$dir/check-matrix.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
 
 # rg-less stub PATH: symlink everything except rg, so the scripts take
@@ -138,6 +138,9 @@ expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"
 expect 0 "decades allowlisted" bash "$VV" "$FX/check-values/values-allow-1970s.md" "$FX/check-values/decades.md"
 expect 1 "decades flagged without allowlist" bash "$VV" "$VM" "$FX/check-values/decades.md"
 expect 0 "tbd suppresses number" bash "$VV" "$VM" "$FX/check-values/tbd-number.md"
+expect 0 "matrix totals match notes" bash "$MX" "$dir"/../HARNESS.md
+expect 0 "matrix clean fixture" bash "$MX" "$FX/check-matrix/clean.md"
+expect 1 "matrix mismatch flagged" bash "$MX" "$FX/check-matrix/mismatch.md"
 
 echo "test-lints: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

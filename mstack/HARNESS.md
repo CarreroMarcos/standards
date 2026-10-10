@@ -80,7 +80,7 @@ Each cell names the native primitive. `Muse agents` claims are first-hand
 
 ## 2. The wake-on-event requirement
 
-Harness-neutral contract (`/loop`): every runbook that waits on an
+The wake-on-event contract (named `/loop` in runbook prose): every runbook that waits on an
 external condition implements **both** arms —
 
 1. **Watcher arm.** If the harness exposes an event for the condition
@@ -245,7 +245,7 @@ and single-agent: shell, version control, and a todo list.
 
 ### Matrix notes
 
-- 45 cells filled: 28 full, 12 degraded, 0 unsupported. No cell is
+- 45 cells filled: 32 full, 13 degraded, 0 unsupported. No cell is
   unsupported because every runbook degrades to shell + files +
   heartbeat, which all five harnesses provide. If a future harness lacks
   a shell, its column gets real `unsupported` cells with "run this

@@ -113,7 +113,7 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 
 ## State
 
-All run state lives in a run-scoped directory the operator names — never a fixed dot-path. Three tiers, each with one address:
+All run state lives in a run-scoped directory the operator names — never a fixed dot-path. When the operator names no directory, use `.runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
 
 - **Pinned head** (≤ `values.md#deep-work.head-lines` lines): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. The orchestrator keeps this current; it is the first thing read on resume.
 - **Progress file** (≤ `values.md#deep-work.progress-lines` lines, rewritten in place, never appended): status, open items, one-line verdicts per lane, pointers to topic files. On any conflict between state shapes, the progress file wins.
@@ -161,6 +161,8 @@ A gate is mandatory after each phase. The gate prompt carries: the phase goal, t
 - Budget exhausted → record the remaining risk in the progress file and ask the operator: accept the risk, change the scope, or authorize one exceptional additional review. The gate never auto-passes on an empty budget. The operator's call is pinned in the progress file and executed, never re-litigated (`recorded-decisions`).
 
 ## The adversarial gate
+
+This gate is one adversary with independent context; it is not the interrogate protocol. If a lane invokes the interrogate skill, interrogate's `min-reviewers = 2` bar governs that review.
 
 After the fixer lanes verify clean, the adversary reviews the work — not the workers. The gate verdict carries one of: pass, findings (routed back to a fixer lane with the evidence), or pass-with-caveat (caveat named on the verdict, e.g. `single-family-adversary`).
 

@@ -61,7 +61,7 @@ Used-in: hub.md
 ### interrogate.min-reviewers
 Value: 2
 Unit: independent reviewers
-Why: Adversarial review needs at least two independent perspectives (different model families when available). One reviewer is an opinion, not a red team.
+Why: Adversarial review needs at least two independent perspectives (different model families when available). One reviewer is an opinion, not a red team. Scopes to the interrogate skill only — deep-work's adversarial gate is a distinct single-adversary mechanism with its own caveat vocabulary.
 Used-in: skills/interrogate/SKILL.md
 
 ### growth-governor.occurrences
@@ -107,5 +107,5 @@ each carries its reason so the list stays honest.
 
 - "9 runbooks" — the runbook file count; structural, not a tuned threshold.
 - "step 1" (and other step numbers) — document numbering, not a quantity.
-- "v0.0.1" — the version string, not a measurement.
+- the version string (e.g. "v0.0.1") — the version string, not a measurement.
 - "3 times" — small fixed procedural counts in prose, not tuned thresholds.
