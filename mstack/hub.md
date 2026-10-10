@@ -90,5 +90,5 @@ Every hub turn ends with this shape:
 
 - **Route:** the matched runbook (or parked / clarification-asked).
 - **Intake verdict:** BLOCKING / PROCEED / CLEAN / NEVER-ASKED — which gate arm fired and why.
-- **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty only when the gate never fired PROCEED.
+- **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty on CLEAN or when PROCEED logged none.
 - **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note — the run resumes by re-invoking `/mstack` with that note as the goal.
