@@ -113,7 +113,7 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 
 ## State
 
-All run state lives in a run-scoped directory the operator names — never a fixed dot-path. When the operator names no directory, use `.runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
+All run state lives in a run-scoped directory the operator names — never a fixed dot-path. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
 
 - **Pinned head** (≤ `values.md#deep-work.head-lines` lines): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. The orchestrator keeps this current; it is the first thing read on resume.
 - **Progress file** (≤ `values.md#deep-work.progress-lines` lines, rewritten in place, never appended): status, open items, one-line verdicts per lane, pointers to topic files. On any conflict between state shapes, the progress file wins.

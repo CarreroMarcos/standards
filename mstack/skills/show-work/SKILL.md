@@ -13,7 +13,7 @@ Any run whose result a human (or a gate) must trust without watching it happen: 
 
 ## Procedure
 
-1. **Open the log before the first decision.** One TSV file per run: `decisions.tsv` in the run's working directory (the runbook's Inputs may name another path). The first row is the header:
+1. **Open the log before the first decision.** One TSV file per run: `.mstack/runs/<slug>/decisions.tsv` — `<slug>` from the invoking runbook's run (the runbook's Inputs may name another path). One file per run: concurrent runs never interleave rows. The first row is the header:
    `ts	decision	alternatives	evidence	result`
 2. **Log the decisions, not the keystrokes.** One row per: a fork chosen, a unit completed with its verification result, a pivot or revert with its trigger, a blocker surfaced, a gate fixed. One row per loop iteration. Skip the trivial and self-evident.
 3. **Write each row so a reviewer reads it at a glance.** Single-line cells, plain words, concrete actions. Columns:
