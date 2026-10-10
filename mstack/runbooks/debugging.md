@@ -33,7 +33,7 @@ Never: "fixed" without the repro going green. Never an environmental verdict wit
    Bad: "The retry logic looks suspicious — let me read it."
    Good: `run.sh 2>&1 | tail -3` exits non-zero with the exact error from the report. Now theorizing may begin.
 
-2. **State one hypothesis and its falsifier.** Before touching code, write down what you believe is wrong and what observation would prove you wrong (`falsifiable-tests` — the discipline applies to hypotheses, not just tests). One hypothesis at a time; a second hypothesis waits its turn. Each hypothesis gets a log entry: hypothesis, falsifier, result — plus the **premise** it rests on. Bisection outcomes append under the owning hypothesis's entry.
+2. **State one hypothesis and its falsifier.** Before touching code, write down what you believe is wrong and what observation would prove you wrong (`falsifiable-tests` — the discipline applies to hypotheses, not just tests). One hypothesis at a time; a second hypothesis waits its turn. Each hypothesis gets an id (H1, H2, …) and a log entry: id, hypothesis, falsifier, result, premise. Bisection outcomes and fix attempts append as new lines repeating the hypothesis id — the id is the anchor step 5's per-premise counting reads.
 
 3. **Isolate by bisection.** Narrow the suspect surface: halve the input, the code path, or the config with each experiment. A hypothesis that survives narrowing gets stronger; one that doesn't dies cheap. When an experiment's result contradicts the hypothesis, the hypothesis changes — not the interpretation of the result.
 
