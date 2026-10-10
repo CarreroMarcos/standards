@@ -15,6 +15,10 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
 
+## State
+
+All runbook-created state lives under `.mstack/` in the working directory — run dirs, ledgers, logs, decision files. One root, so one gitignore entry covers it. A runbook that needs a state file puts it under `.mstack/`; the `parked:` note names its path.
+
 An unmet Require parks the run at the hub with the missing prerequisite named — never rerouted, never improvised around.
 
 ## Inputs

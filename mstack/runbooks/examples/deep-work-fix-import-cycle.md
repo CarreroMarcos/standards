@@ -13,7 +13,7 @@ One instantiation of `runbooks/deep-work.md`. The codebase is invented; the patt
 ## The run
 
 - **Goal:** split `config.py`'s import cycle. Done means `python -c 'import config'` exits 0 and `pytest tests/test_config.py` passes.
-- **State dir:** `.runs/config-cycle/` (operator-named).
+- **State dir:** `.mstack/runs/config-cycle/` (operator-named).
 - **Lanes:**
   - **L1** — extract the `Settings` dataclass to `models/config.py`.
   - **L2** — rewrite the importers (`app.py`, `cli.py`) against the new location.
@@ -47,6 +47,6 @@ The finding routes back to a fixer lane with the evidence. The gate does not pas
 
 ## Tombstone (L3, when done)
 
-> status: complete. conclusion: cycle split, 41/41 green, no behavior change. pointers: `.runs/config-cycle/progress.md`, `models/config.py`. date: 2026-10-09.
+> status: complete. conclusion: cycle split, 41/41 green, no behavior change. pointers: `.mstack/runs/config-cycle/progress.md`, `models/config.py`. date: 2026-10-09.
 
 Six lines. The next run starts here, not from zero.
