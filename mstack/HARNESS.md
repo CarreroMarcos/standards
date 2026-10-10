@@ -120,7 +120,7 @@ how on each harness.
 
 ## 4. Capability matrix
 
-Rows: the seven v0.0.1 runbooks. Columns: the five harnesses.
+Rows: the nine runbooks. Columns: the five harnesses.
 `full` = every step maps to a documented first-class primitive.
 `degraded` = all steps achievable, at least one via a fallback named in
 the cell. `unsupported` = a step cannot be done; the cell names the
@@ -215,9 +215,37 @@ Fallback runbook: spawn, probe, track, report. Minimal verbs.
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
+### deep-work
+
+Delegated subagent execution: lane briefs to fixer subagents, artifacts
+verified against real state, adversarial gate on the merged work, a
+run-scoped state directory. Spawn and todo are the only special verbs —
+no wake-on-event, no per-subagent isolation, no push.
+
+| Harness | Cell |
+|---|---|
+| Muse agents | full |
+| Claude Code | full |
+| OpenCode | full |
+| Cursor | degraded — todo list falls back to plan files in the repo |
+| Codex | full |
+
+### debugging
+
+Repro first, bisect, fix smallest, verify against real state. Sequential
+and single-agent: shell, version control, and a todo list.
+
+| Harness | Cell |
+|---|---|
+| Muse agents | full |
+| Claude Code | full |
+| OpenCode | full |
+| Cursor | degraded — todo list falls back to plan files in the repo |
+| Codex | full |
+
 ### Matrix notes
 
-- 35 cells filled: 24 full, 11 degraded, 0 unsupported. No cell is
+- 45 cells filled: 28 full, 12 degraded, 0 unsupported. No cell is
   unsupported because every runbook degrades to shell + files +
   heartbeat, which all five harnesses provide. If a future harness lacks
   a shell, its column gets real `unsupported` cells with "run this

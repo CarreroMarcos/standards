@@ -53,7 +53,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 | A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement |
 | Something broken with an unknown cause: repro first, isolate, fix smallest | `runbooks/debugging.md` — systematic debugging |
 | A final review before merge: verify the real state, adjudicate holds, deliver a verdict | `runbooks/final-gate.md` — pre-merge final review |
-| Mining senior-engineer taste from real sources | The external taste-mining skill — out of scope for mstack; the hub routes there and stops |
+| Mining senior-engineer taste from real sources | External: the `taste-mining` skill — lives in the operator's skills workspace, outside `mstack/`. The hub routes there and stops |
 | None of the above | `runbooks/figure-it-out.md` — open-ended investigation: frame a falsifiable predicate, design the workflow, run it |
 
 On a match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:

@@ -2,9 +2,9 @@
 name: deep-work
 description: >
   Use when substantial work needs doing through delegated subagents: brief fixers,
-  verify their output against real state, adversarially review it on a different
-  model family, and reconcile the results. Harness-neutral — any codebase, any
-  harness with subagents.
+  verify their output against real state, adversarially review it — pinned to a
+  different model family when the harness supports per-subagent pinning — and
+  reconcile the results. Harness-neutral — any codebase, any harness with subagents.
 ---
 
 ## Exit predicate
@@ -73,7 +73,7 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 
 **Job:** attacks the fix's reasoning, not its output. Finds what friendly review would miss.
 
-**Hard constraints:** read-only — advises, never implements (`model-proposes-never-authorizes`). Acknowledges uncertainty when present. Prefers simpler designs unless complexity clearly earns its keep. Must run on a different model family from the fixer; when the harness offers one family, the gate degrades to an `interrogate`-style self-review and the verdict carries `caveat: single-family-adversary` — never silent. A "no findings" report is valid only with stated coverage.
+**Hard constraints:** read-only — advises, never implements (`model-proposes-never-authorizes`). Acknowledges uncertainty when present. Prefers simpler designs unless complexity clearly earns its keep. Model family: when the harness supports pinning a model per subagent, pin the adversary to a model family different from the fixer's. When it does not, spawn the adversary as one of the harness's general subagents and log `caveat: single-family-adversary` on the gate verdict — never silent. A "no findings" report is valid only with stated coverage.
 
 **Permissions:** read-only. May-not-spawn.
 
@@ -162,9 +162,9 @@ A gate is mandatory after each phase. The gate prompt carries: the phase goal, t
 
 ## The adversarial gate
 
-After the fixer lanes verify clean, the adversary reviews the work — not the workers. The gate verdict carries one of: pass, findings (routed back to a fixer lane with the evidence), or pass-with-caveat (single-family harness, stated on the verdict).
+After the fixer lanes verify clean, the adversary reviews the work — not the workers. The gate verdict carries one of: pass, findings (routed back to a fixer lane with the evidence), or pass-with-caveat (caveat named on the verdict, e.g. `single-family-adversary`).
 
-- **Same-model collapse.** The adversary must differ in model family from the fixer. One family available → the gate degrades to `interrogate`-style self-review and the verdict carries `caveat: single-family-adversary`. A silent single-family gate is a failed gate.
+- **Same-model collapse.** When the harness supports per-subagent model pinning, the adversary is pinned to a model family different from the fixer's. When it does not, the adversary runs as a general subagent — independent context, possibly the same family — and the verdict carries `caveat: single-family-adversary`. A silent single-family gate is a failed gate.
 - **Brief drift.** Covered by pilot-before-fanout above: novel brief shapes prove themselves on one lane before the rest.
 - **Verifier theater.** Covered by the falsification-condition rule above: no stated condition, no check run.
 - **Adversary sycophancy.** An adversary's "no findings" is valid only with stated coverage — "I attacked X, Y, and Z; found nothing." A coverageless "looks good" is treated as a failed gate, not a pass, and the lane goes back with a coverage demand.
