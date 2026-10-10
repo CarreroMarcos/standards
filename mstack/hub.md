@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked. Nothing else leaves the hub (the restatement message and the intake verdict are the hub's voice — both allowed).
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked. Nothing else leaves the hub (the restatement message, the intake verdict, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
@@ -88,7 +88,7 @@ The hub speaks in harness-neutral verbs: spawn a worker, run in background, keep
 
 Every hub turn ends with this shape:
 
-- **Route:** the matched runbook (or parked / clarification-asked).
+- **Route:** the matched runbook (or parked / clarification-asked / declined: small-edit).
 - **Intake verdict:** BLOCKING / PROCEED / CLEAN / NEVER-ASKED — which gate arm fired and why.
 - **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty on CLEAN or when PROCEED logged none.
 - **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note — the run resumes by re-invoking `/mstack` with that note as the goal.

@@ -14,9 +14,9 @@ read -r full degraded unsupported < <(awk '
   /^\| Harness \| Cell \|/ { in_table=1; next }
   /^### / { in_table=0 }
   in_table && /^\|/ && !/^\|---/ {
-    if ($0 ~ /\| full([ |—-])/) f++
-    else if ($0 ~ /\| degraded/) d++
-    else if ($0 ~ /\| unsupported/) u++
+    if ($0 ~ /\| full([^[:alnum:]]|$)/) f++
+    else if ($0 ~ /\| degraded([^[:alnum:]]|$)/) d++
+    else if ($0 ~ /\| unsupported([^[:alnum:]]|$)/) u++
   }
   END { print f+0, d+0, u+0 }
 ' "$f")

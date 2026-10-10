@@ -148,6 +148,9 @@ expect 1 "matrix missing notes flagged" bash "$MX" "$FX/check-matrix/no-notes.md
 expect_output "matrix missing notes message" "no 'cells filled' notes line" bash "$MX" "$FX/check-matrix/no-notes.md"
 expect 1 "matrix malformed notes flagged" bash "$MX" "$FX/check-matrix/malformed-notes.md"
 expect_output "matrix malformed notes message" "unparseable notes line" bash "$MX" "$FX/check-matrix/malformed-notes.md"
+expect 1 "matrix unsupported mismatch flagged" bash "$MX" "$FX/check-matrix/unsupported-mismatch.md"
+expect_output "matrix unsupported mismatch message" "unsupported mismatch" bash "$MX" "$FX/check-matrix/unsupported-mismatch.md"
+expect 0 "matrix two tables clean" bash "$MX" "$FX/check-matrix/two-tables-clean.md"
 # Docs-consistency check (separate): the live HARNESS.md matrix must match
 # its own notes line. Fails on docs drift, not script bugs.
 expect 0 "docs: matrix totals match notes" bash "$MX" "$dir"/../HARNESS.md
