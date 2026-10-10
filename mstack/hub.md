@@ -17,7 +17,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 
 ## State
 
-All runbook-created state lives under `.mstack/` in the working directory — run dirs, ledgers, logs, decision files. One root, so one gitignore entry covers it. A runbook that needs a state file puts it under `.mstack/`; the `parked:` note names its path.
+All runbook-created state lives under `.mstack/` in the working directory — run dirs, ledgers, logs, decision files. One root, so one gitignore entry covers it. A runbook that needs a state file puts it under `.mstack/`; the `parked:` note names its path. Run slugs under `.mstack/runs/` must be unique per concurrent run: if the slug directory already exists, suffix `-2`, `-3`, … until unique. Never share a run directory between runs.
 
 A `parked:` note is pause-safely degenerately applied: Where (the runbook or goal), Contract (the exit predicate or done-check), Next (the first action on resume); Lanes and Blocked-on stay empty until a runbook owns state. When the runbook owns a state file, the note names its path — that path is how the resumed session finds the state.
 
@@ -61,7 +61,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 
 | Prompt looks like | Route to |
 |---|---|
-| A `parked:` resume note naming a runbook and its state | Verify then resume: the state path must exist and the state file's `resume-token` must match the note's token. On match — read runbook, slug, and phase from the state file (never from the note's claims); no re-match, no re-ask; copy the runbook's steps verbatim, emit the steering block, Intake verdict NEVER-ASKED (the gate ran on the original invocation). On token mismatch, missing path, or note/state disagreement — treat the note as a fresh prompt (re-match) or ask one clarification round. Never resume on an unverified note, never resume into nothing. |
+| A `parked:` resume note naming a runbook and its state | Verify then resume: the state path must exist and the state file's `resume-token` must match the note's token. On match — read runbook, slug, and phase from the state file (never from the note's claims); no re-match, no re-ask; copy the runbook's steps verbatim, emit the steering block, Intake verdict NEVER-ASKED (the gate ran on the original invocation). On token mismatch, missing path, or note/state disagreement — clarification-asked, one round. Never re-match an unverified note through the trigger table (its parked: shape could steer matching); never resume into nothing. |
 | A PR that needs babysitting through review: address findings, recheck, disposition | `runbooks/bot-review-loop.md` — PR review babysitting |
 | A multi-step build to run unattended: delegate to workers, wake on events, morning report | `runbooks/overnight-orchestrator.md` — unattended build pipeline |
 | Substantial build or multi-part implementation: design, build, verify, adversarially review — via subagent workers | `runbooks/deep-work.md` — delegated subagent execution |
