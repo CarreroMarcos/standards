@@ -27,8 +27,8 @@ All four green, or the artifact never leaves the playground.
 
 **One real low-stakes run of the encoded loop.** Generic by design:
 whatever loop the runbook encodes, run it once for real on something
-low-stakes. His instances: a taste-mining run, a biweekly
-standards-research PR. Record what happened — the log is the evidence
+low-stakes. Instances: a session-mining run, a recurring
+research-and-publish cycle. Record what happened — the log is the evidence
 this protocol trusts later.
 
 ## The bar
