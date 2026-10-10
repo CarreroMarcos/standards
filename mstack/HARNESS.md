@@ -16,15 +16,17 @@ lists everything that could not be verified.
 ## 1. Verb translations
 
 Each cell names the native primitive. `Muse agents` claims are first-hand
-(observed in this runtime; no URL exists).
+(observed in this runtime; no URL exists). First-hand claims carry their
+date (`first-hand YYYY-MM-DD`) and outrank doc-sourced claims for that
+runtime — docs describe the product, first-hand describes the machine.
 
 ### Spawn a subagent
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | `subagent.spawn` with a self-contained brief (first-hand: child agent, own context, result delivered back) |
+| Muse agents | `subagent.spawn` with a self-contained brief unverified (under ruling, see §6; child agent, own context, result delivered back) |
 | Claude Code | Task / Agent tool: `subagent_type`, optional `run_in_background`, optional `isolation` (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | `task` tool spawning a subagent (`general`, `explore`, `scout`); `@` mentions; child sessions (https://opencode.ai/docs/agents/) |
+| OpenCode | `subagent` tool spawning a subagent (`general`, `explore` — no `scout`); optional `background` and `sessionID` parameters; `@` mentions; child sessions (first-hand 2026-10-10; official docs still name `task` + `scout`: https://opencode.ai/docs/agents/) |
 | Cursor | Agent's Task tool; custom subagents as markdown files in `.cursor/agents/` (also reads `.claude/agents/`, `.codex/agents/`) (https://cursor.com/docs/subagents) |
 | Codex | Prompt-driven subagent workflows ("spawn two agents", "one agent per point"); custom agents as TOML files in `.codex/agents/` (https://developers.openai.com/codex/subagents) |
 
@@ -32,9 +34,9 @@ Each cell names the native primitive. `Muse agents` claims are first-hand
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | `muse.exec` with `background: true`; poll with `process.poll` / `process.log` (first-hand) |
+| Muse agents | `muse.exec` with `background: true`; poll with `process.poll` / `process.log` unverified (under ruling, see §6) |
 | Claude Code | Task `run_in_background`; background sessions via `claude agents` (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | `unverified` — no background subagent primitive found in official docs. Fallback: shell backgrounding (`&`, `nohup`) from the agent's Bash tool |
+| OpenCode | first-hand 2026-10-10: `subagent(background: true)` detached runs confirmed in this runtime; official docs silent. Fallback unchanged: shell backgrounding (`&`, `nohup`) |
 | Cursor | Subagent foreground vs background modes; `is_background` frontmatter on custom subagents; `/in-cloud` hands work to a cloud subagent (https://cursor.com/docs/subagents) |
 | Codex | `degraded` — no first-class detached background subagent documented. Fallbacks: `codex exec` (headless, JSONL stream) backgrounded with `&` and polled; hook handlers may set `async: true` to run in the background (https://developers.openai.com/codex/hooks) |
 
@@ -42,9 +44,9 @@ Each cell names the native primitive. `Muse agents` claims are first-hand
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | Todo lists (tracked items; first-hand) |
+| Muse agents | Todo lists (tracked items) — unverified (under ruling, see §6) |
 | Claude Code | TodoWrite / TodoRead tools (https://docs.claude.com/en/api/agent-sdk/todo-tracking — cited via search; not confirmed on code.claude.com this session) |
-| OpenCode | `todowrite` / `todoread` tools (https://opencode.ai/docs/tools/) |
+| OpenCode | refuted first-hand 2026-10-10 on this runtime (opencode v2.0.26): no todo tool exists under any name. Fallback: plan state in repo files — same as Cursor |
 | Cursor | `unverified` — no official todo tool found in the docs surveyed. Fallback: plan state in repo files (e.g. `plan.md` checklists) |
 | Codex | `todo_write` / `update_plan` built-in solver tools (https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide/) |
 
@@ -52,7 +54,7 @@ Each cell names the native primitive. `Muse agents` claims are first-hand
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | Read the `SKILL.md` and follow its instructions (first-hand) |
+| Muse agents | Read the `SKILL.md` and follow its instructions unverified (under ruling, see §6) |
 | Claude Code | Native `SKILL.md` + Skill tool; Agent Skills open standard; `disable-model-invocation` frontmatter (https://code.claude.com/docs/en/skills) |
 | OpenCode | `skill` tool; native `SKILL.md` support (https://opencode.ai/docs/tools/; https://opencode.ai/docs/skills/ — skills page cited via search results, not opened this session) |
 | Cursor | Agent Skills (`SKILL.md`); the official subagents doc directs single-purpose tasks to "a skill or command instead" (https://cursor.com/docs/subagents). Skill directory path `.cursor/skills/` is third-party-reported, `unverified` in official docs |
@@ -62,7 +64,7 @@ Each cell names the native primitive. `Muse agents` claims are first-hand
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | None — no event system (first-hand). Fallback: heartbeat polling loop (section 2) |
+| Muse agents | No event system — unverified (under ruling, see §6). Fallback: heartbeat polling loop (section 2) |
 | Claude Code | Hooks: `Stop`, `SubagentStop`, `Notification`, `SessionEnd` fire scripts on agent-loop events (https://code.claude.com/docs/en/hooks). No timer primitive — external conditions still need the heartbeat fallback |
 | OpenCode | Plugin hooks: `session.idle`, `session.created`, `session.deleted`, `tool.execute.before/after`, `todo.updated`, `file.watcher.updated` (https://opencode.ai/docs/plugins/). No condition-watch primitive — heartbeat fallback |
 | Cursor | Hooks in `.cursor/hooks.json`: `stop` hook may return `followup_message` to re-arm the loop, bounded by `loop_limit`; also `subagentStart` / `subagentStop`, `sessionStart` / `sessionEnd` (https://cursor.com/docs/hooks). No timer primitive — heartbeat fallback |
@@ -72,7 +74,7 @@ Each cell names the native primitive. `Muse agents` claims are first-hand
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | `git worktree` via shell; subagents share the parent checkout (first-hand) |
+| Muse agents | `git worktree` via shell; subagents share the parent checkout unverified (under ruling, see §6) |
 | Claude Code | `git worktree` via Bash; the Agent tool exposes an `isolation` option (https://code.claude.com/docs/en/sub-agents) |
 | OpenCode | `degraded` — no first-class agent-facing worktree command found in official docs. Fallbacks: plain `git worktree` via Bash; plugin context exposes a worktree path (https://opencode.ai/docs/plugins/) |
 | Cursor | First-class: "ask for isolation and each subagent runs in its own copy of the project" — an isolated git worktree with its own branch and working directory, or a cloud environment with a dedicated VM (https://cursor.com/docs/subagents) |
@@ -94,7 +96,7 @@ Per-harness `/loop` mapping:
 
 | Harness | Watcher arm | Heartbeat arm |
 |---|---|---|
-| Muse agents | none available | background exec loop (first-hand) |
+| Muse agents | none available | background exec loop unverified (under ruling, see §6) |
 | Claude Code | `Stop` / `Notification` hooks | background task + sleep |
 | OpenCode | `session.idle` / `file.watcher.updated` plugin hooks | shell loop |
 | Cursor | `stop` hook with `followup_message` + `loop_limit` | hook script sleeps between re-arms |
@@ -108,7 +110,7 @@ each tick is logged so a stalled loop is distinguishable from a quiet one.
 
 | Harness | Options |
 |---|---|
-| Muse agents | `git worktree` via shell (first-hand). Subagents share the checkout — isolate by hand before delegating write work |
+| Muse agents | `git worktree` via shell unverified (under ruling, see §6). Subagents share the checkout — isolate by hand before delegating write work |
 | Claude Code | `git worktree` via Bash; Agent tool `isolation` option (https://code.claude.com/docs/en/sub-agents) |
 | OpenCode | `git worktree` via Bash (no first-class command; https://opencode.ai/docs/plugins/) |
 | Cursor | Per-subagent isolated git worktree with own branch (first-class); whole-agent isolation via worktree or cloud subagent VM (https://cursor.com/docs/subagents) |
@@ -160,7 +162,7 @@ background, no wake, no push.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | full |
+| OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
@@ -187,7 +189,7 @@ Interleaved runs, median + range, falsifiable checks. Sequential.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | full |
+| OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
@@ -211,7 +213,7 @@ Fallback runbook: spawn, probe, track, report. Minimal verbs.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | full |
+| OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
@@ -226,7 +228,7 @@ no wake-on-event, no per-subagent isolation, no push.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | full |
+| OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
@@ -239,23 +241,19 @@ and single-agent: shell, version control, and a todo list.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | full |
+| OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
 ### Matrix notes
 
-- 45 cells filled: 32 full, 13 degraded, 0 unsupported. No cell is
+- 45 cells filled: 27 full, 18 degraded, 0 unsupported. No cell is
   unsupported because every runbook degrades to shell + files +
   heartbeat, which all five harnesses provide. If a future harness lacks
   a shell, its column gets real `unsupported` cells with "run this
   runbook on a shelled harness" as the alternative.
-- Cursor's recurring degradation is one missing primitive: no documented
-  todo tool. The fallback (plan files in the repo) is cheap and
-  inspectable, so the degradation is minor.
-- OpenCode's recurring degradation is background execution; Codex's is
-  background + per-subagent worktrees. Both fall back to the same shell
-  idioms the runbooks already use for polling.
+- Cursor's and OpenCode's recurring degradation is one missing primitive: no documented todo tool (Cursor), no existing todo tool — refuted first-hand 2026-10-10 (OpenCode). The fallback (plan files in the repo) is cheap and inspectable, so the degradation is minor.
+- Codex's recurring degradation is background + per-subagent worktrees, falling back to the same shell idioms the runbooks already use for polling. (OpenCode background execution was previously listed here; first-hand 2026-10-10 confirms the primitive exists.)
 
 ## 5. Push abstraction
 
@@ -306,3 +304,17 @@ From official docs, during this session's research:
 - **No harness documents a timer/cron primitive for agents.** Stated as
   "not found in the docs surveyed" — that is why the heartbeat arm is
   the portable baseline, not a claim about any harness's roadmap.
+- **OpenCode tool names (corrected first-hand 2026-10-10).** The spawn
+  primitive is the `subagent` tool (`general`, `explore` — no `scout`),
+  not the documented `task` tool; no todo tool exists in this runtime
+  under any name (`todowrite`/`todoread` refuted); background subagents
+  (`subagent(background: true)`) confirmed, previously marked unverified.
+  Five matrix cells flipped `full` → `degraded` on the todo finding; the
+  §5 count and notes updated in the same change.
+- **Muse-agents first-hand cells vs this runtime (operator ruling
+  needed).** The Muse column claims first-hand `subagent.spawn`,
+  `muse.exec`, `process.poll`, and todo lists — but the 2026-10-10
+  audited surface of this runtime exposes `subagent`, `shell`, and no
+  todo tool. Either "Muse agents (this runtime)" names a different
+  runtime than the one audited, or the Muse column is stale. No Muse
+  cell rewritten pending the operator's ruling.
