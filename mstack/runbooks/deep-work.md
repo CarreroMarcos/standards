@@ -56,7 +56,7 @@ Every delegated role is a triple: what it does, what it may do, and when to use 
 
 **Job:** runs the fixer's check against real state and reports what the state showed.
 
-**Hard constraints:** never trusts the fixer's summary. States the check's falsification condition — "what observable outcome would make this check fail?" — *before* running it. A verifier that cannot state the condition does not run the check (`falsifiable-tests`: a check that cannot fail does not count).
+**Hard constraints:** never trusts the fixer's summary. States the check's falsification condition — "what observable outcome would make this check fail?" — *before* running it. A verifier that cannot state the condition does not run the check (`falsifiable-tests`: a check that cannot fail does not count). Every must-not-flag probe carries a paired must-flag twin — one must-flag case per must-not-flag case; silence proves cleanliness only when the twin proves the instrument still fires. A verification whose negative probes lack twins is an unstated falsification condition: the verifier does not run it — it goes back for a brief fix.
 
 **Permissions:** read and execute checks. Never modifies the artifact under review. May-not-spawn.
 
@@ -116,10 +116,14 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 All run state lives in a run-scoped directory the operator names — never a fixed dot-path. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
 
 - **Pinned head** (≤ `values.md#deep-work.head-lines` lines): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. The orchestrator keeps this current; it is the first thing read on resume.
-- **Progress file** (≤ `values.md#deep-work.progress-lines` lines, rewritten in place, never appended): status, open items, one-line verdicts per lane, pointers to topic files. On any conflict between state shapes, the progress file wins.
+- **Progress file** (≤ `values.md#deep-work.progress-lines` lines, rewritten in place, never appended): status, open items, one-line verdicts per lane, pointers to topic files. Mid-run, on any conflict between state shapes, the progress file wins; at resume, the gate record wins: a disposition is what the gate that made it recorded, and a re-review amends it in a new gate record, never by rewriting the old.
 - **Topic files:** full lane outputs, verbatim. Full analyses live here — never in the progress file, never in chat.
 
-**Resume chain:** on resume or after compaction, read one chain, one file per hop — the pinned head, then the progress file its `slug:` points to, then the topic files its pointers reference. Nothing else. Bounded recovery by construction.
+**Instrumentation ledger.** One TSV in the run directory, one row per dispatch, lane completion, gate, and recovery — written by the orchestrator, never by workers. Dispatch rows carry t_start; the row that closes an interval carries t_end (lane completion, gate close, kill or respawn, contention events with an opening row, tombstone/report); tokens and cost land on completion rows when the harness exposes usage, else literally n/a — named as unobserved, never blank. Timebox evidence is t_end − t_start against the brief's timebox; a lane that cannot show its wall-clock cannot claim it stayed in budget.
+
+A restored or superseded state file carries its correction in place — one line at the top: NOTE: superseded, see <incident record> — and the named record must exist in the run's evidence; a NOTE that names nothing is itself a finding. The correction lives in the incident record; the pointer just makes it findable from the scene.
+
+**Resume chain:** on resume or after compaction, read one chain, one file per hop — the pinned head, then the progress file its `slug:` points to, then the topic files its pointers reference. Nothing else. Bounded recovery by construction. The pinned head is a cache of the progress file: if they disagree, the progress file is current — no mtime forensics, and a torn update heals on the next orchestrator write.
 
 ## The Grill — per-lane intake
 
@@ -139,13 +143,13 @@ Before dispatching any lane, answer all seven. A lane dispatched without a Grill
 
 1. Brief one lane per worker with the lane brief template — goal, scope, context, acceptance, the exact verification, timebox, forbidden actions, report shape, standing rules. A brief with a blank field goes back for a rewrite.
 2. **Pilot before fan-out.** Run one lane through the whole path first when the brief shape is novel. When the pilot stalls on an unclear field, fix the brief — never the worker.
-3. Probe worker liveness on a cadence tighter than the lane's timebox. A worker with no output and no state change across a full probe window is dead: kill it and respawn fresh with the same brief — never inherit a dead session's confusion. On continued silence after respawn, narrow the scope before the next attempt.
+3. Probe worker liveness on a cadence tighter than the lane's timebox. A worker with no output and no state change across a full probe window is dead: kill it and respawn fresh with the same brief — never inherit a dead session's confusion. On continued silence after respawn, narrow the scope before the next attempt. Record every probe verdict as a per-lane status line in the progress file (running / silent / dead). On resume, a lane with a dispatch record and no completion record is dead — the resumer does not consult anyone's narrative about it.
 4. Retry by mode, never by hope: stall → probe, then respawn narrowed; flake → exactly one fresh attempt, then the failure is real; conflict → pause and report, never force through. A finding already dispositioned is never re-litigated.
 5. When a lane surfaces a mid-run discovery, the discovering lane owns it: scope the surprise, report it at the next checkpoint, hold scope steady until the orchestrator re-briefs. Discoveries never silently expand the run.
 
 ## Lane completion
 
-A lane is complete only when the orchestrator re-reads the artifact from disk and finds its first line — and that first line IS the lane's one-line conclusion. Reading the worker's report is not completion; reading the artifact is (`prove-completion`: no completion claim without fresh evidence).
+A lane is complete only when the orchestrator re-reads the artifact from disk and finds its first line — and that first line IS the lane's one-line conclusion. Reading the worker's report is not completion; reading the artifact is (`prove-completion`: no completion claim without fresh evidence). A dead lane's output is completed by nobody: on resume the resumer records only what the checks showed, on the run's verification and gate artifacts, marked resumed-by <context> — the resumer verifies, never authors the lane's output.
 
 **Fixer output contract** — every fixer report carries all three, in order:
 
@@ -153,10 +157,13 @@ A lane is complete only when the orchestrator re-reads the artifact from disk an
 - `<changes>` — file: description, one per changed file.
 - `<verification>` — what was run, what resulted, and every skip named with its reason. A skip without a reason is an open item, not a pass.
 
+When a dead lane's checks are scripted and cheap — re-runnable in one command by the resumer — the resumer runs them, falsification condition stated first, instead of re-dispatching a worker to roll the mortality dice again; this is the scheduler verifying, not implementing. When the same context both runs the checks and reviews the gate, the verdict carries caveat: resume-verifier-equals-reviewer — never silent.
+
 ## Phase gates
 
-A gate is mandatory after each phase. The gate prompt carries: the phase goal, the changed paths, the validation evidence, the specific decision or risk under review, and the attempt counter (`Gate 2 — review attempt 2 of 3`).
+A gate is mandatory after each phase. The gate prompt carries: the phase goal, the changed paths, the validation evidence, the specific decision or risk under review, and the attempt counter (`Gate 2 — review attempt 2 of 3`). Each gate's decision lands in the run's gate record — a file in the run directory, one entry appended at gate close: verdict, evidence, caveats.
 
+- The grounding gate's record pins the run's expected end-state as a literal falsifiable expectation — exit 0, or exit 1 with exactly these findings, or the done-check's literal equivalent — and every later gate and the final verdict check against that pin. A pin that narrows or contradicts the operator's done-check goes back to the operator — a gate decision re-scopes the run only within the done-check's frame. Changing the pin is a new gate decision, never a quiet edit.
 - At most `values.md#deep-work.gate-rereview-budget` re-reviews per gate. Re-review only when remediation materially changes the reviewed decision — never to reopen accepted, unchanged, or resolved concerns.
 - Budget exhausted → record the remaining risk in the progress file and ask the operator: accept the risk, change the scope, or authorize one exceptional additional review. The gate never auto-passes on an empty budget. The operator's call is pinned in the progress file and executed, never re-litigated (`recorded-decisions`).
 
