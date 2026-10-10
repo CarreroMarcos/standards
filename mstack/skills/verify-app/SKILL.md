@@ -31,12 +31,12 @@ The project needs a repeatable way to operate the actual app and confirm behavio
 
 ### Phase B — Maintain the generated skills
 
-6. **Audit on a schedule.** For each project-local verification skill: read its own docs, check the app still does what they describe, drive the paths live.
-7. **Pick one outcome per skill and say which:**
+7. **Audit on a schedule.** For each project-local verification skill: read its own docs, check the app still does what they describe, drive the paths live.
+8. **Pick one outcome per skill and say which:**
    - **clean** — everything still checks out; nothing to ship. No branch, no PR.
    - **changed** — the app moved; ship proven corrections to the skill.
    - **blocked** — coverage could not finish. Say exactly what blocked it — never fake it.
-8. **Never touch product code during an audit.** When the app no longer does what the docs describe, that's either drift in the docs (fix them) or a regression in the product (report it — never hide it by editing docs).
+9. **Never touch product code during an audit.** When the app no longer does what the docs describe, that's either drift in the docs (fix them) or a regression in the product (report it — never hide it by editing docs).
 
 ## Output
 
