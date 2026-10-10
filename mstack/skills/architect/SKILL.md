@@ -42,7 +42,7 @@ costs more than a wrong line.
    - **Split ownership.** Two writers on one state, or two copies drifting
      apart. One owner; everyone else reads or requests.
    - **Two ways to do one task.** Duplicate paths multiply callers. Keep
-     one; migrate the rest and delete them together.
+     one; migrate the rest and delete them together. The license covers the duplicate paths this pass migrates and deletes together; anything wider gets destructive-scope confirmation — state the exact scope and wait for the human.
    - **Importable internals.** Anything reachable gets imported and
      becomes interface. Unreachable-by-construction is the only guarantee
      that holds.
@@ -73,7 +73,7 @@ costs more than a wrong line.
    edges do not count; data may be complex while the design stays simple.
    To restart: re-run `how` on what exists, treat the new constraints as
    day-one knowledge, shrink before growing — the replacement starts
-   smaller than what it replaces — and sketch again from step 2.
+   smaller than what it replaces — and sketch again from step 2. The replacement's license covers the implementation it restarts; anything wider gets destructive-scope confirmation.
 
 ## Output
 
@@ -83,3 +83,4 @@ The design package:
 - The candidates with each one's tripwire screening
 - The rationale — chosen, rejected, why — with the synthesis decision
 - Assumptions stated out loud, decision on record before building
+- Deleted paths named — the duplicate paths migrated and deleted together, and the implementation the restart replaced

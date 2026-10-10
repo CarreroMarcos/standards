@@ -64,6 +64,8 @@ rewrite on sight:
 Bad: a test asserting the function was called (it was — by the test).
 Good: a test asserting the observable outcome changed.
 
+The license covers bad tests by this section's criteria only. Deleting anything outside it — a test that merely fails, product code, config — requires destructive-scope confirmation first: state the exact scope and wait for the human.
+
 ## The skip contract
 
 TDD is not universal. When it does not apply, **state why in one
@@ -84,3 +86,5 @@ Per fix, report the evidence:
   run.
 - **Skipped-with-reason** — when no test was practical: the
   one-sentence reason and the closest check used instead.
+- **Removed-on-criterion** — every test killed or rewritten, each with
+  the criterion it met.

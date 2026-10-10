@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, and the small-edit decline are the hub's voice — all allowed).
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
@@ -14,6 +14,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 - `principles-distilled.md` for the steering vocabulary.
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
+- `runbooks/figure-it-out.md` step 9 for the corpus-wide destructive-scope definition — every "destructive-scope confirmation" in the corpus invokes that meaning.
 
 ## State
 
@@ -43,13 +44,15 @@ Before routing, check whether the prompt supports a checkable exit predicate.
 
 **PROCEED WITH LOGGED ASSUMPTIONS.** Fire when the prompt is vague but fully reversible: investigation, read-only analysis, drafts. State the assumptions up front; they enter the decision log and surface in the Reply's Assumptions section for correction after the fact. "Fully reversible" means the run touches none of the irreversible actions and produces no external side effects. Adapt to the cost of being wrong: when the task is build-shaped and a wrong assumption means rebuilding, name the open questions the runbook's intake must close before dispatch — don't just log assumptions for correction after the fact. The runbook asks them; the hub just names them.
 
+**CONFIRM — irreversible, on crisp instructions.** Fire when the prompt is crisp, complete, and **not fully reversible** (per PROCEED's definition — any irreversible action or external side effect; BLOCKING's verb list is illustrative, not the boundary). Nothing is missing, so ask nothing: state the exact irreversible action and wait for the human's confirmation before routing. Confirmation is permission, not information. The hub turn ends on the confirmation request; the human's confirmation resumes routing only for the exact irreversible action stated — a confirmation naming a different action is a new prompt, not a resume.
+
 **CLEAN — proceed, no assumptions.** Fire when the prompt is crisp, complete, and fully reversible: goal named, done-check checkable, no missing pieces. No questions, no logged assumptions — the Reply names CLEAN as the fired arm.
 
 **NEVER ASK FOR.** The how (the runbook owns it). A theory of the cause. Anything a runbook's grounding phase determines: which files, which tools.
 
 Read for intent. Prompts arrive as speech-to-text; a vague-but-intelligible prompt is never bounced for grammar. "Scope ambiguous" has concrete triggers: no named target; a verb with no object; two plausible readings of the done-check.
 
-**Precedence: holds win over session overrides.** If BLOCKING fires under "i'm stepping away", do not ask into the void — park the run with a pause-safely resume note and report what is missing.
+**Precedence: holds win over session overrides.** If BLOCKING or CONFIRM fires under "i'm stepping away", do not wait into the void — park the run with a pause-safely resume note and report what is missing or awaiting confirmation.
 
 Restatement-first: for noisy input, send one restatement message before any code. A correction costs one message; a misread costs a run.
 
@@ -99,7 +102,7 @@ The hub speaks in harness-neutral verbs: spawn a worker, run in background, keep
 
 Every hub turn ends with this shape:
 
-- **Route:** the matched runbook (or parked / clarification-asked / declined: small-edit / resumed from a `parked:` note).
-- **Intake verdict:** BLOCKING / PROCEED / CLEAN / NEVER-ASKED — which gate arm fired and why.
+- **Route:** the matched runbook (or parked / clarification-asked / confirmation-asked / declined: small-edit / resumed from a `parked:` note).
+- **Intake verdict:** BLOCKING / PROCEED / CONFIRM / CLEAN / NEVER-ASKED — which gate arm fired and why.
 - **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty on CLEAN or when PROCEED logged none.
 - **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note (shape defined in ## State) — the run resumes by re-invoking `/mstack` with that note as the goal. (Deliberate scope: at intake there is no working directory to cut the note to, so the note stays chat-borne; mid-run durability belongs to the runbooks.)
