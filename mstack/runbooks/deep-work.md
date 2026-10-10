@@ -177,7 +177,7 @@ Good: adversary reports "Attacked the error paths and the migration ordering; th
 
 ## Tombstone
 
-On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone-lines` lines: `status: completed`, the final conclusion, deliverable pointers, surviving constraints, the date. A finished run directory is read by nothing; it may be deleted only with destructive-scope confirmation: state the exact scope — the run directory's actual path (`.mstack/runs/<slug>/` only when the operator named no directory, per ## State) — and wait for the human. A scope stated after the deletion is a confession, not a confirmation.
+On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone-lines` lines: `status: completed`, the final conclusion, deliverable pointers, surviving constraints, the date. A finished run directory is read by nothing; it may be deleted only with destructive-scope confirmation: state the exact scope — the run directory's actual path (`.mstack/runs/<slug>/` only when the operator named no directory, per ## State) — and its completion date from the tombstone, and wait for the human. A scope stated after the deletion is a confession, not a confirmation.
 
 ## Reply:
 
