@@ -53,7 +53,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 |---|---|
 | A PR that needs babysitting through review: address findings, recheck, disposition | `runbooks/bot-review-loop.md` — PR review babysitting |
 | A multi-step build to run unattended: delegate to workers, wake on events, morning report | `runbooks/overnight-orchestrator.md` — unattended build pipeline |
-| A substantial task to hand to subagent workers: brief, verify, adversarially review | `runbooks/deep-work.md` — delegated subagent execution |
+| Substantial build or multi-part implementation: design, build, verify, adversarially review — via subagent workers | `runbooks/deep-work.md` — delegated subagent execution |
 | Writing or fixing an agent skill: draft → verify → pass or kill | `runbooks/skill-authoring-run.md` — skill drafting and verification |
 | Researching a topic to update the standards library: research → distill → branch → PR | `runbooks/biweekly-standards-research.md` — standards research |
 | A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement |
