@@ -123,7 +123,7 @@ All run state lives in a run-scoped directory the operator names — never a fix
 
 A restored or superseded state file carries its correction in place — one line at the top: NOTE: superseded, see <incident record> — and the named record must exist in the run's evidence; a NOTE that names nothing is itself a finding. The correction lives in the incident record; the pointer just makes it findable from the scene.
 
-**Resume chain:** on resume or after compaction, read one chain, one file per hop — the pinned head, then the progress file its `slug:` points to, then the run's gate record, then the topic files its pointers reference. Nothing else. Bounded recovery by construction. The pinned head is a cache of the progress file: if they disagree, the progress file is current — no mtime forensics, and a torn update heals on the next orchestrator write.
+**Resume chain:** on resume or after compaction, read one chain, one file per hop — the pinned head, then the progress file its `slug:` points to, then the run's gate record, then the topic files its pointers reference. Nothing else. On a note-borne resume, the head's `token:` must match the `parked:` note's token; on mismatch, the note is unverified — clarify, don't resume. Bounded recovery by construction. The pinned head is a cache of the progress file: if they disagree, the progress file is current — no mtime forensics, and a torn update heals on the next orchestrator write.
 
 ## The Grill — per-lane intake
 
