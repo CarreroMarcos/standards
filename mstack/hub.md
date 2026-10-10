@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked. Nothing else leaves the hub (the restatement message, the intake verdict, and the small-edit decline are the hub's voice — all allowed).
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
@@ -51,6 +51,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 
 | Prompt looks like | Route to |
 |---|---|
+| A `parked:` resume note naming a runbook and its state | Resume the named runbook from the named state — no re-match, no re-ask; copy its steps verbatim, emit the steering block. |
 | A PR that needs babysitting through review: address findings, recheck, disposition | `runbooks/bot-review-loop.md` — PR review babysitting |
 | A multi-step build to run unattended: delegate to workers, wake on events, morning report | `runbooks/overnight-orchestrator.md` — unattended build pipeline |
 | Substantial build or multi-part implementation: design, build, verify, adversarially review — via subagent workers | `runbooks/deep-work.md` — delegated subagent execution |
@@ -88,7 +89,7 @@ The hub speaks in harness-neutral verbs: spawn a worker, run in background, keep
 
 Every hub turn ends with this shape:
 
-- **Route:** the matched runbook (or parked / clarification-asked / declined: small-edit).
+- **Route:** the matched runbook (or parked / clarification-asked / declined: small-edit / resumed from a `parked:` note).
 - **Intake verdict:** BLOCKING / PROCEED / CLEAN / NEVER-ASKED — which gate arm fired and why.
 - **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty on CLEAN or when PROCEED logged none.
-- **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note — the run resumes by re-invoking `/mstack` with that note as the goal.
+- **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note — the run resumes by re-invoking `/mstack` with that note as the goal. The note is pause-safely degenerately applied at intake: Where (the runbook or goal), Contract (the exit predicate or done-check), Next (the first action on resume); Lanes and Blocked-on stay empty until a runbook owns state. When the runbook owns a state file, the note names its path — that path is how the resumed session finds the state. (Deliberate scope: at intake there is no working directory to cut the note to, so the note stays chat-borne; mid-run durability belongs to the runbooks.)

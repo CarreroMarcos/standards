@@ -28,18 +28,18 @@ Never: "fixed" without the repro going green. Never an environmental verdict wit
 
 ## Steps
 
-1. **Repro first — one red-capable command before any theory.** Build the smallest command that exhibits the exact symptom, run it, and watch it fail (`loop-before-theory`). Match the loop's cost to the problem's size: a one-liner for a crash, a small script for a flake. No repro that goes red on demand, no hypothesis — theorizing without a loop feels like progress and isn't.
+1. **Repro first — one red-capable command before any theory.** Build the smallest command that exhibits the exact symptom, run it, and watch it fail (`loop-before-theory`). Match the loop's cost to the problem's size: a one-liner for a crash, a small script for a flake. No repro that goes red on demand, no hypothesis — theorizing without a loop feels like progress and isn't. Open `debug-log.md` in the working directory now — append-only, it carries every attempt from this step on.
 
    Bad: "The retry logic looks suspicious — let me read it."
    Good: `run.sh 2>&1 | tail -3` exits non-zero with the exact error from the report. Now theorizing may begin.
 
-2. **State one hypothesis and its falsifier.** Before touching code, write down what you believe is wrong and what observation would prove you wrong (`falsifiable-tests` — the discipline applies to hypotheses, not just tests). One hypothesis at a time; a second hypothesis waits its turn.
+2. **State one hypothesis and its falsifier.** Before touching code, write down what you believe is wrong and what observation would prove you wrong (`falsifiable-tests` — the discipline applies to hypotheses, not just tests). One hypothesis at a time; a second hypothesis waits its turn. Each hypothesis gets a log entry: hypothesis, falsifier, result — plus the **premise** it rests on. Bisection outcomes append under the owning hypothesis's entry.
 
 3. **Isolate by bisection.** Narrow the suspect surface: halve the input, the code path, or the config with each experiment. A hypothesis that survives narrowing gets stronger; one that doesn't dies cheap. When an experiment's result contradicts the hypothesis, the hypothesis changes — not the interpretation of the result.
 
 4. **Fix smallest.** The minimal change that makes the repro go green (`ship-smallest`). Not the refactor noticed along the way, not the hardening that "might help." If the fix needs more than the repro demands, the repro was wrong — go back to step 1.
 
-5. **Two failures, same assumption → stop.** Two failed fixes on the same assumption means the assumption is the bug (`attack-the-premise`). Write the premise down, question it, and take a census before the next fix. The third fix on a disproven premise is the definition of spiraling — the runbook forbids it.
+5. **Two failures, same assumption → stop.** Two failed fixes on the same assumption means the assumption is the bug (`attack-the-premise`). The premise is already in the log from step 2 — count failures per premise, not per hypothesis. Question it, and take a census before the next fix. The third fix on a disproven premise is the definition of spiraling — the runbook forbids it.
 
 6. **Verify against real state.** The repro goes green on the final diff. The adjacent tests pass — the neighbors of the changed code, not just the repro. If a regression test was added, watch it fail without the fix, then restore the fix (`prove-completion`: evidence, not "fixed!"). A green run on a tree that isn't the final diff proves nothing — re-run on the diff that ships.
 
