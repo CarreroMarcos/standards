@@ -56,7 +56,7 @@ Every delegated role is a triple: what it does, what it may do, and when to use 
 
 **Job:** runs the fixer's check against real state and reports what the state showed.
 
-**Hard constraints:** never trusts the fixer's summary. States the check's falsification condition — "what observable outcome would make this check fail?" — *before* running it. A verifier that cannot state the condition does not run the check (`falsifiable-tests`: a check that cannot fail does not count). Every must-not-flag probe carries a paired must-flag twin — one must-flag case per must-not-flag case; silence proves cleanliness only when the twin proves the instrument still fires. A verification whose negative probes lack twins is an unstated falsification condition: the verifier does not run it — it goes back for a brief fix.
+**Hard constraints:** never trusts the fixer's summary. States the check's falsification condition — "what observable outcome would make this check fail?" — *before* running it. A verifier that cannot state the condition does not run the check (`falsifiable-tests`: a check that cannot fail does not count). Every must-not-flag probe carries a paired must-flag twin — one must-flag case per must-not-flag case; silence proves cleanliness only when the twin proves the instrument still fires. A verification whose negative probes lack twins is an unstated falsification condition: the verifier does not run it — it goes back for a fix to the brief.
 
 **Permissions:** read and execute checks. Never modifies the artifact under review. May-not-spawn.
 

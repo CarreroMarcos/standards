@@ -44,7 +44,7 @@ runtime — docs describe the product, first-hand describes the machine.
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | Todo lists (tracked items; first-hand, date unknown — under ruling, see §6) |
+| Muse agents | Todo lists (tracked items) — unverified (under ruling, see §6) |
 | Claude Code | TodoWrite / TodoRead tools (https://docs.claude.com/en/api/agent-sdk/todo-tracking — cited via search; not confirmed on code.claude.com this session) |
 | OpenCode | refuted first-hand 2026-10-10 on this runtime (opencode v2.0.26): no todo tool exists under any name. Fallback: plan state in repo files — same as Cursor |
 | Cursor | `unverified` — no official todo tool found in the docs surveyed. Fallback: plan state in repo files (e.g. `plan.md` checklists) |
@@ -64,7 +64,7 @@ runtime — docs describe the product, first-hand describes the machine.
 
 | Harness | Primitive |
 |---|---|
-| Muse agents | None — no event system unverified (under ruling, see §6). Fallback: heartbeat polling loop (section 2) |
+| Muse agents | No event system — unverified (under ruling, see §6). Fallback: heartbeat polling loop (section 2) |
 | Claude Code | Hooks: `Stop`, `SubagentStop`, `Notification`, `SessionEnd` fire scripts on agent-loop events (https://code.claude.com/docs/en/hooks). No timer primitive — external conditions still need the heartbeat fallback |
 | OpenCode | Plugin hooks: `session.idle`, `session.created`, `session.deleted`, `tool.execute.before/after`, `todo.updated`, `file.watcher.updated` (https://opencode.ai/docs/plugins/). No condition-watch primitive — heartbeat fallback |
 | Cursor | Hooks in `.cursor/hooks.json`: `stop` hook may return `followup_message` to re-arm the loop, bounded by `loop_limit`; also `subagentStart` / `subagentStop`, `sessionStart` / `sessionEnd` (https://cursor.com/docs/hooks). No timer primitive — heartbeat fallback |
