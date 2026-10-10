@@ -37,7 +37,7 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 
 ## Steps
 
-1. Poll the PR thread for the latest comment carrying the run's `marker-prefix` — any version counts; the newest one is canonical and older ones are history. (Match the prefix, never the literal: a version bump in the marker must not silently break this step.) Confirm the disposition ledger path `.mstack/dispositions/<repo>-<pr>.md` is writable — it is created on first disposition per the ledger rule in step 2. When the bot errors repeatedly, emits stale reviews, or stops posting canonical comments, go to step 13.
+1. Poll the PR thread for the latest comment carrying the run's `marker-prefix` — any version counts; the newest one is canonical and older ones are history. (Match the prefix, never the literal: a version bump in the marker must not silently break this step.) Confirm the disposition ledger path `.mstack/dispositions/<repo>-<pr>.md` is writable — it is created on first disposition per the ledger rule in step 2. If the path is not writable, park the run with the ledger path named in the `parked:` note — never proceed without the ledger, since the cross-session freeze guarantee depends on it. When the bot errors repeatedly, emits stale reviews, or stops posting canonical comments, go to step 13.
 2. Triage every finding against the shared dismissal rubric — skeptical by default. Read the cited code before judging the finding (`loop-before-theory`); match triage depth to finding severity (`scale-ceremony`).
 
    **Shared dismissal rubric.** Dismiss a finding only with evidence attached:

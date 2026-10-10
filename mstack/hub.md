@@ -57,7 +57,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 
 | Prompt looks like | Route to |
 |---|---|
-| A `parked:` resume note naming a runbook and its state | Resume the named runbook from the named state — no re-match, no re-ask; copy its steps verbatim, emit the steering block. If the named runbook or state path doesn't exist, treat the note as a fresh prompt (re-match) or ask one clarification round — never resume into nothing. |
+| A `parked:` resume note naming a runbook and its state | Verify then resume: the state path must exist and the note's claims (runbook, slug, phase) must match the state file's contents. On match — no re-match, no re-ask; copy the runbook's steps verbatim, emit the steering block, Intake verdict NEVER-ASKED (the gate ran on the original invocation). On mismatch or missing path — treat the note as a fresh prompt (re-match) or ask one clarification round. Never resume on an unverified note, never resume into nothing. |
 | A PR that needs babysitting through review: address findings, recheck, disposition | `runbooks/bot-review-loop.md` — PR review babysitting |
 | A multi-step build to run unattended: delegate to workers, wake on events, morning report | `runbooks/overnight-orchestrator.md` — unattended build pipeline |
 | Substantial build or multi-part implementation: design, build, verify, adversarially review — via subagent workers | `runbooks/deep-work.md` — delegated subagent execution |
