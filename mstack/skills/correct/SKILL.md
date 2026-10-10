@@ -13,7 +13,7 @@ A mistake has repeated, or is about to. Reach for `correct` when the same correc
 2. **Climb the ladder — highest rung first.** Attempt each rung in order and take the first one that holds:
    - **Make it impossible.** Restructure so the bad state cannot be written: one owner per piece of state, one supported way per task, internals hidden so the wrong import fails. **Structure beats discipline** — a state that cannot be represented needs no one's cooperation.
    - **Enforce it with types or a lint.** Where the bad code still compiles, add a check whose failure message names the right file, type, or function. Where the pattern is already widespread, fail only on changes that add more of it.
-   - **Test the behavior.** Rewrite or delete any test whose assertions survive every callee returning nothing.
+   - **Test the behavior.** Rewrite or delete any test whose assertions survive every callee returning nothing. This license covers only tests that meet this criterion. Anything else you want gone — product code, config, fixtures this run didn't create — goes through destructive-scope confirmation: state the exact scope and wait for the human.
    - **Write it down — last, and only for judgment calls.** Docs and agent rules are the weakest rung: nothing fails when an agent skips them. **Skip a rung only with a reason** — record why the higher rung didn't work in the Output.
 3. **Count the class — never at one.** A failure class counts at `values.md#correct-mining.class-threshold` occurrences. **One occurrence is an anecdote, not a rule** — and not a basis for a new check. Group the evidence before you mine: commits, reverts, review comments, corrections.
 4. **Prove the check on a real past mistake.** Every new check must fail on a real past mistake before it ships: run it against the old code and watch it fire. **A check that never failed proves nothing.** The check must fire identically locally and in CI.
@@ -24,3 +24,4 @@ A mistake has repeated, or is about to. Reach for `correct` when the same correc
 - **The fix** — the class, the rung taken, why the higher rungs didn't work, and the check itself.
 - **The mined lesson** (only when the class counted) — class, occurrences with evidence pointers, the proof (the past mistake the check fails on), and the rule↔enforcer row.
 - **Skipped rungs** — each with its reason.
+- **Removed tests** — each with the criterion it met.

@@ -17,7 +17,7 @@ The project needs a repeatable way to operate the actual app and confirm behavio
    - **Drive:** through what channel can an agent operate it? Prefer whatever the repo already has (specs, PTY helpers, HTTP endpoints) — reach for a generic recipe only when nothing exists.
    - **Observe:** what proof can the run leave behind? Screenshots, terminal output, response payloads, logs, exit codes, database state.
    - **Isolate:** can two copies run concurrently without sharing ports, data, or profiles? If not, the generated skill says so — never let a run corrupt the operator's live session by double-driving it.
-2. **Fix a broken base first.** When the checkout won't build or boot as-is, repair it (or report exactly what's wrong) before generating — instructions written against a broken starting point teach the wrong moves. When an irrelevant missing asset blocks startup (a static dir the API never serves, a sample config), the generated skill may create it — clearly marked as verification scaffolding — and remove it in cleanup.
+2. **Fix a broken base first.** When the checkout won't build or boot as-is, repair it (or report exactly what's wrong) before generating — instructions written against a broken starting point teach the wrong moves. If the repair touches product code beyond what the verification base needs to build and boot, state the exact scope and wait — or take the report alternative. The alternative is a gated choice, not a style preference. When an irrelevant missing asset blocks startup (a static dir the API never serves, a sample config), the generated skill may create it — clearly marked as verification scaffolding — and remove it in cleanup.
 3. **Write the skill to the five-section template**, grounding every section in interview findings — no placeholders:
    - **Launch:** the precise command that starts the app, plus the signal that it's ready (a log line, an answering port, a shell prompt) — and how to tear it down.
    - **Doctor:** one read-only check answering "is this instance worth driving?" — run it first whenever anything looks off.
@@ -40,5 +40,5 @@ The project needs a repeatable way to operate the actual app and confirm behavio
 
 ## Output
 
-- **Phase A:** the generated skill's path in the target repo, plus the end-to-end proof — which user path was driven, what evidence was captured, where it lives.
+- **Phase A:** the generated skill's path in the target repo, plus the end-to-end proof — which user path was driven, what evidence was captured, where it lives. Phase A also names every product-code touch the base repair made.
 - **Phase B:** per skill, one verdict — clean / changed / blocked — each with the evidence behind it.
