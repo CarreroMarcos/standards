@@ -38,13 +38,13 @@ Used-in: bot-review-loop.md
 Value: 5
 Unit: interleaved runs
 Why: Minimum runs for a trustworthy measurement (median + range). Fewer runs cannot separate signal from run-to-run noise.
-Used-in: measurement-eval.md, validate.md
+Used-in: measurement-eval.md, skills/validate/SKILL.md
 
 ### correct-mining.class-threshold
 Value: 2
 Unit: occurrences
 Why: A mistake class counts when seen twice. One occurrence is an anecdote, not a rule — and not a basis for a new check.
-Used-in: correct.md
+Used-in: skills/correct/SKILL.md
 
 ### audit-tick.interval
 Value: 3600
@@ -61,8 +61,8 @@ Used-in: hub.md
 ### interrogate.min-reviewers
 Value: 2
 Unit: independent reviewers
-Why: Adversarial review needs at least two independent perspectives (different model families when available). One reviewer is an opinion, not a red team.
-Used-in: interrogate.md
+Why: Adversarial review needs at least two independent perspectives (different model families when available). One reviewer is an opinion, not a red team. Scopes to the interrogate skill only — deep-work's adversarial gate is a distinct single-adversary mechanism with its own caveat vocabulary.
+Used-in: skills/interrogate/SKILL.md
 
 ### growth-governor.occurrences
 Value: 2
@@ -105,7 +105,7 @@ Used-in: runbooks/deep-work.md
 Structural literals that are not magic numbers. The lint ignores these;
 each carries its reason so the list stays honest.
 
-- "7 runbooks" — the v0.0.1 file count; structural, not a tuned threshold.
+- "9 runbooks" — the runbook file count; structural, not a tuned threshold.
 - "step 1" (and other step numbers) — document numbering, not a quantity.
-- "v0.0.1" — the version string, not a measurement.
+- the version string (e.g. "v0.0.1") — the version string, not a measurement.
 - "3 times" — small fixed procedural counts in prose, not tuned thresholds.

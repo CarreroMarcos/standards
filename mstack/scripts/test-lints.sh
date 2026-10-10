@@ -23,7 +23,7 @@ expect_no_output() { # expect_no_output <description> <grep-pattern> <command...
   else pass=$((pass + 1)); fi
 }
 
-RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"
+RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"; MX="$dir/check-matrix.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
 
 # rg-less stub PATH: symlink everything except rg, so the scripts take
@@ -138,6 +138,27 @@ expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"
 expect 0 "decades allowlisted" bash "$VV" "$FX/check-values/values-allow-1970s.md" "$FX/check-values/decades.md"
 expect 1 "decades flagged without allowlist" bash "$VV" "$VM" "$FX/check-values/decades.md"
 expect 0 "tbd suppresses number" bash "$VV" "$VM" "$FX/check-values/tbd-number.md"
+# Script-behavior tests use self-contained fixtures only, so a script
+# regression is distinguishable from documentation drift.
+expect 0 "matrix clean fixture" bash "$MX" "$FX/check-matrix/clean.md"
+expect 1 "matrix mismatch flagged" bash "$MX" "$FX/check-matrix/mismatch.md"
+expect 1 "matrix split mismatch flagged" bash "$MX" "$FX/check-matrix/split-mismatch.md"
+expect 0 "matrix unsupported cell clean" bash "$MX" "$FX/check-matrix/unsupported-clean.md"
+expect 1 "matrix missing notes flagged" bash "$MX" "$FX/check-matrix/no-notes.md"
+expect_output "matrix missing notes message" "no 'cells filled' notes line" bash "$MX" "$FX/check-matrix/no-notes.md"
+expect 1 "matrix malformed notes flagged" bash "$MX" "$FX/check-matrix/malformed-notes.md"
+expect_output "matrix malformed notes message" "unparseable notes line" bash "$MX" "$FX/check-matrix/malformed-notes.md"
+expect 1 "matrix unsupported mismatch flagged" bash "$MX" "$FX/check-matrix/unsupported-mismatch.md"
+expect_output "matrix unsupported mismatch message" "unsupported mismatch" bash "$MX" "$FX/check-matrix/unsupported-mismatch.md"
+expect 0 "matrix two tables clean" bash "$MX" "$FX/check-matrix/two-tables-clean.md"
+expect 1 "matrix unknown status flagged" bash "$MX" "$FX/check-matrix/unknown-status.md"
+expect_output "matrix unknown status message" "unrecognized cell status" bash "$MX" "$FX/check-matrix/unknown-status.md"
+expect 1 "matrix usage error on no arg" bash "$MX"
+expect_output "matrix usage message" "usage:" bash "$MX"
+expect 0 "matrix first notes line wins" bash "$MX" "$FX/check-matrix/two-notes-lines.md"
+# Docs-consistency check (separate): the live HARNESS.md matrix must match
+# its own notes line. Fails on docs drift, not script bugs.
+expect 0 "docs: matrix totals match notes" bash "$MX" "$dir"/../HARNESS.md
 
 echo "test-lints: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

@@ -15,7 +15,7 @@ Give the goal and a checkable finish condition. Leave out the how and your theor
 | Path | What |
 |---|---|
 | `README.md` | This file — what mstack is, usage, install |
-| `VERSION` | Current version (`0.0.1`) |
+| `VERSION` | Current version (`0.0.2`) |
 | `hub.md` | The router: matches your prompt to a runbook, copies its steps into the todo list. Thin — it never does the work itself |
 | `values.md` | SSOT for magic numbers. Every number lives here as a named entry; runbooks reference it by name, never inline literals |
 | `principles-distilled.md` | Distilled principle pointers — the named vocabulary the hub cites. Re-distilled on the biweekly sync; no-change is valid |

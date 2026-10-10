@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked. Nothing else leaves the hub.
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked. Nothing else leaves the hub (the restatement message, the intake verdict, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
@@ -15,11 +15,13 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
 
+An unmet Require parks the run at the hub with the missing prerequisite named — never rerouted, never improvised around.
+
 ## Inputs
 
 - **Goal** — what the operator wants done.
-- **Done-check** — the checkable finish condition. A duration is not a finish condition.
-- **Proof wanted** — what evidence counts as done.
+- **Done-check** — the checkable finish condition. A duration is not a finish condition. Done-check is the predicate: the state that proves done.
+- **Proof wanted** — what evidence counts as done. Proof-wanted is the artifact that carries the predicate (log, screenshot, link). Optional; when absent, the runbook's Reply shape is the evidence.
 - **Known context** — what the operator already knows.
 - **Real constraints** — time, scope, and holds that bind the run.
 
@@ -27,9 +29,11 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 
 Before routing, check whether the prompt supports a checkable exit predicate.
 
-**BLOCKING — stop and ask.** Fire when the goal is missing or unintelligible; the done-check is missing or uncheckable ("make it better", "trust it was done right"); or the scope is ambiguous AND the task carries irreversible consequences (merge, deploy, delete, force-push, closing someone else's PR). Ask for exactly what is missing — nothing else. Batch what is blocking into one round of questions — the cap lives at `values.md#intake-gate.max-question-rounds` — then go.
+**BLOCKING — stop and ask.** Fire when the goal is missing or unintelligible; the done-check is missing or uncheckable ("make it better", "trust it was done right"); or the scope is ambiguous AND the task carries irreversible consequences (merge, deploy, delete, force-push, closing someone else's PR). Ask for exactly what is missing — nothing else. When BLOCKING fires, the restatement and the question batch are one message: restate in two lines, then ask. Batch what is blocking into one round of questions — the cap lives at `values.md#intake-gate.max-question-rounds` — then go.
 
 **PROCEED WITH LOGGED ASSUMPTIONS.** Fire when the prompt is vague but fully reversible: investigation, read-only analysis, drafts. State the assumptions up front; they enter the decision log and surface in the Reply's Assumptions section for correction after the fact. "Fully reversible" means the run touches none of the irreversible actions and produces no external side effects.
+
+**CLEAN — proceed, no assumptions.** Fire when the prompt is crisp, complete, and fully reversible: goal named, done-check checkable, no missing pieces. No questions, no logged assumptions — the Reply names CLEAN as the fired arm.
 
 **NEVER ASK FOR.** The how (the runbook owns it). A theory of the cause. Anything a runbook's grounding phase determines: which files, which tools.
 
@@ -40,6 +44,8 @@ Read for intent. Prompts arrive as speech-to-text; a vague-but-intelligible prom
 Restatement-first: for noisy input, send one restatement message before any code. A correction costs one message; a misread costs a run.
 
 ## Trigger table
+
+Pre-invocation filter: if the task is a small obvious edit, close the hub and do the edit — the hub is for work that needs rigor.
 
 Match the prompt against these rows, top to bottom. First match wins.
 
@@ -53,7 +59,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 | A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement |
 | Something broken with an unknown cause: repro first, isolate, fix smallest | `runbooks/debugging.md` — systematic debugging |
 | A final review before merge: verify the real state, adjudicate holds, deliver a verdict | `runbooks/final-gate.md` — pre-merge final review |
-| Mining senior-engineer taste from real sources | The external taste-mining skill — out of scope for mstack; the hub routes there and stops |
+| Mining senior-engineer taste from real sources | External: the `taste-mining` skill — lives in the operator's skills workspace, outside `mstack/`. The hub routes there and stops |
 | None of the above | `runbooks/figure-it-out.md` — open-ended investigation: frame a falsifiable predicate, design the workflow, run it |
 
 On a match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:
@@ -70,7 +76,8 @@ On a match, before any work: copy the runbook's steps verbatim into the todo lis
 - Never lead with a theory of the cause. Ground first, theorize after.
 - A duration is not a finish condition. "Run for an hour" routes nowhere until the operator names what done looks like.
 - Name a skill only to override a specific choice the runbook makes. The runbook names what it needs; the hub never volunteers skills.
-- Invocation discipline: the hub is for work that needs rigor. A small obvious edit does not get the hub — do the edit.
+- Invocation discipline: the hub is for work that needs rigor.
+- Scale the steering block with blast radius: on routes whose worst case is a reverted edit, emit the five principles the route actually exercises (`prove-completion`, `loop-before-theory`, `ship-smallest`, `state-assumptions`, `scale-ceremony`); the full 20 stay reserved for irreversible-scope routes.
 - Role-based cost control stays harness-neutral. The hub never names model slugs or per-role models; the harness decides.
 
 ## Harness verbs
@@ -81,7 +88,7 @@ The hub speaks in harness-neutral verbs: spawn a worker, run in background, keep
 
 Every hub turn ends with this shape:
 
-- **Route:** the matched runbook (or parked / clarification-asked).
-- **Intake verdict:** BLOCKING / PROCEED / NEVER-ASKED — which gate arm fired and why.
-- **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty only when the gate never fired PROCEED.
-- **Next:** the first concrete action the run takes.
+- **Route:** the matched runbook (or parked / clarification-asked / declined: small-edit).
+- **Intake verdict:** BLOCKING / PROCEED / CLEAN / NEVER-ASKED — which gate arm fired and why.
+- **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty on CLEAN or when PROCEED logged none.
+- **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note — the run resumes by re-invoking `/mstack` with that note as the goal.
