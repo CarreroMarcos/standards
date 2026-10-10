@@ -14,6 +14,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 - `principles-distilled.md` for the steering vocabulary.
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
+- `runbooks/figure-it-out.md` step 9 for the corpus-wide destructive-scope definition — every "destructive-scope confirmation" in the corpus invokes that meaning.
 
 ## State
 
