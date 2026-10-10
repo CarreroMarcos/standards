@@ -46,7 +46,7 @@ A predicate bent to fit the run is not an exit. When the run cannot reach either
    | Worker stall | Probe once; on continued silence, kill and respawn with narrowed scope. |
    | External-service failure | Confident-stop per that loop's contract — stop and report; never fake a trigger to keep the loop alive. |
    | Build flake | Exactly one fresh build per `values.md#flake-retry.count`; an identical second failure is a real failure, routed back to the lane. |
-   | Merge conflict on rebase | Pause-safely and report in the handoff — never force-push. |
+   | Merge conflict on rebase | Pause-safely and report in the handoff. |
    | Gate HOLD | Address the cited evidence and re-enter the gate; never re-litigate a frozen finding. |
 
 8. Split every escalation by who it reaches. **Reaches the human:** merge decisions, destructive scope, external-gate verdicts, confident-stops, dead-end write-ups, operator stops. **Never reaches the human:** routine retries inside the table above, re-polling, checkpoint logging, audit ticks, worker respawns — all logged in the decision log and surfaced in the morning handoff.
