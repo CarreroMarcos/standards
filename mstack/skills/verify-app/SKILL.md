@@ -40,5 +40,5 @@ The project needs a repeatable way to operate the actual app and confirm behavio
 
 ## Output
 
-- **Phase A:** the generated skill's path in the target repo, plus the end-to-end proof — which user path was driven, what evidence was captured, where it lives. Phase A also names every product-code touch the base repair made.
+- **Phase A:** the generated skill's path in the target repo, plus the end-to-end proof — which user path was driven, what evidence was captured, where it lives. Phase A also names every product-code touch the base repair made, and which repair-gate alternative was taken (wait or report) and why.
 - **Phase B:** per skill, one verdict — clean / changed / blocked — each with the evidence behind it.
