@@ -28,7 +28,7 @@ Never: "fixed" without the repro going green. Never an environmental verdict wit
 
 ## Steps
 
-1. **Repro first — one red-capable command before any theory.** Build the smallest command that exhibits the exact symptom, run it, and watch it fail (`loop-before-theory`). Match the loop's cost to the problem's size: a one-liner for a crash, a small script for a flake. No repro that goes red on demand, no hypothesis — theorizing without a loop feels like progress and isn't. Open `.mstack/debug-log.md` now — append-only, it carries every attempt from this step on.
+1. **Repro first — one red-capable command before any theory.** Build the smallest command that exhibits the exact symptom, run it, and watch it fail (`loop-before-theory`). Match the loop's cost to the problem's size: a one-liner for a crash, a small script for a flake. No repro that goes red on demand, no hypothesis — theorizing without a loop feels like progress and isn't. Open `.mstack/runs/<slug>/debug-log.md` now — `<slug>` derived from the symptom, same convention as deep-work's run slug — append-only, it carries every attempt from this step on. One log per run: concurrent debugging sessions never share a file, so hypothesis and premise ids can't collide across runs.
 
    Bad: "The retry logic looks suspicious — let me read it."
    Good: `run.sh 2>&1 | tail -3` exits non-zero with the exact error from the report. Now theorizing may begin.
