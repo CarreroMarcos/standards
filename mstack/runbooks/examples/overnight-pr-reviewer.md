@@ -31,4 +31,4 @@ Spec → implement → bot-review → gate, per unit. Implement the smallest cha
 
 ## Operator-stop
 
-Attach to the tmux session, issue the zero-writes order, pause-safely, cut a work-in-progress commit, and report the resume state. The run resumes from the decision log.
+Attach to the tmux session, issue the zero-writes order, pause-safely, cut a work-in-progress commit, and report the resume state. The run resumes through deep-work's resume chain, the decision log among its referenced files.

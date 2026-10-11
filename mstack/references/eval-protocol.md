@@ -8,7 +8,9 @@ runbook — the defect is in the artifact, never the agent.
 
 **Run the artifact before trusting it.** A fresh subagent executes the
 runbook against a scratch target. For skills, trigger-probe execution:
-fire the skill on 3–5 trigger-shaped prompts and check it does its job.
+fire the skill on 3–5 trigger-shaped prompts and check it does its job —
+blinded per the `validate` skill whenever the run compares the draft against
+a baseline or incumbent.
 Then the artifact itself passes four audits:
 
 1. **Bold-skeleton read.** Read only the bold lines top to bottom. The

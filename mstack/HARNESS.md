@@ -310,7 +310,7 @@ From official docs, during this session's research:
   under any name (`todowrite`/`todoread` refuted); background subagents
   (`subagent(background: true)`) confirmed, previously marked unverified.
   Five matrix cells flipped `full` → `degraded` on the todo finding; the
-  §5 count and notes updated in the same change.
+  §4 count and notes updated in the same change.
 - **Muse-agents first-hand cells vs this runtime (operator ruling
   needed).** The Muse column claims first-hand `subagent.spawn`,
   `muse.exec`, `process.poll`, and todo lists — but the 2026-10-10

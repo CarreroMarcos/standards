@@ -73,7 +73,7 @@ Used-in: skills/reflect/SKILL.md
 ### deep-work.head-lines
 Value: 12
 Unit: lines
-Why: The pinned run head stays scannable — status, task, slug, phase, next, blockers, one line each. More lines and it stops being a head.
+Why: The pinned run head stays scannable — status, task, slug, phase, next, blockers, files, token, one line each. More lines and it stops being a head.
 Used-in: runbooks/deep-work.md
 
 ### deep-work.progress-lines

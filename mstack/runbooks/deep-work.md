@@ -113,9 +113,9 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 
 ## State
 
-All run state lives in a run-scoped directory the operator names — never a fixed dot-path. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
+All run state lives in a run-scoped directory under `.mstack/` that the operator names — never outside `.mstack/`. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. Three tiers, each with one address:
 
-- **Pinned head** (≤ `values.md#deep-work.head-lines` lines): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. `files:` — one-line index of the run directory's artifacts (progress, ledger, gate records). The orchestrator keeps this current; it is the first thing read on resume.
+- **Pinned head** (≤ `values.md#deep-work.head-lines` lines): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. `files:` — one-line index of the run directory's artifacts (progress, ledger, gate records). `token:` — a fresh `resume-token`, unique per park, at least 128 bits, and unguessable to anyone who cannot read the run directory (never a counter, timestamp, or slug-derived value), written here and into the `parked:` note whenever the run parks; a resume note without the matching token is unverified. The orchestrator keeps this current; it is the first thing read on resume.
 - **Progress file** (≤ `values.md#deep-work.progress-lines` lines, rewritten in place, never appended): status, open items, one-line verdicts per lane, pointers to topic files. Mid-run, on any conflict between state shapes, the progress file wins. At resume, the gate record wins for dispositions — a disposition is what the gate that made it recorded, and a re-review appends a new entry to the same gate-record file, never by rewriting the old entry; for lane and status state, the progress file still wins.
 - **Topic files:** full lane outputs, verbatim. Full analyses live here — never in the progress file, never in chat.
 
@@ -123,7 +123,7 @@ All run state lives in a run-scoped directory the operator names — never a fix
 
 A restored or superseded state file carries its correction in place — one line at the top: NOTE: superseded, see <incident record> — and the named record must exist in the run's evidence; a NOTE that names nothing is itself a finding. The correction lives in the incident record; the pointer just makes it findable from the scene.
 
-**Resume chain:** on resume or after compaction, read one chain, one file per hop — the pinned head, then the progress file its `slug:` points to, then the run's gate record, then the topic files its pointers reference. Nothing else. Bounded recovery by construction. The pinned head is a cache of the progress file: if they disagree, the progress file is current — no mtime forensics, and a torn update heals on the next orchestrator write.
+**Resume chain:** on resume or after compaction, read one chain, one file per hop — the pinned head, then the progress file its `slug:` points to, then the run's gate record, then the topic files its pointers reference. Nothing else. On a note-borne resume, the head's `token:` must match the `parked:` note's token; on mismatch, the note is unverified — clarify, don't resume. Bounded recovery by construction. The pinned head is a cache of the progress file: if they disagree, the progress file is current — no mtime forensics, and a torn update heals on the next orchestrator write.
 
 ## The Grill — per-lane intake
 
@@ -144,7 +144,7 @@ Before dispatching any lane, answer all seven. A lane dispatched without a Grill
 1. Brief one lane per worker with the lane brief template — goal, scope, context, acceptance, the exact verification, timebox, forbidden actions, report shape, standing rules. A brief with a blank field goes back for a rewrite.
 2. **Pilot before fan-out.** Run one lane through the whole path first when the brief shape is novel. When the pilot stalls on an unclear field, fix the brief — never the worker.
 3. Probe worker liveness on a cadence tighter than the lane's timebox. A worker with no output and no state change across a full probe window is dead: kill it and respawn fresh with the same brief — never inherit a dead session's confusion. On continued silence after respawn, narrow the scope before the next attempt. Record every probe verdict as a per-lane status line in the progress file — one slot per lane, current verdict only, overwritten in place (running / silent / dead), never a log. On resume, a lane with a dispatch record and no completion record is dead — the resumer does not consult anyone's narrative about it.
-4. Retry by mode, never by hope: stall → probe, then respawn narrowed; flake → exactly one fresh attempt, then the failure is real; conflict → pause and report, never force through. A finding already dispositioned is never re-litigated.
+4. Retry by mode, never by hope: stall → probe, respawn with the same brief, then narrow on continued silence; flake → exactly one fresh attempt, then the failure is real; conflict → pause and report, never force through. A finding already dispositioned is never re-litigated.
 5. When a lane surfaces a mid-run discovery, the discovering lane owns it: scope the surprise, report it at the next checkpoint, hold scope steady until the orchestrator re-briefs. Discoveries never silently expand the run.
 
 ## Lane completion
@@ -184,7 +184,7 @@ Good: adversary reports "Attacked the error paths and the migration ordering; th
 
 ## Tombstone
 
-On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone-lines` lines: `status: completed`, the final conclusion, deliverable pointers, surviving constraints, the date. A finished run directory is read by nothing and is kept by default — retention is the lifecycle, not deletion. A finished directory is pruned only with destructive-scope confirmation: state the exact scope — the run directory's actual path (`.mstack/runs/<slug>/` only when the operator named no directory, per ## State) — and its completion date from the tombstone, and wait for the human. No run deletes its own or a prior run's directory during normal execution. The license covers only the stated directory — nothing outside its path. A scope stated after the deletion is a confession, not a confirmation.
+On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone-lines` lines: `status: completed`, the final conclusion, deliverable pointers, surviving constraints, the date. A finished run directory is read by nothing and is kept by default — retention is the lifecycle, not deletion. A finished directory is pruned only with destructive-scope confirmation: state the exact scope — the run directory's actual path (always under `.mstack/`, per ## State) — and its completion date from the tombstone, and wait for the human. No run deletes its own or a prior run's directory during normal execution. The license covers only the stated directory — nothing outside its path. A scope stated after the deletion is a confession, not a confirmation.
 
 ## Reply:
 
