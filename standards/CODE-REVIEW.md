@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.9"
+version: "2.10"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-09
+last_reviewed: 2026-10-11
 ---
 
 # Code Review Standard
@@ -72,6 +72,14 @@ For attribution, show the decomposition summing to the measured whole — *"N ne
 **Match the command's reach to the assertion.** A filename filter cannot establish a claim about file *contents*; a single-directory search cannot establish a claim about the repository; a pattern written for the wrong syntax returns zero matches indistinguishable from a true absence. Where reach and assertion differ, the finding is **unsupported** — not necessarily wrong, but not established. Only a stated scope lets a second reader see the gap.
 
 Run the command before writing its output. An unrun example is the same defect as an unrun test.
+
+**A finding with no machine-checkable reproduction anchor is rejected at intake, not debated.** An AI-generated finding must cite the trigger path — `file:line` plus the path the failure takes — or the verifier can't check it; without an anchor the finding costs triage before it can be proven or dismissed.
+
+- Why: 2026: Google paused new OSS VRP product-vulnerability submissions after "a significant rise in automated submissions, the vast majority of which are not valid" — no anchor, no triage. Google tightened evidence requirements once already in March 2026; the flood outran the tightening.
+
+**Fabricated evidence is its own defect class.** A cited code path that doesn't exist, or a hallucinated PoC, consumes more triage than an honest-but-wrong inference — because it looks checkable. The generator re-verifies every cited path against the real repo before the finding survives into a report; a fabricated citation is itself reported as the defect — the generator's verification discipline failed, not the code it claimed to find.
+
+- Why: this is the generator-side mirror of the freeze rule — don't re-litigate dispositioned findings *and* don't generate findings that can't be disposed.
 
 ## 3.5 The evidence ladder
 

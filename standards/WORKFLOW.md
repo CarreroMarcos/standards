@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.3"
+version: "3.4"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-10-09
+last_reviewed: 2026-10-11
 ---
 
 # Workflow Standard
@@ -196,6 +196,11 @@ When a recurring bug class surfaces, **propose** the rule addition to the human 
 - Why: hypothetical-only rules sediment into dead weight; the citation forces the failing scenario to be written down — which is also the future eval case for that rule.
 - Bad: "agents should probably confirm before deleting" — added because it sounds safer. Good: "2026-10-03 session: agent deleted the staging config unasked; expected: ask-first on destructive ops" → rule proposed.
 - Boundary: emergency guardrails still ship fast; the failure citation gets backfilled, not skipped.
+
+**Prune on a cadence.** An instruction file gets a retirement review on a fixed schedule — a rule that no longer earns its bytes is deleted, not grandfathered. Add with a price, prune with measurement.
+
+- Why: 2026: OpenAI's GPT-6 guidance — stale or conflicting rules are now an active failure source for capable models, not dead weight. The failure mode moves from under-specification to over-specification as models get better at following.
+- Boundary: the cadence reviews the rule's survival, not the file's prose — one rule per line, kept or cut, no partial demotions.
 
 Full review vocabulary and procedure: `CODE-REVIEW.md`.
 

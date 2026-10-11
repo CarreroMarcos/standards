@@ -1,9 +1,9 @@
 ---
 title: Supply Chain Security
-version: "2.9"
+version: "2.10"
 scope: "Supply chain security: dependencies, provenance, SBOM"
 consult_when: "When adding, upgrading, or reviewing a dependency, package, skill, or any third-party code — 'it's just a patch bump', 'the model recommended this package'."
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-11
 ---
 
 # Supply Chain Security
@@ -16,6 +16,7 @@ Applies to: adding, upgrading, or regenerating dependencies in AI-assisted devel
 
 - **The attack: slopsquatting** — hallucinated package names as the delivery mechanism
 - **The second attack: poisoning the real package** — the 2026 worm wave through legitimate packages
+- **Upstream triage capacity is a supply-chain dependency** — an overwhelmed project's review availability is degraded
 - **Verify every suggested package at the registry — before installing** — resolve first, install second; release-age gating for new versions too
 - **Treat the model as a supply-chain artifact** — pin model IDs; model change = dependency update
 - **Make dependency additions explicit and pinned** — manifests and lockfiles, reviewed diffs
@@ -43,6 +44,12 @@ Slopsquatting is the 2025 threat. The 2026 threat is the real package going bad:
 The 2026 worm wave proved it: ChainDrop (Oct 2025), Mini Shai-Hulud (Aug 2026), and the axios compromise via TanStack (Sep 2026) all shipped hostile code through legitimate packages with valid provenance. Every check in the old playbook passed; the artifact was hostile anyway.
 
 Treat every dependency update with the same suspicion as a new dependency. A familiar name is not evidence of a clean artifact.
+
+## Upstream triage capacity is a supply-chain dependency
+
+**Treat an upstream triage backlog as a signal, not just the absence of a CVE.** A project drowning in invalid AI-generated reports has degraded review availability — real fixes land slower, and refresh decisions should weight that alongside the vulnerability count.
+
+- Why: 2026: Google paused new OSS VRP product-vulnerability submissions after invalid automated reports overwhelmed maintainers (supply-chain reports stayed open); curl and the Internet Bug Bounty reportedly cut payouts for the same reason within nine months. Unverified output is a systems problem, not a prompting problem — and it degrades the review surface every dependency counts on.
 
 ## Verify every suggested package at the registry — before installing
 

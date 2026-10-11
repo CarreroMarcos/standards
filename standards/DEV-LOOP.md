@@ -1,9 +1,9 @@
 ---
 title: Dev Loop — the agentic build loop, as operated
-version: "2.1"
+version: "2.2"
 scope: Runbook for the agentic build loop (PR reviewer dev loop)
 consult_when: "When running the ticket → implement → verify → review → gate → merge loop — especially when tempted to treat a bot verdict or green CI as the merge decision."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-11
 ---
 
 # Dev Loop — the agentic build loop, as operated
@@ -113,6 +113,7 @@ The loop's shape generalizes beyond this repo:
 - **Fan out with bounded parallelism; merge through a verifier.** Independent lanes run in parallel under a fixed cap; one verifier reads the full reports before anything merges. A verifier that reads summaries-of-summaries is a rumor mill — for gate and merge verdicts, verify from the artifacts; summaries are fine for status, never for verdicts.
 - **Hold-out verification.** The gate tests what the maker never saw (above: the Oracle's hold-out checks). A verifier iterating against the same suite the maker used is curve-fitting, not verification.
 - **Sequential where dependent, parallel where independent.** Dependent stages run in order with handoff validation at each boundary; independent lanes fan out. Don't parallelize what shares state. Scale handoff validation to the trust delta (AGENTIC-SAFETY.md): claims that become instructions or gate decisions get checked — quarantine suspect outputs until an independent check clears them.
+- **Budget verification, not just generation.** An automated-finding pipeline's throughput is its verification throughput — generation cost is the cheap leg; the pipeline chokes where verification does. Track the disposition rate (fixed ÷ raised), not the finding count. (2026: Google's OSS VRP paused intake because the flood overwhelmed verification, not generation.)
 
 ## Roles
 
