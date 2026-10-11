@@ -146,7 +146,7 @@ Before dispatching any lane, answer all seven. A lane dispatched without a Grill
 3. Probe worker liveness on a cadence tighter than the lane's timebox. A worker with no output and no state change across a full probe window is dead: kill it and respawn fresh with the same brief — never inherit a dead session's confusion. On continued silence after respawn, narrow the scope before the next attempt. Record every probe verdict as a per-lane status line in the progress file — one slot per lane, current verdict only, overwritten in place (running / silent / dead), never a log. On resume, a lane with a dispatch record and no completion record is dead — the resumer does not consult anyone's narrative about it. When there is no probe window — dispatch blocks until the worker returns, or the lane runs as a same-context pass under the no-subagent degradation — the probe degrades to an artifact check: on return, read the lane's output path; an empty output or a missing artifact is the dead-worker signal, and the respawn rules above apply unchanged.
 4. Retry by mode, never by hope: stall → probe, respawn with the same brief, then narrow on continued silence; flake → exactly one fresh attempt, then the failure is real; conflict → pause and report, never force through. A finding already dispositioned is never re-litigated.
 5. When a lane surfaces a mid-run discovery, the discovering lane owns it: scope the surprise, report it at the next checkpoint, hold scope steady until the orchestrator re-briefs. Discoveries never silently expand the run.
-6. Probe for contention at every dispatch and every liveness probe: a change in the run directory your run did not write — a file, an mtime, an instrumentation row — is evidence of a concurrent writer. Split the namespace (suffix your directory, per ## State), preserve the other writer's files read-only, and record the split in the progress file and the Reply. Never delete or overwrite what you did not write.
+6. Probe for contention at every dispatch and every liveness probe: a change in the run directory your run did not write — a new file, changed content, a foreign instrumentation row — is evidence of a concurrent writer. On contention, migrate: move your run's ongoing state to a fresh suffixed directory (per ## State) and continue there, leaving the other writer's files read-only and untouched. Record the split in the progress file and the Reply. Never delete or overwrite what you did not write.
 
 ## Lane completion
 
@@ -162,7 +162,7 @@ When a dead lane's checks are scripted and cheap — re-runnable in one command 
 
 ## Phase gates
 
-A gate is mandatory after each phase. The gate prompt carries: the phase goal, the changed paths, the validation evidence, the check designs — how each validation was performed, not only what it output —, the specific decision or risk under review, and the attempt counter (`Gate 2 — review attempt 2 of 3`). Each gate's decision lands in the run's gate record — a file in the run directory, one entry appended at gate close: verdict, evidence, caveats.
+A gate is mandatory after each phase. The gate prompt carries: the phase goal, the changed paths, the validation evidence, the check designs (how each validation was performed, not only what it output), the specific decision or risk under review, and the attempt counter (`Gate 2 — review attempt 2 of 3`). Each gate's decision lands in the run's gate record — a file in the run directory, one entry appended at gate close: verdict, evidence, caveats.
 
 - The grounding gate's record pins the run's expected end-state as a literal falsifiable expectation — exit 0, or exit 1 with exactly these findings, or the done-check's literal equivalent — and every later gate and the final verdict check against that pin. A pin that narrows or contradicts the operator's done-check goes back to the operator — a gate decision re-scopes the run only within the done-check's frame. Changing the pin is a new gate decision, never a quiet edit.
 - At most `values.md#deep-work.gate-rereview-budget` re-reviews per gate. Re-review only when remediation materially changes the reviewed decision — never to reopen accepted, unchanged, or resolved concerns.
@@ -189,7 +189,7 @@ On completion, rewrite the progress file into ≤ `values.md#deep-work.tombstone
 
 ## Reply:
 
-An operator-specified reply shape — in the prompt or the brief — overrides the default; the handoff block still goes in the state directory.
+An operator-specified reply shape — in the prompt or the brief — overrides the default; the handoff block still goes in the state directory — complete: an override changes where the block appears, never what it contains.
 
 ```
 ## Reply: deep-work handoff
