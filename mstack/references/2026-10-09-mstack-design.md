@@ -278,7 +278,7 @@ pass**, never as ambient context:
 
 1. Every magic number lives in `mstack/values.md` as a named entry:
    name, value, unit, why, used-in (which runbooks/skills).
-2. Runbooks reference values **by name** (`per values.md#mars-law-interval`);
+2. Runbooks reference values **by name** (`per values.md#mars-law.interval`);
    they never inline a literal. The only literals allowed are structural
    ("7 runbooks", "step 1") — see the lint's allowlist.
 3. Numbers originating in the library are mirrored as named entries with a
