@@ -1,7 +1,7 @@
 ---
 title: Testing Discipline
 version: "1.1"
-scope: "Test creation for agents: what to measure, seam agreement, when tests are required, anti-cheating, cost placement, suppression guards, mocking design, test shape, red-first discipline, dead-test detection, verification runs"
+scope: "Test creation for agents: what to measure, seam agreement, when tests are required, anti-cheating, cost placement, suppression guards, mocking design, test shape, red-first discipline, dead-test detection, suite redundancy, verification runs"
 consult_when: "When writing tests and tempted to test everything or nothing — 'do I need a test for this?', 'what should I mock?', 'is this test actually proving anything?' — or when a suite is slow, flaky, or green-but-meaningless."
 last_reviewed: 2026-10-08
 ---
@@ -144,6 +144,24 @@ For scripted verification runs — the harness that launches the app and proves 
 **Cleanup removes instances and scratch — never the proof.** Kill what you started (never by process name); after teardown, confirm the evidence still exists at the named location. A cleanup that eats the proof fails the run.
 *Why: proof that doesn't survive the run's own teardown can't be re-read by the next agent or the review — it existed for a minute and is gone.*
 
+## 12. The suite is not the sum of its tests
+
+**Plans name behaviors, never tests.** A plan specifies each behavior and its discriminating assertion — what breaks that only this test catches. A plan that enumerates test names pre-decides the suite's size, and the implementer will implement the list literally instead of applying §3's one-test-per-behavior rule. A test list in a plan is a batch; §3 already bans batches.
+*Why: the plan becomes the spec. The compliance gradient runs plan bullets > immediate instructions > this file. If the count is fixed before the first test is written, no quality rule downstream can un-fix it.*
+
+**Redundancy is a defect class.** Two individually good tests asserting the same thing are one test too many. Before keeping a test, ask: what other test already asserts this — and name the mutation this one kills that the others don't. A test with no unique mutation gets merged into its neighbor or deleted.
+*Why: this is §4's discrimination applied at suite level. Per-test falsifiability is necessary; suite-level uniqueness is what keeps the suite from growing into a second implementation.*
+*Boundary: mutation-uniqueness is a per-task audit step, not a per-test ritual — §5's cost placement still holds. Run it at the task's review checkpoint, not in the edit loop.*
+
+**Input variants on one code path collapse into one table-driven test.** Thirty-five near-identical test functions differing only in inputs become one test with a case table (`subTest` / `pytest.mark.parametrize`). DAMP (ENGINEERING_PRINCIPLES.md §4) governs row readability — each row reads top-to-bottom — not function count.
+*Why: near-identical functions multiply maintenance without multiplying discrimination. The table keeps the cases; the single test keeps the assertion.*
+
+**A test fake past ~20 lines needs approval.** A hand-built fake with thread coordination or branching is a second implementation you're now responsible for — it can flake, and it protects tuning details, not behavior. State what the fake pins and why the real seam can't serve.
+*Why: this is §7's "a mock with branches is a second implementation" with a tripwire. The number is a review trigger, not a gate.*
+
+**The guard and its test come out together.** When a guard is cut because its input can't occur (AGENTS.md rule 5 — not merely imaginable), the test guarding it goes in the same edit. A test for a removed guard is a test for nothing.
+*Why: guards and tests are one unit of "handling." Removing one and keeping the other leaves either dead code or a dead test.*
+
 ---
 
 ## Before you commit the test
@@ -155,4 +173,5 @@ For scripted verification runs — the harness that launches the app and proves 
 - [ ] Changed-lines coverage didn't fall (§1)
 - [ ] New test: ran before the fix; failure read and confirmed for the intended reason — or the skip was recorded with its reason (§9)
 - [ ] No dead-test shape — it would fail if every import returned nothing (§10)
+- [ ] No other kept test asserts the same thing — it names a unique mutation or was merged (§12)
 - [ ] Verification runs: drove the real user path; dry-run's skips observed, not assumed; proof survives cleanup (§11)

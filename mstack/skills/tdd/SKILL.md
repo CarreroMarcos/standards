@@ -60,6 +60,9 @@ rewrite on sight:
   test deterministic and write down which signal the test pins.
 - **Expensive for a small fix.** Needs heavy infrastructure to check
   a one-line change — use the closest cheap check instead and say so.
+- **Redundant with a kept test's assertion.** Names no behavior the suite
+  doesn't already discriminate — no unique mutation, no distinct branch.
+  Merge it into its neighbor or delete it.
 
 Bad: a test asserting the function was called (it was — by the test).
 Good: a test asserting the observable outcome changed.
