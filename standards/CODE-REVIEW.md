@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.10"
+version: "2.11"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-12
 ---
 
 # Code Review Standard
@@ -33,10 +33,20 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 
 **Cover every change for five domains:** Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
 
+**Findings scope to the diff.** Report issues only in code the diff adds or modifies. A vulnerability sitting in untouched code is a separate task — file it and link it — not a review finding. Pre-existing issues stacked into a review bury the diff's own signal and teach authors to skim.
+
+- Bad — a finding on code the diff didn't touch: *"`auth.py:412` has an injection flaw"* on a diff that never touched line 412.
+- Good — the flaw as follow-up, not blocker: the diff *adds* the same pattern at `handler.py:38` (a finding); `auth.py:412`'s older instance goes to a separate task with a link, not against this diff.
+
+- Why: the review's job is the change in front of it; unrelated history is a different change with a different owner and a different blast radius.
+- Boundary: unchanged code stays in scope as *evidence* — §3.5's call-chain traces and flag lookups run through untouched code freely. It leaves scope only as *reported findings*.
+
 Activate conditional domains when the change triggers them:
 
 - Performance — runtime-sensitive changes (tight loops, DB queries, I/O paths)
 - Accessibility — UI file changes
+- Developer-experience breakage — changes that alter how the team runs or builds the code locally: secret-reading paths (what the process reads and where from), new or renamed environment variables, remapped ports or networking, scripts that must now run for old functionality to keep working. Adding a dependency through the normal package manager is not devex breakage — unless it forces an out-of-workflow step (manual website install, App Store download, new hardware) that a developer must discover on their own.
+- Feature-gate integrity — when the codebase gates features behind flags or internal-only checks: trace the gate across the diff for leaks. Features the gate was meant to hold back surface through new call paths, flipped defaults, or silently dropped gate checks. Gate leaks are subtle by nature — any changed file that touches the flag's enforcement earns the trace.
 
 Severity scale: `Critical → High → Medium → Low → Info`
 
@@ -125,6 +135,13 @@ A `SPECULATIVE` finding is a ladder stopped at rung 2 — the trigger line is ci
 
 **Verdict** — carries the Act On / Consider / Dismissed lists (§6.5).
 
+**Audit before you read the discussion; reconcile after.** Draft your own audit before opening the PR/MR discussion — other reviewers' comments (human or bot) prime the review and cost you independence. When your audit has medium-or-higher findings and the branch has a PR, read the discussion after: validate their findings against this rubric, fold the valid ones in with attribution into §6.5's Act On / Consider / Dismissed lists, dedupe the rest.
+
+- Boundary: a clean audit (no medium-or-higher findings) may skip the discussion — on a clean diff the skim's priming cost exceeds its expected yield, and another reviewer's Low/Info items are not this review's responsibility.
+
+- Bad — prime first: skim the discussion, then write findings that echo the loudest thread.
+- Good — reconcile after: *"BugBot's thread flagged the retry budget; independently verified at `worker/poller.py:41` — folded in as corroborated."* A finding you missed gets evaluated on its own evidence and attributed to its source — not silently absorbed, not ignored because it wasn't yours.
+
 ## 6. Opposition review
 
 **Answer all four explicitly — this is not a summary pass:**
@@ -152,6 +169,11 @@ A passing opposition review answers all four. A general statement that none appl
 - Bad — a preference wearing a finding's clothes: *"Extract this into a helper for readability."*
 - Good — dismissed with the reason: *"Extract this into a helper — no concrete problem shown with the inline version; 12 lines, one caller. Kept as is."*
 
+**Dismiss the intended-breakage finding.** When the finding *is* the branch's stated intent — the branch removes the legacy endpoint, and the finding reports the legacy endpoint removed — don't spend the author's time reporting it back. Report it anyway when the implications look unappreciated: the scope is unbounded, dependents get dragged along, or the stated intent doesn't match what the diff mechanically does (a branch titled "remove X" that quietly changes auth behavior).
+
+- Bad — the echo: a branch titled *"remove the staging fallback"* earns *"staging fallback removed"* as a High finding.
+- Good — the report stays silent on the intended removal, and spends its words on the unbounded part: *"removal drags `jobs/nightly.py`, which the branch description doesn't mention — confirm intentional."*
+
 **Keep findings that name a concrete execution path.** Three signals a finding survives the filter: independent reviewers flag the same issue, the finding walks a real call path instead of a hypothetical, or it exposes a gap in your own mental model of the code. Security and correctness findings get this scrutiny even when they come from a single reviewer — discomfort is not a filter.
 
 **Cap the Act On list at five.** A verdict the reader can act on in one sitting is the goal. More than five "Act On" items means the filter isn't filtering — push the rest to Consider or Dismissed.
@@ -169,6 +191,8 @@ A passing opposition review answers all four. A general statement that none appl
 
 - Why: parallel agents share a model, training, and blind spots — their agreement measures the blind spot's consistency, not the finding's truth.
 - Boundary: treat N correlated agreements as one signal. Correlated agreement still beats a single opinion for typos and mechanical issues; the discount applies to judgment calls, where shared blind spots live.
+
+Agreement across *different* reviewer angles — security vs quality, different prompts or different tools — earns weight the correlated case doesn't: independent angles sharing a blind spot is the rare case, not the common one. When two angles disagree, resolve it with your own judgment; don't average them.
 
 ---
 
