@@ -1,6 +1,6 @@
 ---
 title: Code Review Standard
-version: "2.11"
+version: "2.12"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
 last_reviewed: 2026-10-12
@@ -32,6 +32,12 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 ## 1. Coverage
 
 **Cover every change for five domains:** Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
+
+**Ask the reversibility question on every architecture-shaping review: "If this turns out wrong in a month, how hard is the rollback?"** Call out one-way doors explicitly — a change whose reversal is a rewrite gets named as one, with the recovery or forward-fix path stated. (PatrickJS/awesome-cursorrules `rules/pr-review-cursorrules-prompt-file.mdc:74`)
+
+- Why: design-time reversibility (ENGINEERING_PRINCIPLES.md "Prefer Reversible Change") decays at review time — the review is the last checkpoint before the one-way door closes.
+- Bad: a data migration merged with no stated recovery path. Good: "one-way door — forward-only migration; forward-fix plan attached, no automatic rollback."
+- Boundary: this is the review-time interrogation, not a demand that every change be reversible — the design rule stands: the recovery path must be understood, rollback is not mandatory.
 
 **Findings scope to the diff.** Report issues only in code the diff adds or modifies. A vulnerability sitting in untouched code is a separate task — file it and link it — not a review finding. Pre-existing issues stacked into a review bury the diff's own signal and teach authors to skim.
 
@@ -241,6 +247,12 @@ A Testing assessment that reports "suite passes" without having established that
 ## 10. Scale the ceremony to the diff
 
 **Not every diff earns all ten sections.** Match the review's weight to the change's blast radius — the trigger is what the change can break, not its line count.
+
+**Keep the change reviewable: one concern per PR, ~400 lines as the split heuristic.** Past ~400 human-read lines, split the change — stacked or sequential PRs. Small PRs get reviewed faster and catch more bugs. (PatrickJS/awesome-cursorrules `rules/ai-agent-specialist.mdc:46-47`)
+
+- Why: reviewer attention is the scarce resource; oversized diffs get skimmed, and skimmed diffs ship bugs.
+- Bad: one 900-line PR mixing a feature, a refactor, and a dependency bump. Good: the feature ships at 300 lines; the refactor follows on top.
+- Boundary: generated code, mechanical renames, and vendored files don't count — count lines a human must actually read. Blast radius, not line count, still sets the review's ceremony (this section's rule above); the cap is the producer-side heuristic for keeping a diff reviewable, not a review-weight rule.
 
 Evidence-only tasks (re-captures, re-runs) get ceremony scaled to the decision they gate, not to a diff that doesn't exist.
 
