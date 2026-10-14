@@ -3,7 +3,7 @@ title: Code Review Standard
 version: "2.12"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-10-12
+last_reviewed: 2026-10-14
 ---
 
 # Code Review Standard
@@ -248,7 +248,7 @@ A Testing assessment that reports "suite passes" without having established that
 
 **Not every diff earns all ten sections.** Match the review's weight to the change's blast radius — the trigger is what the change can break, not its line count.
 
-**Keep the change reviewable: one concern per PR, ~400 lines as the split heuristic.** Past ~400 human-read lines, split the change — stacked or sequential PRs. Small PRs get reviewed faster and catch more bugs. (PatrickJS/awesome-cursorrules `rules/ai-agent-specialist.mdc:46-47`)
+**Keep the change reviewable: one concern per PR, ~400 lines as the split heuristic.** Past ~400 human-read lines, split the change — stacked or sequential PRs. Smaller diffs earn faster, closer reviews. (PatrickJS/awesome-cursorrules `rules/ai-agent-specialist.mdc:46-47`)
 
 - Why: reviewer attention is the scarce resource; oversized diffs get skimmed, and skimmed diffs ship bugs.
 - Bad: one 900-line PR mixing a feature, a refactor, and a dependency bump. Good: the feature ships at 300 lines; the refactor follows on top.
