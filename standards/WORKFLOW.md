@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.4"
+version: "3.5"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-14
 ---
 
 # Workflow Standard
@@ -210,6 +210,18 @@ Full review vocabulary and procedure: `CODE-REVIEW.md`.
     git commit -m "feat: <what was built and why in one line>"
 
 **Never commit `.env` or credentials.** Keep the diff scoped to the ticket — drive-by fixes to lines you touched ride along; anything that could be its own commit gets its own commit. (Credential rules: `SECRETS.md`.)
+
+**Before delivery, audit the diff for scope — `git diff --stat`, every file earned.** Confirm three things: every changed file was requested or is a mechanical consequence of the request, no unrequested files were touched, and no unasked-for "improvements" ride along. Unrequested changes riding along are scope creep the reviewer never agreed to audit. (PatrickJS/awesome-cursorrules `rules/anti-overengineering.mdc:12`)
+
+- Why: agents expand diffs quietly — a touched-but-unrequested file is how "small fix" PRs balloon past reviewability.
+- Bad: a 2-file bug fix whose diff touches 6 files "while I was in there". Good: the fix is 2 files; the adjacent cleanup became its own unit of work.
+- Boundary: drive-by fixes to lines the diff already touches ride along (per the rule above); lines it doesn't touch are a separate task. Simpler-approach checks belong to the anti-overengineering rule (AGENTS.md rule 1), not to this audit. Architecture changes are never drive-bys — they escalate (next rule).
+
+**Architecture changes are scope escalations — stick to the current choices unless the task asked for a change.** When the task doesn't ask for it, don't swap the framework, introduce a new module, or restructure the layout — those are design decisions the human never approved. Proposing the swap is its own task with its own review. (PatrickJS/awesome-cursorrules `rules/optimize-dry-solid-principles-cursorrules-prompt-f.mdc:22`)
+
+- Why: a quiet architecture change inside a feature task is a one-way door wearing a small diff's clothes.
+- Bad: "add caching to endpoint X" lands a new caching module plus a registry pattern. Good: caching uses the existing pattern — or the agent asks before introducing the module.
+- Boundary: when the existing architecture genuinely cannot support the task, say so and propose the change as its own unit of work — don't silently rebuild inside this one.
 
 **Remove your scratch files.** Temporary files, scripts, or helpers created to iterate get deleted at the end of the task — they don't ride along into the commit or linger in the tree. (vscode `.github/copilot-instructions.md:142`)
 
