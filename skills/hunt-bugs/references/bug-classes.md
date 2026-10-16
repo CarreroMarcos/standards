@@ -26,8 +26,7 @@ races. Deadlock from lock ordering. Assumptions about scheduling order.
 
 ## Resources
 Unclosed files, connections, or handles on any path. Unbounded growth:
-lists, caches, or queues with no cap or eviction. Expensive work
-repeated per call that should be hoisted or memoized.
+lists, caches, or queues with no cap or eviction.
 
 ## Security (AI-generated code repeats these)
 Secrets or credentials in code. Unauthenticated access to a new
