@@ -1,0 +1,11 @@
+# Simplify verification checklist
+
+Run after the pass, before reporting done:
+
+- [ ] All tests pass **unmodified** — a test edited to pass means behavior changed.
+- [ ] The diff touches only the task's files — no drive-by refactors.
+- [ ] No error handling, validation, or guards weakened or removed.
+- [ ] No `try/except` removed unless replaced with an explicit non-erroring path.
+- [ ] Names follow the surrounding conventions; no `data` / `tmp` / `result` introduced.
+- [ ] Read the result cold. Still confusing → the simplification didn't land; revert and try smaller.
+- [ ] Each change was checked individually — no batched simplifications with one test run at the end.
