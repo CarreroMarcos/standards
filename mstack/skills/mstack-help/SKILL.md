@@ -37,8 +37,10 @@ Use when the user asks which mstack skill to use, what the skills can do, or ask
    | "what did this session teach" — the lesson before the next run | `reflect` |
    | "write the test first" — a bug or behavior with a cheap local test path | `tdd` |
    | "how will we verify this" — a non-trivial change needing its evidence path designed before work starts | `verification-planning` |
+   | "make this simpler" — a dedicated simplification pass over working code (behavior must not change), not routine cleanup | `simplify` |
+   | "find the lurking bugs" — working code or a diff, no reported symptom yet (a known bug goes to `tdd`) | `hunt-bugs` |
 
-3. **Layer 3 — full inventory.** Point at the directory: the fourteen routable skills in `mstack/skills/` (this router makes fifteen), each in its own `<name>/SKILL.md` directory. Never re-list the table — the directory is the inventory.
+3. **Layer 3 — full inventory.** Point at the directory: the sixteen routable skills in `mstack/skills/` (this router makes seventeen), each in its own `<name>/SKILL.md` directory. Never re-list the table — the directory is the inventory.
 4. **No match → route to the runbook that owns the question.** An open-ended task that needs designing and driving to a finish condition → `figure-it-out`. A merge-readiness gate → `final-gate`. An unattended multi-hour run → `overnight-orchestrator`. Never invent a skill that doesn't exist.
 5. **Anti-loop rule.** Never route the user back to `mstack-help` for a question this skill can answer. Answer here, in one turn.
 
