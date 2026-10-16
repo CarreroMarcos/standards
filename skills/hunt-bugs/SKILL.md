@@ -10,7 +10,7 @@ Find real bugs hiding in working code — every finding proven, none speculative
 
 ## Workflow
 1. **Charter.** State the scope (files or diff) and the bug classes under hunt. Time-box the hunt — if the box expires mid-lens, report the remaining classes as "not examined", never as clean.
-2. **Hunt with lenses.** Read the code once per bug class (`references/bug-classes.md`): boundaries, error paths, state, concurrency, resources, security, logic. One lens at a time — a lens you skip is a class you declare clean.
+2. **Hunt with lenses.** Read the code once per bug class (`references/bug-classes.md`): boundaries, error paths, state, concurrency, resources, security, logic. One lens at a time — a lens you skip is reported as "not examined", never as clean.
 3. **Prove each candidate.** A finding needs a concrete trigger: an input, a trace, or a failing test that demonstrates the bug. "Might fail if…" without the trigger is not a finding — file it as a hypothesis or drop it.
 4. **Report.** File:line, bug class, the trigger that proves it, severity.
 

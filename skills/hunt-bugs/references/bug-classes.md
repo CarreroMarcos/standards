@@ -1,7 +1,8 @@
 # Bug-class catalog
 
 Read the scope once per class. A class you don't read is a class you
-declare clean — say so in the report.
+report as "not examined" — only classes you actually read can be
+declared clean. Say which in the report.
 
 ## Boundaries
 Off-by-one in loops, slices, and ranges. Empty input, single element,
