@@ -1,9 +1,9 @@
 ---
 title: Logging Standard
-version: "2.7"
+version: "2.8"
 scope: "Logging: what to log, levels, structure, retention"
 consult_when: "When adding or changing log/telemetry statements — or deciding whether a field is safe to log ('is this secret-adjacent?')."
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-16
 ---
 
 # Logging Standard
@@ -12,7 +12,7 @@ last_reviewed: 2026-10-04
 
 ## Sections
 
-- **Rules** — structured format, honest levels, exception logging, request-scoped context, redaction before rendering, libraries emit records
+- **Rules** — structured format, honest levels, exception logging, request-scoped context, redaction before rendering, libraries emit records, entrypoint-owned termination, fixed log templates
 - **Example** — the canonical logging setup
 - **What Never to Log** — secrets and everything adjacent
 
@@ -29,6 +29,32 @@ last_reviewed: 2026-10-04
 6. **Log identifiers, not objects** — a lazy repr can trigger queries inside the log call. Redaction runs *before* rendering: the secret-scrubbing step sits ahead of the formatter, so a secret never reaches the string that gets emitted.
 7. **Libraries emit records; applications own policy** — a library attaches a NullHandler and nothing else: never configure handlers, levels, or formatting in library code. Hierarchical logger names (`getLogger(__name__)`); lazy arguments so disabled levels cost nothing.
 8. **Inside an `except` block, log with `logger.exception()`, never `logger.error()`.** `exception()` attaches the traceback; `error()` inside a handler discards the one artifact that would diagnose the failure. The message names the event; the traceback names the cause. (`exception()` always logs at ERROR — for an expected-but-noteworthy failure at another level, e.g. the warning-level skips CODE-QUALITY.md §3 prescribes, pass `exc_info=True` to `warning()` instead.)
+9. **Termination is an entrypoint decision, not a logging side effect.** A logging call that also kills the process (`log.Fatal`, `os.Exit`, `sys.exit`, a panic used as control flow) inside request, worker, library, or cleanup paths steals the caller's recovery, context-logging, and cleanup — return the error and let the top-level entrypoint decide whether the process lives. The message gets emitted either way; only the entrypoint gets to decide if the process ends.
+```go
+// ❌ a library deciding the process's fate
+//    (deferred cleanup registered earlier never runs — log.Fatal calls os.Exit)
+if err != nil {
+    log.Fatalf("db unreachable: %v", err) // caller can't recover, retry, or clean up
+}
+// ✅ return it; the entrypoint owns termination
+if err != nil {
+    return fmt.Errorf("db unreachable: %w", err)
+}
+```
+   - Boundary: an impossible internal invariant or a documented programmer contract may still crash — deliberately, at the boundary, never as a library default.
+10. **The log template is fixed; untrusted content is always a value.** Never pass a runtime-derived or user-controlled string in the template/format position of a log call — pass it as a parameter to a literal template, or as a structured field. Content containing format specifiers (`%s`, `{}`, `%@`) corrupts the message or crashes the formatter, and a template that changes per call breaks the stable event names rule 5 depends on for greppability.
+```python
+# ❌ user input promoted to the template position
+logger.info(user_supplied_status)
+# ✅ literal template, untrusted content as data
+#    (extra= needs a formatter that renders extra fields — in production that's
+#    the structured-JSON formatter per "Format by environment", not the
+#    basicConfig line in the Example above)
+logger.info("status_received", extra={"status": user_supplied_status})
+```
+   - Boundary: also covers templates assembled at runtime from data — the template must be a literal in the source, not a string built on the fly.
+11. **Log and error strings are read by operators — spell them right.** Misspelled words in log messages, exception messages, and panic messages degrade readability and break the greppability rules 4–5 depend on. Check spelling in emitted strings at write time, the same way identifiers get checked.
+   - Boundary: flag actual misspellings that hurt readability, not style preferences — when in doubt, match the surrounding codebase's regional spelling.
 
 **Format by environment:** structured JSON in production (queryable in CloudWatch/Loki); human-readable console rendering in dev. Serverless: structured JSON to stdout.
 
