@@ -171,7 +171,7 @@ The loop's shape generalizes beyond this repo:
   secret-adjacent — scrub first, then record.
 - **Bot review still absent at 120s+45s → note it and proceed.** Record it
   in the state file.
-- **The bot's review posts as a PR-thread comment under CarreroMarcos's name (`pr-reviewer:canonical` marker) — recheck the issue comments, not the reviews endpoint.**
+- **The bot's review may post as a PR-thread comment under CarreroMarcos's name — recheck the issue comments, not the reviews endpoint.**
 - **`pytest | tail` lies about the exit code** — gate pushes on the real RC:
   write output to a file, check `$?`, grep the summary line.
 - **Exported AWS creds poison the suite** — run capture and pytest in separate
