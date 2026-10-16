@@ -30,9 +30,9 @@ repeated per call that should be hoisted or memoized.
 
 ## Security (AI-generated code repeats these)
 Secrets or credentials in code. Unauthenticated access to a new
-endpoint. Overly broad CORS or permissions. Debug logging left in.
-Unparameterized queries / injection points. Missing audit of new
-dependencies.
+endpoint. Overly broad CORS or permissions. Debug logging that fires on
+a live path with secrets or PII. Unparameterized queries / injection
+points. Dependency with a known CVE in the used version range.
 
 ## Logic
 Inverted conditions. Wrong operator (`and`/`or`, `<`/`<=`). Early
