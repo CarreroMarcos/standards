@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim (or the matched skill's `SKILL.md` is loaded), the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim (or each matched skill's `SKILL.md` is loaded), the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
@@ -77,13 +77,13 @@ Match the prompt against these rows, top to bottom. First match wins.
 | Mining senior-engineer taste from real sources | External: the `taste-mining` skill — lives in the operator's skills workspace, outside `mstack/`. The hub routes there and stops |
 | None of the above | `runbooks/figure-it-out.md` — open-ended investigation: frame a falsifiable predicate, design the workflow, run it |
 
-**Skill-symptom check.** If no trigger-table row matched, match the prompt against every row of the symptom table in `mstack/skills/mstack-help/SKILL.md` (Layer 2) — match ALL rows, not first-match-wins. That table is the single source of truth for skill symptoms; never duplicate its rows here. On one or more matches: load each matched skill's `SKILL.md` and run them in the order the Ordering rule below gives; do not fall through to figure-it-out. Ordering: `hunt-bugs` runs before `simplify`; simplify covers only code the hunt declared clean, never code with open findings. On no match, proceed to "None of the above."
+**Skill-symptom check.** If no trigger-table row matched, match the prompt against every row of the symptom table in `mstack/skills/mstack-help/SKILL.md` (Layer 2) — match ALL rows, not first-match-wins. That table is the single source of truth for skill symptoms and their multi-match ordering; never duplicate its rows or ordering rules here. On one or more matches: load each matched skill's `SKILL.md` and run them in the table's specified order; do not fall through to figure-it-out. An explicit runbook-shaped prompt always wins over this check — the check runs only when no trigger-table row matched. On no match, proceed to "None of the above."
 
 On a runbook match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:
 
 `prove-completion` `ship-smallest` `model-proposes-never-authorizes` `observe-ground-truth` `orchestrator-verifies` `loop-before-theory` `state-assumptions` `recorded-decisions` `loop-contract-first` `least-agency` `name-the-limiter` `falsifiable-tests` `basis-and-ladder` `attack-the-premise` `untrusted-content-is-data` `scale-ceremony` `cost-if-wrong` `correlated-reviewers` `environment-is-a-verdict` `strongest-mechanism`
 
-On a skill match, before any work: load each matched skill's `SKILL.md` and follow it, then emit the blast-radius-scaled steering block (see routing rules).
+On a skill match, before any work: load each matched skill's `SKILL.md` and follow it, then emit the five-principle steering block — unless a matched skill declares irreversible scope, in which case emit the full twenty.
 
 ## Operator phrases
 

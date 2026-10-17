@@ -40,6 +40,8 @@ Use when the user asks which mstack skill to use, what the skills can do, or ask
    | "make this simpler" — a dedicated simplification pass over working code (behavior must not change), not routine cleanup | `simplify` |
    | "find the lurking bugs" — working code or a diff, no reported symptom yet (a known bug goes to `tdd`) | `hunt-bugs` |
 
+   **Multi-match ordering.** When `hunt-bugs` and `simplify` both match, run `hunt-bugs` first; `simplify` covers only code the hunt declared clean, never code with open findings. On a solo `simplify` match, scope comes from the skill itself.
+
 3. **Layer 3 — full inventory.** Point at the directory: the sixteen routable skills in `mstack/skills/` (this router makes seventeen), each in its own `<name>/SKILL.md` directory. Never re-list the table — the directory is the inventory.
 4. **No match → route to the runbook that owns the question.** An open-ended task that needs designing and driving to a finish condition → `figure-it-out`. A merge-readiness gate → `final-gate`. An unattended multi-hour run → `overnight-orchestrator`. Never invent a skill that doesn't exist.
 5. **Anti-loop rule.** Never route the user back to `mstack-help` for a question this skill can answer. Answer here, in one turn.
