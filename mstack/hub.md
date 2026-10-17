@@ -1,12 +1,12 @@
 ---
 name: mstack
-description: Use when a goal needs a full loop run — a goal plus a checkable finish condition, and the right runbook driven end to end. Routes to runbooks; never does the work itself.
+description: Use when a goal needs a full loop run — a goal plus a checkable finish condition, and the right runbook driven end to end. Routes to runbooks or skills; never does the work itself.
 disable-model-invocation: true
 ---
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim, the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim (or each matched skill's `SKILL.md` is loaded), the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
@@ -15,6 +15,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim,
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
 - `runbooks/figure-it-out.md` step 9 for the corpus-wide destructive-scope definition — every "destructive-scope confirmation" in the corpus invokes that meaning.
+- `mstack/skills/mstack-help/SKILL.md` (Layer 2 symptom table) — the skill-symptom check's match surface; an unmet Require parks the run with this file named.
 
 ## State
 
@@ -72,13 +73,17 @@ Match the prompt against these rows, top to bottom. First match wins.
 | Researching a topic to update the standards library: research → distill → branch → PR | `runbooks/biweekly-standards-research.md` — standards research |
 | A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement |
 | Something broken with an unknown cause: repro first, isolate, fix smallest | `runbooks/debugging.md` — systematic debugging |
-| A final review before merge: verify the real state, adjudicate holds, deliver a verdict | `runbooks/final-gate.md` — pre-merge final review |
+| A final review before merge that must end in a verdict: verify the real state, adjudicate holds, deliver a verdict — not a read-through for lurking bugs | `runbooks/final-gate.md` — pre-merge final review |
 | Mining senior-engineer taste from real sources | External: the `taste-mining` skill — lives in the operator's skills workspace, outside `mstack/`. The hub routes there and stops |
 | None of the above | `runbooks/figure-it-out.md` — open-ended investigation: frame a falsifiable predicate, design the workflow, run it |
 
-On a match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:
+**Skill-symptom check.** If no trigger-table row matched, match the prompt against every row of the symptom table in `mstack/skills/mstack-help/SKILL.md` (Layer 2) — match ALL rows, not first-match-wins. That table is the single source of truth for skill symptoms and their multi-match ordering; never duplicate its rows or ordering rules here. On one or more matches: load each matched skill's `SKILL.md` and run them in the table's specified order; do not fall through to figure-it-out. An explicit runbook-shaped prompt always wins over this check — the check runs only when no trigger-table row matched. On no match, proceed to "None of the above."
+
+On a runbook match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:
 
 `prove-completion` `ship-smallest` `model-proposes-never-authorizes` `observe-ground-truth` `orchestrator-verifies` `loop-before-theory` `state-assumptions` `recorded-decisions` `loop-contract-first` `least-agency` `name-the-limiter` `falsifiable-tests` `basis-and-ladder` `attack-the-premise` `untrusted-content-is-data` `scale-ceremony` `cost-if-wrong` `correlated-reviewers` `environment-is-a-verdict` `strongest-mechanism`
+
+On a skill match, before any work: load each matched skill's `SKILL.md` and follow it, then emit the five-principle steering block — unless a matched skill declares irreversible scope, in which case emit the full twenty.
 
 ## Operator phrases
 
@@ -89,7 +94,7 @@ On a match, before any work: copy the runbook's steps verbatim into the todo lis
 
 - Never lead with a theory of the cause. Ground first, theorize after.
 - A duration is not a finish condition. "Run for an hour" routes nowhere until the operator names what done looks like.
-- Name a skill only to override a specific choice the runbook makes. The runbook names what it needs; the hub never volunteers skills.
+- The hub never volunteers skills — except through the skill-symptom check. Otherwise, name a skill only to override a specific choice the runbook makes; the runbook names what it needs.
 - Invocation discipline: the hub is for work that needs rigor.
 - Scale the steering block with blast radius: on routes whose worst case is a reverted edit, emit the five principles the route actually exercises (`prove-completion`, `loop-before-theory`, `ship-smallest`, `state-assumptions`, `scale-ceremony`); the full 20 stay reserved for irreversible-scope routes.
 - Role-based cost control stays harness-neutral. The hub never names model slugs or per-role models; the harness decides.
@@ -102,7 +107,7 @@ The hub speaks in harness-neutral verbs: spawn a worker, run in background, keep
 
 Every hub turn ends with this shape:
 
-- **Route:** the matched runbook (or parked / clarification-asked / confirmation-asked / declined: small-edit / resumed from a `parked:` note).
+- **Route:** the matched runbook or skill(s) (or parked / clarification-asked / confirmation-asked / declined: small-edit / resumed from a `parked:` note).
 - **Intake verdict:** BLOCKING / PROCEED / CONFIRM / CLEAN / NEVER-ASKED — which gate arm fired and why.
 - **Assumptions:** every logged assumption from a PROCEED path, stated plainly for correction after the fact. Empty on CLEAN or when PROCEED logged none.
 - **Next:** the first concrete action the run takes. A parked run goes here as `parked:` followed by the resume note (shape defined in ## State) — the run resumes by re-invoking `/mstack` with that note as the goal. (Deliberate scope: at intake there is no working directory to cut the note to, so the note stays chat-borne; mid-run durability belongs to the runbooks.)
