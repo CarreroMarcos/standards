@@ -16,6 +16,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim 
 - `values.md` for the intake-gate question-round cap.
 - `runbooks/figure-it-out.md` step 9 for the corpus-wide destructive-scope definition — every "destructive-scope confirmation" in the corpus invokes that meaning.
 - `mstack/skills/mstack-help/SKILL.md` (Layer 2 symptom table) — the skill-symptom check's match surface; an unmet Require parks the run with this file named.
+- `references/routing-fixtures.md` — the router's pinned test data (prompts + expected routes + intake verdicts); the router clause in `runbooks/skill-authoring-run.md` re-verifies hub edits against it.
 
 ## State
 

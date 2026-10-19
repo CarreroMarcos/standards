@@ -44,7 +44,7 @@ Used-in: measurement-eval.md, skills/validate/SKILL.md
 Value: 5
 Unit: fresh router simulations
 Why: Router prose fails ambiguously — identical hub text has produced divergent routes across blind routers, so one clean pass proves little. Five fresh routers make a divergent reading likely to surface while keeping the gate cheap enough to run on every hub or Layer-2 edit; the same signal-from-noise floor as eval.run-floor, applied to routing instead of measurement.
-Used-in: runbooks/skill-authoring-run.md
+Used-in: runbooks/skill-authoring-run.md (simulations run against references/routing-fixtures.md)
 
 ### correct-mining.class-threshold
 Value: 2

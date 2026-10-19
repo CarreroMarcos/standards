@@ -46,3 +46,5 @@ failing simulation pass; that is tuning the test to the code.
 | F1 | clean up the formatting in lambda/common/diff.py | declined: small-edit | NEVER-ASKED |
 | F2 | find the function that validates webhooks | declined: direct answer (a locate; `hunt-bugs` must not fire) | NEVER-ASKED |
 | F3 | summarize what the last commit did | declined: direct answer (a summary) | NEVER-ASKED |
+| F4 | run the retry logic and report what it does | work loop, not a direct answer (requires code execution — past the valve boundary) | PROCEED |
+| F5 | summarize how auth works across the worker and API | work loop, not a direct answer (multi-file synthesis — past the valve boundary) | PROCEED |
