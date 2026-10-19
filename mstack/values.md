@@ -70,16 +70,10 @@ Unit: occurrences
 Why: A new skill is admitted only when the same failure shows up twice. Guards the skill list against accretion by enthusiasm.
 Used-in: skills/reflect/SKILL.md
 
-### deep-work.head-lines
-Value: 12
+### deep-work.state-lines
+Value: 90
 Unit: lines
-Why: The pinned run head stays scannable — status, task, slug, phase, next, blockers, files, token, one line each. More lines and it stops being a head.
-Used-in: runbooks/deep-work.md
-
-### deep-work.progress-lines
-Value: 80
-Unit: lines
-Why: The progress file is rewritten in place, never appended — the line budget forces summarization instead of log growth.
+Why: `state.md` merges the old pinned head and progress file — status, task, slug, phase, next, blockers, files, token one line each, then open items and per-lane verdicts. Rewritten in place, never appended — the line budget forces summarization instead of log growth.
 Used-in: runbooks/deep-work.md
 
 ### deep-work.tombstone-lines
