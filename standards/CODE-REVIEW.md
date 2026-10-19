@@ -39,6 +39,11 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 - Bad: a data migration merged with no stated recovery path. Good: "one-way door — forward-only migration; forward-fix plan attached, no automatic rollback."
 - Boundary: this is the review-time interrogation, not a demand that every change be reversible — the design rule stands: the recovery path must be understood, rollback is not mandatory.
 
+**Treat interface retirement as a product decision, not cleanup.** When a diff deletes a reachable capability, supported interface, stored representation, or compatibility path, require the branch to say so plainly: what capability is surrendered, who consumes it, and whose direction authorized it. Before judging the cut, enumerate the contract map — every in-scope entrypoint and authority boundary traced to its owner and observable contract; uninspected surfaces are recorded as blind spots, not assumed dead (tt-a1i/archify `.agents/skills/simplify-codebase/SKILL.md:24`).
+- Why: reachable interfaces have invisible consumers — dynamic callers, persisted data, external integrations. Deleting them is a decision with a blast radius, not tidying; and a cut can't be judged without the contract map that says who is reachable.
+- Bad: "remove unused `v1/export` endpoint" buried in a refactor PR, no consumer analysis. Good: the PR names the surrender ("drops CSV export; 3 integrations named"), the direction ("approved in #issue"), and the contract map that proved nothing else reaches it.
+- Boundary: truly dead code with no reachable consumers (CODE-QUALITY.md §7) is still cleanup — this rule fires on reachable surfaces.
+
 **Findings scope to the diff.** Report issues only in code the diff adds or modifies. A vulnerability sitting in untouched code is a separate task — file it and link it — not a review finding. Pre-existing issues stacked into a review bury the diff's own signal and teach authors to skim.
 
 - Bad — a finding on code the diff didn't touch: *"`auth.py:412` has an injection flaw"* on a diff that never touched line 412.

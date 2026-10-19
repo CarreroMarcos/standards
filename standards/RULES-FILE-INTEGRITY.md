@@ -143,6 +143,10 @@ If you find a violation:
    - Bad: a ban in the lint config plus "remember not to use X" in AGENTS.md. Good: the lint rule; the prose line deleted.
    - Boundary: when the mechanism's intent isn't self-evident, one line of prose may name the why — the enforcement still lives in the mechanism.
 
+4. **Version instruction-file changes like behavior changes.** Skill instructions, authored examples, build inputs, and generated-site sources are behavioral inputs even when they look like documentation (tt-a1i/archify `CONTRIBUTING.md:96`). A change to any of them is a behavior change: versioned, evidence-backed, and reviewed like code — never a prose touch-up. Policy changes need process review (they're contracts); the runtime evidence required follows whether the change affects runtime inputs.
+   - Why: agents and builds don't distinguish "docs" from "code" — they execute both. A prose-touch-up review bar on a behavior change ships untested behavior with a spellcheck.
+   - Boundary: purely mechanical corrections (typos, broken links to their intended destination) stay mechanical — this rule fires when the words shape behavior.
+
 ## References
 
 - arxiv/2601.17548v1 — *Prompt Injection on Agentic Coding Assistants*
