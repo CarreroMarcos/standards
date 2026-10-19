@@ -118,6 +118,11 @@ Scope the sandbox to the tool call, not the agent. One sandbox shared across too
 - Bad: "This tool is idempotent and safe to retry" in the description text. Good: `idempotentHint: true` on the tool definition, so the retry policy reads the flag.
 - Boundary: annotations describe the tool's contract, not its implementation — a wrong `idempotentHint` is worse than none, because the harness will trust it. Set them from the tool's actual semantics, verified by test.
 
+**Declare each tool's failure surface as structured data, not prose.** When a tool, CLI, or API is consumed by agents, every failure arrives in a machine-readable shape: a stable `code` the caller can match, a precise `subject` naming the affected input, concrete `evidence` showing what was observed, and executable `supportedFixes` — commands or steps the agent can run, not advice. Preserve non-zero exit codes and machine-readable receipts for failed stages (tt-a1i/archify `CONTRIBUTING.md:134`).
+- Why: a paragraph forces inference; fields allow branching. The agent retries, escalates, or repairs from the `code`, not from reading the message — the same lookup-not-inference logic as the safety hints above.
+- Bad: `Error: something went wrong with the diagram. Try checking your input.` Good: `{"code": "input/unknown-node-type", "subject": "nodes[4].type", "evidence": "value 'swimlane' not in schema enum", "supportedFixes": ["node bin/archify.mjs validate architecture candidate.json"]}`.
+- Boundary: governs machine consumers; human-only error surfaces still follow §10's matter-of-fact cause → fix prose. `supportedFixes` lists only fixes the tool can actually verify — never a wishlist.
+
 Break the lethal trifecta (AGENTIC-SAFETY.md, "Break the lethal trifecta"): never combine private-data access, untrusted content, and external communication in one unattended session.
 
 **The common failure:** encoding a hard business or security rule only in a system prompt and treating model compliance as enforcement.

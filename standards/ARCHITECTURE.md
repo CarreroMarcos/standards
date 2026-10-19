@@ -154,6 +154,11 @@ Return errors in a consistent machine-readable format so clients can distinguish
 
 **Publish the smallest contract that satisfies known consumers.** Every optional field added "just in case" is a field someone may eventually depend on. Confirm required behavior with consumers before freezing rather than discovering omissions after implementation.
 
+**Taste rules earn hard-error status; they don't start with it.** A validation rule that encodes taste ships first as evidence or a warning. Promote it to a hard error only after ruling out legitimate obstacles — shared ports, explicit routes, nested boundaries, existing examples — and naming the user harm the rule prevents. Before repairing a failed check, identify that harm and whether it is actually present; an unsuitable rule gets its scope, threshold, or severity revised, not its expected values overwritten — changing the expected value alone proves no benefit, and the original failure stays visible in the rationale (tt-a1i/archify `CONTRIBUTING.md:135`, `.agents/skills/archify-tuning/SKILL.md:22`).
+- Why: hard errors are a contract; every hard error an agent can't tell apart from a bug gets worked around instead of respected. A warning that names its harm earns its error status on evidence.
+- Bad: a new `no-detour` lint fails CI on day one against a diagram with an intentional routed detour. Good: the rule ships as a warning citing the harm (unreadable routes); it becomes an error after review of real failures, with the legitimate-obstacle list checked.
+- Boundary: genuine correctness or safety violations can be errors from day one — this rule governs taste, not brokenness.
+
 **Fixtures are a legitimate first deliverable.** When a contract is agreed but implementation is blocked, contract-valid static fixtures can unblock downstream consumers without pretending the service exists. Prefer this to building an integration against unconfirmed assumptions.
 
 **The common failure:** hand-writing client types that drift from actual server behavior, with the missing field discovered in production. Keep one authoritative schema and automate alignment where practical.

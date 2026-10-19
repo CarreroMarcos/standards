@@ -135,6 +135,11 @@ Two stop rules: (1) stop fixing and re-examine the premise after the second fail
 
 *Boundary: the census is the exit. If it comes back even across actors, the premise is not the cause — look elsewhere and keep the census as evidence. One failure is just debugging; two failures on the same assumption trigger the rule. When a correct seam for the census doesn't exist, the census itself is a rerunnable script (one artifact the reviewer reruns).*
 
+**Track the repair budget per issue identity, not per run.** Key each repair sequence to the diagnostic's stable identity — code + subject + stage + evidence. Compare attempts by that identity; a declining error count alone is not progress, and a newly exposed issue starts its own sequence. When an identity exhausts its budget, stop repairing and report the concrete gap (tt-a1i/archify `archify/references/delivery-contract.md:11`).
+- Why: error counts move for reasons unrelated to the issue — a different code path hit, output reformatted. Identity-keyed tracking keeps the budget honest; without it the agent spends the budget on a moving target.
+- Bad: "errors went from 5 to 3 — keep iterating" when the remaining 3 are different issues than the original 5. Good: `input/unknown-node-type` at stage `validate` gets its two focused repairs; a new `layout/route-collision` at stage `render` gets its own budget; the exhausted identity escalates with its evidence.
+- Boundary: pairs with §10's premise rule — budget exhaustion on a stable identity triggers "attack the premise"; a *changed* identity means the problem moved, not that the budget reset.
+
 ---
 
 ## 11. When the cause is the environment, handle it and monitor it
