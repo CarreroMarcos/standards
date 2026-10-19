@@ -18,6 +18,7 @@ Find real bugs hiding in working code — every finding proven, none speculative
 - Findings: file:line + bug class + concrete trigger + severity (wrong behavior, crash, security, data loss).
 - Non-findings: bug classes examined and declared clean, one line each.
 - No fix code unless asked — findings first; fixes are a separate task.
+- Disposition: every open finding ends `fixed` / `dismissed-with-reason` / `frozen`, with the reason recorded.
 - A trigger that takes the form of a failing test SHOULD be kept as a regression test (via `tdd`) — proof that evaporates with the session is not proof.
 
 ## Operating Rules

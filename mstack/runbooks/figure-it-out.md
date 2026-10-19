@@ -29,7 +29,7 @@ An INCONCLUSIVE verdict with an empty audit trail is not inconclusive — it is 
 
 1. Frame a falsifiable predicate before any work (`falsifiable-tests`). State what would prove the goal achieved and what would disprove it. No predicate, no work — a goal you cannot falsify is a wish, not a task. Never lead with a theory of the cause (`loop-before-theory`).
 2. State assumptions up front (`state-assumptions`). Write down what is taken as given; each assumption is a candidate for the first attack.
-3. Design the smallest workflow that could test the predicate. One loop, one artifact, one check — add machinery only when the predicate demands it.
+3. Design the smallest workflow that could test the predicate. One loop, one artifact, one check — add machinery only when the predicate demands it. When the workflow is optimization-shaped, `runbooks/measurement-eval.md` owns the numbers — its interleaved-run discipline is the measurement step.
 4. Ground the investigation in the system under test. When the workflow touches unfamiliar code or behavior, run the `how` skill's grounding pass first — parallel angles, fixed-section synthesis — so the hypothesis loop starts from observed structure, not guesses.
 5. Run the hypothesis loop: predict → run → compare. Each iteration states its prediction before the run, executes against the real artifact, and compares the outcome to the prediction. Log every iteration with its evidence.
 6. Attack the premise (`attack-the-premise`). When an iteration surprises, interrogate the predicate and the assumptions before the code — the most expensive bug is a well-tested wrong theory.

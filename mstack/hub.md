@@ -59,7 +59,7 @@ Restatement-first: for noisy input, send one restatement message before any code
 
 ## Trigger table
 
-Pre-invocation filter (runs before the intake gate above): if the task is a small obvious edit — one file, mechanical change, self-evident done-check — close the hub and do the edit; or if it is a question answerable from the codebase without a work loop (a locate, a summary, a what-does-X-do), close the hub and answer it directly. Intake verdict NEVER-ASKED (the gate never runs on a filtered task). The hub is for work that needs rigor.
+Pre-invocation filter (runs before the intake gate above): if the task is a small obvious edit — one file, mechanical change, self-evident done-check — close the hub and do the edit; or if it is a question answerable from the codebase without a work loop (a locate, a summary, a what-does-X-do), close the hub and answer it directly. A direct answer suffices when it requires no code execution and no multi-file synthesis — past that boundary is a work loop, and the work loop routes. Intake verdict NEVER-ASKED (the gate never runs on a filtered task). The hub is for work that needs rigor.
 
 Match the prompt against these rows, top to bottom. First match wins. The "None of the above" row is the fallthrough — it never preempts the skill-symptom check below; the check runs before the catch-all.
 

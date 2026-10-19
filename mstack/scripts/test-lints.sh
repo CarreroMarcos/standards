@@ -102,7 +102,7 @@ expect_output "check-values cofire num" "undeclared magic number '90s'" bash "$V
 expect 1 "check-values tbd-ref"         bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 expect_output "check-values tbd-ref named" "unknown values.md reference 'missing.entry'" bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 # Self-hosting: the lints must pass on the shipped docs themselves.
-expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md "$dir"/../references/routing-fixtures.md
 expect 0 "values lint clean on runbooks" bash "$VV" "$VM" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "values lint clean on skills" bash "$VV" "$VM" "$dir"/../skills/*/SKILL.md
 expect 0 "frontmatter clean fixture" bash "$FF" "$FX/check-frontmatter/clean.md"
@@ -118,10 +118,10 @@ expect 0 "frontmatter empty file" bash "$FF" "$FX/check-frontmatter/empty.md"
 expect 1 "frontmatter mixed files exit 1" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
 expect_output "frontmatter mixed reports bad file" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
 expect_no_output "frontmatter mixed silent on clean file" "clean.md" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
-expect 0 "frontmatter clean on docs" bash "$FF" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "frontmatter clean on docs" bash "$FF" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md "$dir"/../references/routing-fixtures.md
 expect 0 "frontmatter clean on runbooks" bash "$FF" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "frontmatter clean on skills" bash "$FF" "$dir"/../skills/*/SKILL.md
-expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md "$dir"/../references/routing-fixtures.md
 expect 0 "refs lint clean on runbooks" bash "$RV" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "refs lint clean on skills" bash "$RV" "$dir"/../skills/*/SKILL.md
 expect 0 "refs lint no-rg clean on runbooks" norv bash "$RV" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
