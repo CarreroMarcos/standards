@@ -30,7 +30,7 @@ Use when the user asks which mstack skill to use, what the skills can do, or ask
    | "I need a trail I can audit" — long or unattended work | `show-work` |
    | "this mistake happened again" — a repeated failure class | `correct` |
    | "prove the app really does it" — no scripted verification | `verify-app` |
-   | "shape this before code" — types, boundaries, competing designs | `architect` |
+   | "shape this before code" — types, boundaries, competing designs; also design ideation and brainstorming (the corpus's deliberate home for it — no separate brainstorm runbook) | `architect` |
    | "how does this work" — a code walkthrough before a change | `how` |
    | "why is it shaped this way" — rationale, regressions, postmortems | `why` |
    | "what could this break" — the damage beyond the diff | `blast-radius` |
@@ -40,7 +40,7 @@ Use when the user asks which mstack skill to use, what the skills can do, or ask
    | "make this simpler" — a dedicated simplification pass over working code (behavior must not change), not routine cleanup | `simplify` |
    | "find the lurking bugs" — working code or a diff, no reported symptom yet (a known bug goes to `tdd`) | `hunt-bugs` |
 
-   **Multi-match ordering.** When `hunt-bugs` and `simplify` both match, run `hunt-bugs` first; `simplify` covers only code the hunt declared clean, never code with open findings. On a solo `simplify` match, scope comes from the skill itself.
+   **Multi-match ordering.** When `hunt-bugs` and `simplify` both match, run `hunt-bugs` first; `simplify` covers only code the hunt declared clean, never code with open findings — "clean" is assessed at function granularity (a finding anywhere in the function excludes the whole function; a fix restructures it). On a solo `simplify` match, scope comes from the skill itself. When ordering defers a matched skill (findings open), re-run it after the findings are dispositioned — the deferred verb is parked, not dropped. `validate` runs before `prove-it`; `verification-planning` (design the evidence path) runs before `validate` (execute the proof).
 
 3. **Layer 3 — full inventory.** Point at the directory: the sixteen routable skills in `mstack/skills/` (this router makes seventeen), each in its own `<name>/SKILL.md` directory. Never re-list the table — the directory is the inventory.
 4. **No match → route to the runbook that owns the question.** An open-ended task that needs designing and driving to a finish condition → `figure-it-out`. A merge-readiness gate → `final-gate`. An unattended multi-hour run → `overnight-orchestrator`. Never invent a skill that doesn't exist.
