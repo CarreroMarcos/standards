@@ -17,7 +17,8 @@ costs more than a wrong line.
    is unfamiliar, run the `how` skill and produce its traced model; where
    the design moves ownership or layering, run the `why` skill so the
    existing rationale constrains the new shape instead of being guessed
-   at. Only genuinely greenfield work with nothing to integrate against
+   at. If the brief already names the exact surfaces, reading them directly
+   satisfies this step — no sub-skill escalation required. Only genuinely greenfield work with nothing to integrate against
    may skip this phase.
 2. **Sketch competing shapes.** Produce at least two candidates with
    genuinely different structures — different boundaries, different
@@ -84,3 +85,6 @@ The design package:
 - The rationale — chosen, rejected, why — with the synthesis decision
 - Assumptions stated out loud, decision on record before building
 - Deleted paths named — the duplicate paths migrated and deleted together, and the implementation the restart replaced
+- The package lives in a named report file (the run's report, or the brief's named artifact) — it outlives the session
+
+For analysis-only runs (brainstorm, no implementation follows): end at step 3's locked synthesis; steps 4–5 and the implementation-bound Output lines are N/A by license, not by judgment. The `interrogate` stress-test is optional — skip it on bounded deliverables.

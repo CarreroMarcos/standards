@@ -41,11 +41,11 @@ An unmet Require parks the run at the hub with the missing prerequisite named �
 
 Before routing, check whether the prompt supports a checkable exit predicate.
 
-**BLOCKING — stop and ask.** Fire when the goal is missing or unintelligible; the done-check is missing or uncheckable ("make it better", "trust it was done right"); or the scope is ambiguous AND the task carries irreversible consequences (merge, deploy, delete, force-push, closing someone else's PR). Ask for exactly what is missing — nothing else. When BLOCKING fires, the restatement and the question batch are one message: restate in two lines, then ask. Batch what is blocking into one round of questions — the cap lives at `values.md#intake-gate.max-question-rounds` — then go.
+**BLOCKING — stop and ask.** Fire when the goal is missing or unintelligible; the done-check is missing or uncheckable ("make it better", "trust it was done right"); or the scope is ambiguous AND the task carries irreversible consequences (merge, deploy, delete, force-push, closing someone else's PR). A missing done-check does NOT block when the task is fully reversible (worst case: a reverted edit) — route, and let the matched runbook or skill's contract supply the predicate (a skill's output contract counts as the done-check). Ask for exactly what is missing — nothing else. When BLOCKING fires, the restatement and the question batch are one message: restate in two lines, then ask. Batch what is blocking into one round of questions — the cap lives at `values.md#intake-gate.max-question-rounds` — then go.
 
 **PROCEED WITH LOGGED ASSUMPTIONS.** Fire when the prompt is vague but fully reversible: investigation, read-only analysis, drafts. State the assumptions up front; they enter the decision log and surface in the Reply's Assumptions section for correction after the fact. "Fully reversible" means the run touches none of the irreversible actions and produces no external side effects. Adapt to the cost of being wrong: when the task is build-shaped and a wrong assumption means rebuilding, name the open questions the runbook's intake must close before dispatch — don't just log assumptions for correction after the fact. The runbook asks them; the hub just names them.
 
-**CONFIRM — irreversible, on crisp instructions.** Fire when the prompt is crisp, complete, and **not fully reversible** (per PROCEED's definition — any irreversible action or external side effect; BLOCKING's verb list is illustrative, not the boundary). Nothing is missing, so ask nothing: state the exact irreversible action and wait for the human's confirmation before routing. Confirmation is permission, not information. The hub turn ends on the confirmation request; the human's confirmation resumes routing only for the exact irreversible action stated — a confirmation naming a different action is a new prompt, not a resume.
+**CONFIRM — irreversible, on crisp instructions.** Fire when the prompt is crisp, complete, and **not fully reversible** (per PROCEED's definition — any irreversible action or external side effect; BLOCKING's verb list is illustrative, not the boundary). Does NOT fire when the routed runbook owns the authorization for that action itself (e.g. bot-review-loop's push gate) — one authorization per action, at the runbook. Nothing is missing, so ask nothing: state the exact irreversible action and wait for the human's confirmation before routing. Confirmation is permission, not information. The hub turn ends on the confirmation request; the human's confirmation resumes routing only for the exact irreversible action stated — a confirmation naming a different action is a new prompt, not a resume.
 
 **CLEAN — proceed, no assumptions.** Fire when the prompt is crisp, complete, and fully reversible: goal named, done-check checkable, no missing pieces. No questions, no logged assumptions — the Reply names CLEAN as the fired arm.
 
@@ -59,9 +59,9 @@ Restatement-first: for noisy input, send one restatement message before any code
 
 ## Trigger table
 
-Pre-invocation filter: if the task is a small obvious edit, close the hub and do the edit — the hub is for work that needs rigor.
+Pre-invocation filter (runs before the intake gate above): if the task is a small obvious edit — one file, mechanical change, self-evident done-check — close the hub and do the edit; or if it is a question answerable from the codebase without a work loop (a locate, a summary, a what-does-X-do), close the hub and answer it directly. Intake verdict NEVER-ASKED (the gate never runs on a filtered task). The hub is for work that needs rigor.
 
-Match the prompt against these rows, top to bottom. First match wins.
+Match the prompt against these rows, top to bottom. First match wins. The "None of the above" row is the fallthrough — it never preempts the skill-symptom check below; the check runs before the catch-all.
 
 | Prompt looks like | Route to |
 |---|---|
@@ -71,7 +71,7 @@ Match the prompt against these rows, top to bottom. First match wins.
 | Substantial build or multi-part implementation: design, build, verify, adversarially review — via subagent workers | `runbooks/deep-work.md` — delegated subagent execution |
 | Writing or fixing an agent skill: draft → verify → pass or kill | `runbooks/skill-authoring-run.md` — skill drafting and verification |
 | Researching a topic to update the standards library: research → distill → branch → PR | `runbooks/biweekly-standards-research.md` — standards research |
-| A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement |
+| A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement (verifies claims; achievement-shaped asks — "make X faster" — go through figure-it-out with a measurement step, by design) |
 | Something broken with an unknown cause: repro first, isolate, fix smallest | `runbooks/debugging.md` — systematic debugging |
 | A final review before merge that must end in a verdict: verify the real state, adjudicate holds, deliver a verdict — not a read-through for lurking bugs | `runbooks/final-gate.md` — pre-merge final review |
 | Mining senior-engineer taste from real sources | External: the `taste-mining` skill — lives in the operator's skills workspace, outside `mstack/`. The hub routes there and stops |
