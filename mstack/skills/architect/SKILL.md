@@ -52,7 +52,11 @@ costs more than a wrong line.
    Judge each candidate from the next contributor's chair: an agent that
    opens a few files, copies the nearest example, and ships the first
    thing that compiles. The winning shape is the one where that workflow
-   still lands in the right place.
+   still lands in the right place. For policy-level designs the screen
+   adapts: split-ownership and two-ways-to-do-one-task carry the weight
+   while the code-shape tripwires go quiet; with more than two
+   candidates, screen each on one uniform shape — mechanism,
+   trade-offs, when-wrong — so the comparison stays honest.
 3. **Lock the synthesis.** Pick the candidate that buries the most
    complexity behind the narrowest public surface. Write the synthesis
    decision down — chosen, rejected, why — and say every assumption out

@@ -13,6 +13,11 @@ URL inline. Claims that could not be verified in official docs are marked
 `unverified` and the cell degrades to the documented fallback. Section 6
 lists everything that could not be verified.
 
+When the runner or toolchain itself is broken (missing toolchain, blocked
+install), improvise the nearest equivalent and log it as a harness fault —
+never as a failed attempt. This binds corpus-wide: every runbook and skill
+inherits it from here; debugging.md's ledger row is the per-run record.
+
 ## 1. Verb translations
 
 Each cell names the native primitive. `Muse agents` claims are first-hand

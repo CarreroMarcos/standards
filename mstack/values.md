@@ -40,6 +40,12 @@ Unit: interleaved runs
 Why: Minimum runs for a trustworthy measurement (median + range). Fewer runs cannot separate signal from run-to-run noise.
 Used-in: measurement-eval.md, skills/validate/SKILL.md
 
+### router.simulation-count
+Value: 5
+Unit: fresh router simulations
+Why: Router prose fails ambiguously — identical hub text has produced divergent routes across blind routers, so one clean pass proves little. Five fresh routers make a divergent reading likely to surface while keeping the gate cheap enough to run on every hub or Layer-2 edit; the same signal-from-noise floor as eval.run-floor, applied to routing instead of measurement.
+Used-in: runbooks/skill-authoring-run.md (simulations run against references/routing-fixtures.md)
+
 ### correct-mining.class-threshold
 Value: 2
 Unit: occurrences

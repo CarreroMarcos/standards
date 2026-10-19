@@ -16,6 +16,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim 
 - `values.md` for the intake-gate question-round cap.
 - `runbooks/figure-it-out.md` step 9 for the corpus-wide destructive-scope definition — every "destructive-scope confirmation" in the corpus invokes that meaning.
 - `mstack/skills/mstack-help/SKILL.md` (Layer 2 symptom table) — the skill-symptom check's match surface; an unmet Require parks the run with this file named.
+- `references/routing-fixtures.md` — the router's pinned test data (prompts + expected routes + intake verdicts); the router clause in `runbooks/skill-authoring-run.md` re-verifies hub edits against it.
 
 ## State
 
@@ -59,7 +60,7 @@ Restatement-first: for noisy input, send one restatement message before any code
 
 ## Trigger table
 
-Pre-invocation filter (runs before the intake gate above): if the task is a small obvious edit — one file, mechanical change, self-evident done-check — close the hub and do the edit; or if it is a question answerable from the codebase without a work loop (a locate, a summary, a what-does-X-do), close the hub and answer it directly. Intake verdict NEVER-ASKED (the gate never runs on a filtered task). The hub is for work that needs rigor.
+Pre-invocation filter (runs before the intake gate above): if the task is a small obvious edit — one file, mechanical change, self-evident done-check — close the hub and do the edit; or if it is a question answerable from the codebase without a work loop (a locate, a summary, a what-does-X-do), close the hub and answer it directly. A direct answer suffices when it requires no code execution and no multi-file synthesis — past that boundary is a work loop, and the work loop routes. Intake verdict NEVER-ASKED (the gate never runs on a filtered task). The hub is for work that needs rigor.
 
 Match the prompt against these rows, top to bottom. First match wins. The "None of the above" row is the fallthrough — it never preempts the skill-symptom check below; the check runs before the catch-all.
 

@@ -23,7 +23,7 @@ expect_no_output() { # expect_no_output <description> <grep-pattern> <command...
   else pass=$((pass + 1)); fi
 }
 
-RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"; MX="$dir/check-matrix.sh"
+RV="$dir/check-refs.sh"; VV="$dir/check-values.sh"; FF="$dir/check-frontmatter.sh"; MX="$dir/check-matrix.sh"; CF="$dir/check-fixtures.sh"
 FX="$dir/fixtures"; VM="$dir/../values.md"
 
 # rg-less stub PATH: symlink everything except rg, so the scripts take
@@ -102,7 +102,7 @@ expect_output "check-values cofire num" "undeclared magic number '90s'" bash "$V
 expect 1 "check-values tbd-ref"         bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 expect_output "check-values tbd-ref named" "unknown values.md reference 'missing.entry'" bash "$VV" "$VM" "$FX/check-values/tbd-ref.md"
 # Self-hosting: the lints must pass on the shipped docs themselves.
-expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "values lint clean on docs" bash "$VV" "$VM" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md "$dir"/../references/routing-fixtures.md
 expect 0 "values lint clean on runbooks" bash "$VV" "$VM" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "values lint clean on skills" bash "$VV" "$VM" "$dir"/../skills/*/SKILL.md
 expect 0 "frontmatter clean fixture" bash "$FF" "$FX/check-frontmatter/clean.md"
@@ -118,10 +118,10 @@ expect 0 "frontmatter empty file" bash "$FF" "$FX/check-frontmatter/empty.md"
 expect 1 "frontmatter mixed files exit 1" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
 expect_output "frontmatter mixed reports bad file" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
 expect_no_output "frontmatter mixed silent on clean file" "clean.md" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
-expect 0 "frontmatter clean on docs" bash "$FF" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "frontmatter clean on docs" bash "$FF" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md "$dir"/../references/routing-fixtures.md
 expect 0 "frontmatter clean on runbooks" bash "$FF" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "frontmatter clean on skills" bash "$FF" "$dir"/../skills/*/SKILL.md
-expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md
+expect 0 "refs lint clean on docs" bash "$RV" "$dir"/../hub.md "$dir"/../values.md "$dir"/../README.md "$dir"/../HARNESS.md "$dir"/../principles-distilled.md "$dir"/../references/eval-protocol.md "$dir"/../references/routing-fixtures.md
 expect 0 "refs lint clean on runbooks" bash "$RV" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
 expect 0 "refs lint clean on skills" bash "$RV" "$dir"/../skills/*/SKILL.md
 expect 0 "refs lint no-rg clean on runbooks" norv bash "$RV" "$dir"/../runbooks/*.md "$dir"/../runbooks/examples/*.md
@@ -133,6 +133,17 @@ expect_output "check-values no-rg tbd-ref named" "unknown values.md reference 'm
 expect 1 "check-refs mixed targets" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect_output "check-refs mixed targets report" "violation.md:3:" bash "$RV" "$FX/does-not-exist.md" "$FX/check-refs/clean.md" "$FX/check-refs/violation.md"
 expect 1 "check-values no values file"  bash "$VV" "$FX/does-not-exist.md" "$FX/check-values/clean.md"
+expect 0 "check-fixtures clean fixture" bash "$CF" "$FX/check-fixtures/clean.md"
+expect 1 "check-fixtures violation fixture exit 1" bash "$CF" "$FX/check-fixtures/clean.md" "$FX/check-fixtures/violation.md"
+expect_output "check-fixtures bad prefix reported" "lacks P/F prefix" bash "$CF" "$FX/check-fixtures/violation.md"
+expect_output "check-fixtures bad verdict reported" "not in {CLEAN, PROCEED, CONFIRM, BLOCKING, NEVER-ASKED}" bash "$CF" "$FX/check-fixtures/violation.md"
+expect_output "check-fixtures duplicate reported" "duplicate row id 'P1'" bash "$CF" "$FX/check-fixtures/violation.md"
+# Self-hosting: the shipped fixture must be structurally sound, and the
+# router docs must actually reference it (a fixture nobody cites is a wish).
+expect 0 "check-fixtures clean on routing-fixtures" bash "$CF" "$dir/../references/routing-fixtures.md"
+expect 0 "fixture referenced in hub" grep -q "routing-fixtures" "$dir/../hub.md"
+expect 0 "fixture referenced in skill-authoring-run" grep -q "routing-fixtures" "$dir/../runbooks/skill-authoring-run.md"
+expect 0 "fixture referenced in values" grep -q "routing-fixtures" "$dir/../values.md"
 expect_output "check-values zero args usage" "usage:" bash "$VV"
 expect 1 "check-refs tmp-mixed flagged" bash "$RV" "$FX/check-refs/tmp-mixed.md"
 expect 0 "decades allowlisted" bash "$VV" "$FX/check-values/values-allow-1970s.md" "$FX/check-values/decades.md"
