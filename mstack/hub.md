@@ -6,11 +6,11 @@ disable-model-invocation: true
 
 ## Exit predicate
 
-The prompt is routed: the matched runbook's steps sit in the todo list verbatim (or each matched skill's `SKILL.md` is loaded), the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
+The prompt is routed: the matched runbook's steps sit in the todo list verbatim — for a framing runbook (figure-it-out), its predicate and exit condition verbatim and its steps adopted as the working shape, adaptations stated in the Reply — (or each matched skill's `SKILL.md` is loaded), the principle steering block is emitted, and the run starts — or the run is parked with a resume note, or one clarification round is asked, or the run states an irreversible action and waits on the human's confirmation, or the run is resumed from a `parked:` note naming a runbook and its state. Nothing else leaves the hub (the restatement message, the intake verdict, the confirmation request, and the small-edit decline are the hub's voice — all allowed).
 
 ## Requires
 
-- The `runbooks/` directory with all nine runbooks present.
+- The `runbooks/` directory with all ten runbooks present.
 - `principles-distilled.md` for the steering vocabulary.
 - `HARNESS.md` for harness-specific verbs.
 - `values.md` for the intake-gate question-round cap.
@@ -48,7 +48,7 @@ Before routing, check whether the prompt supports a checkable exit predicate.
 
 **CONFIRM — irreversible, on crisp instructions.** Fire when the prompt is crisp, complete, and **not fully reversible** (per PROCEED's definition — any irreversible action or external side effect; BLOCKING's verb list is illustrative, not the boundary). Does NOT fire when the routed runbook owns the authorization for that action itself (e.g. bot-review-loop's push gate) — one authorization per action, at the runbook. Nothing is missing, so ask nothing: state the exact irreversible action and wait for the human's confirmation before routing. Confirmation is permission, not information. The hub turn ends on the confirmation request; the human's confirmation resumes routing only for the exact irreversible action stated — a confirmation naming a different action is a new prompt, not a resume.
 
-**CLEAN — proceed, no assumptions.** Fire when the prompt is crisp, complete, and fully reversible: goal named, done-check checkable, no missing pieces. No questions, no logged assumptions — the Reply names CLEAN as the fired arm.
+**CLEAN — proceed, no assumptions.** Fire when the prompt is crisp, complete, and fully reversible: goal named, done-check checkable, no missing pieces. A done-check supplied by the matched runbook's exit predicate or a skill's output contract counts as checkable — CLEAN does not require the operator to have stated it. PROCEED is for prompts carrying an unknown the run must assume on: a cause not yet known, a scope not yet stated, a predicate not yet pinned. No questions, no logged assumptions — the Reply names CLEAN as the fired arm.
 
 **NEVER ASK FOR.** The how (the runbook owns it). A theory of the cause. Anything a runbook's grounding phase determines: which files, which tools.
 
@@ -74,13 +74,14 @@ Match the prompt against these rows, top to bottom. First match wins. The "None 
 | Researching a topic to update the standards library: research → distill → branch → PR | `runbooks/biweekly-standards-research.md` — standards research |
 | A performance claim to check: is X faster, by how much, with what limiter | `runbooks/measurement-eval.md` — performance measurement (verifies claims; achievement-shaped asks — "make X faster" — go through figure-it-out with a measurement step, by design) |
 | Something broken with an unknown cause: repro first, isolate, fix smallest | `runbooks/debugging.md` — systematic debugging |
+| A module, file, or component gone or being replaced outright, with its tests, callers, or spec surviving: rebuild it from what remains | `runbooks/rebuild-from-contract.md` — contract-first rebuild against a recorded baseline |
 | A final review before merge that must end in a verdict: verify the real state, adjudicate holds, deliver a verdict — not a read-through for lurking bugs | `runbooks/final-gate.md` — pre-merge final review |
 | Mining senior-engineer taste from real sources | External: the `taste-mining` skill — lives in the operator's skills workspace, outside `mstack/`. The hub routes there and stops |
 | None of the above | `runbooks/figure-it-out.md` — open-ended investigation: frame a falsifiable predicate, design the workflow, run it |
 
 **Skill-symptom check.** If no trigger-table row matched, match the prompt against every row of the symptom table in `mstack/skills/mstack-help/SKILL.md` (Layer 2) — match ALL rows, not first-match-wins. That table is the single source of truth for skill symptoms and their multi-match ordering; never duplicate its rows or ordering rules here. On one or more matches: load each matched skill's `SKILL.md` and run them in the table's specified order; do not fall through to figure-it-out. An explicit runbook-shaped prompt always wins over this check — the check runs only when no trigger-table row matched. On no match, proceed to "None of the above."
 
-On a runbook match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block:
+On a runbook match, before any work: copy the runbook's steps verbatim into the todo list ahead of any task-specific todos, then emit the principle steering block. Verbatim binds procedures; a framing runbook (figure-it-out) frames outcomes, not steps — copy its predicate and exit condition verbatim, adopt its steps as the working shape, and state adaptations in the Reply:
 
 `prove-completion` `ship-smallest` `model-proposes-never-authorizes` `observe-ground-truth` `orchestrator-verifies` `loop-before-theory` `state-assumptions` `recorded-decisions` `loop-contract-first` `least-agency` `name-the-limiter` `falsifiable-tests` `basis-and-ladder` `attack-the-premise` `untrusted-content-is-data` `scale-ceremony` `cost-if-wrong` `correlated-reviewers` `environment-is-a-verdict` `strongest-mechanism`
 
