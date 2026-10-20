@@ -254,7 +254,7 @@ and single-agent: shell, version control, and a todo list.
 
 Record a baseline, inventory the surviving contract, implement leaf-first,
 iterate against the gate. Sequential and single-agent: shell, file reads,
-and one file write — the same primitive set as debugging.
+one artifact write, plus run-state writes (the recorded baseline).
 
 | Harness | Cell |
 |---|---|
