@@ -27,7 +27,7 @@ failing simulation pass; that is tuning the test to the code.
   nothing in the hub treats a runbook's exit predicate differently.
   P12/P17 corrected to CLEAN, F5's route named as the `how` skill (5/5
   sims), and the hub's CLEAN arm now states the rule. The confirmation
-  round against the amended text then returned P7 CLEAN 4/5 — the same
+  round against the amended text then returned P7 CLEAN 5/5 — the same
   anomaly class (a runbook that owns its whole loop; findings are read,
   not assumed on) — so P7 is corrected to CLEAN on the same grounds. These are
   deliberate semantics corrections, recorded here — not tuning to a
