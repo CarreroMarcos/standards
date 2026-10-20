@@ -127,7 +127,7 @@ how on each harness.
 
 ## 4. Capability matrix
 
-Rows: the nine runbooks. Columns: the five harnesses.
+Rows: the ten runbooks. Columns: the five harnesses.
 `full` = every step maps to a documented first-class primitive.
 `degraded` = all steps achievable, at least one via a fallback named in
 the cell. `unsupported` = a step cannot be done; the cell names the
@@ -250,9 +250,23 @@ and single-agent: shell, version control, and a todo list.
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
 
+### rebuild-from-contract
+
+Record a baseline, inventory the surviving contract, implement leaf-first,
+iterate against the gate. Sequential and single-agent: shell, file reads,
+one artifact write, plus run-state writes (the recorded baseline).
+
+| Harness | Cell |
+|---|---|
+| Muse agents | full |
+| Claude Code | full |
+| OpenCode | degraded — todo list falls back to plan files in the repo |
+| Cursor | degraded — todo list falls back to plan files in the repo |
+| Codex | full |
+
 ### Matrix notes
 
-- 45 cells filled: 27 full, 18 degraded, 0 unsupported. No cell is
+- 50 cells filled: 30 full, 20 degraded, 0 unsupported. No cell is
   unsupported because every runbook degrades to shell + files +
   heartbeat, which all five harnesses provide. If a future harness lacks
   a shell, its column gets real `unsupported` cells with "run this
