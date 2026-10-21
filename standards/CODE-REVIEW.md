@@ -198,6 +198,11 @@ A passing opposition review answers all four. A general statement that none appl
 
 - Bad: Minor — "the spec doesn't cover this input." Good: Important — "a user hitting this input gets silent data loss; the spec's silence is the gap, not the grade."
 
+**Score lock-ordering findings by reachability.** A lock-ordering or deadlock defect blocks review only when bounded input can stop shared progress; otherwise file it as a concurrency defect to fix, not an availability finding.
+- Why: an unreachable deadlock is a bug, not an outage. Grading it as availability noise teaches authors to discount the next real one.
+- Bad: High — "locks acquired in inconsistent order" with no path from input to the ordering. Good: "inconsistent lock order between A and B; no bounded input reaches both — file as a defect, not a blocker." High only when a bounded request sequence can wedge shared progress; externally reachable operations acquiring locks in inconsistent order are always worth the finding — the question is only whether it blocks the review.
+- Boundary: holding locks across callbacks or blocking I/O is worth flagging either way — the grade is what differs. (cloudflare/security-audit-skill `MEMORY-SAFETY-AND-BINARY.md:47-48`)
+
 **Correlated reviewers are not independent evidence.** "Independent reviewers flag the same issue" counts only when the reviewers are actually independent — different models, different prompts, different angles. Two instances of the same reviewer agreeing is one signal wearing a trench coat; discount it accordingly and say so.
 
 - Why: parallel agents share a model, training, and blind spots — their agreement measures the blind spot's consistency, not the finding's truth.
