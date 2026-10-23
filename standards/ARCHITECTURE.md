@@ -15,7 +15,7 @@ last_reviewed: 2026-10-08
 - **1. Start With Critical Flows and Failure Modes** — reason from what must survive failure
 - **2. Minimize Blast Radius** — contain failure domains
 - **3. Simplest Sufficient Isolation** — no heavier isolation than the failure warrants
-- **4. State Has Semantics** — ownership and consistency boundaries
+- **4. State Has Semantics** — ownership, consistency, and race-discipline boundaries
 - **5. Data-Access Discipline** — how data is read and written
 - **6. Dependency Contracts First** — timeouts, retry, and dependency interaction
 - **7. Worker and Queue Discipline** — background work rules
@@ -99,6 +99,30 @@ Choose a database, queue, cache, event stream, object store, or workflow engine 
 Prefer one authoritative owner for a fact. Replicas, caches, indexes, read models, recommendations, and derived views must be distinguishable from the authoritative value when the difference affects a decision.
 
 **The common failure:** selecting a datastore because it is already available, then discovering during implementation that the system needed ordering, deduplication, atomicity, stronger consistency, or a single writer that the chosen design does not naturally provide.
+
+### 4.1. Race discipline for shared state
+
+Concurrency is a named semantic above; these are the rules that make it concrete. Each one assumes two actors can interleave — where only one writer exists by construction, the machinery is overhead, and the proof is the exemption.
+
+**Collapse check-then-act into one atomic decision.** A permission, balance, count, or existence check followed by a separate act is a race: both actors can pass the check before either acts. Make the decision where the write happens — a conditional write, a unique constraint, a row lock, a compare-and-swap — never read-decide-write in three steps.
+- Why: the check's result is only true at check time; the act needs it true at act time, and nothing in between holds the world still.
+- Bad: `if balance >= amount: balance -= amount` in two statements — two concurrent requests both pass the check. Good: `UPDATE accounts SET balance = balance - :amount WHERE id = :id AND balance >= :amount` — the check and the act are one statement, and the affected-row count says who won.
+- Boundary: a single-writer path (one process owns the key, one thread drains the queue) needs no atomicity primitive — but the exemption is proven, not assumed: name the single writer. (cloudflare/security-audit-skill `ATTACK-CLASSES.md:67`)
+
+**Act on the handle you verified, not a re-lookup by name.** Between check and use, never re-identify the resource by path, name, or key: verify identity on the handle itself (type, identity, bounds) and act through that handle. When identity can change between verification and use, re-verify at use and reject the mismatch.
+- Why: a name can be rebound between the check and the use; the handle can't. Re-looking-up re-opens the race the check was supposed to close.
+- Bad: `if os.path.exists(path): open(path)` — a symlink swap between the two calls redirects the open. Good: open with `O_NOFOLLOW | O_CREAT | O_EXCL`, then verify with `fstat` — regular file, link count exactly one, size within bounds — before reading from that descriptor; reject if type, identity, or size changed since the check.
+- Boundary: where no untrusted writer can reach the namespace between check and use, a single lookup is fine — the handle discipline earns its cost at trust boundaries. (cloudflare/security-audit-skill `SKILL.md:71-77`)
+
+**A lock or ownership rule is only as good as its worst path.** For shared state, enumerate every writer, then confirm the fast, error, shutdown, and compatibility paths all obey the same lock and ownership discipline. A single unlocked path — the background cleanup task, the shutdown hook, the lazily-initialized global — is the race.
+- Why: races hide in the paths nobody reviews. The happy path takes the lock; the error path mutates without it.
+- Bad: the write path holds the lock, but the teardown routine frees the object without it. Good: per shared structure, a writer × path matrix (fast / error / shutdown / compat) confirming one lock discipline — the lazily-initialized global treated as a concurrent writer until proven single-threaded.
+- Boundary: a single-threaded runtime exempts itself by construction — but what you verify is the construction, not the assumption. (cloudflare/security-audit-skill `MEMORY-SAFETY-AND-BINARY.md:41-42`)
+
+**Every decision used later carries a freshness contract.** An authorization, validation, or lifecycle decision made at t0 and acted on at t1 is stale unless re-verified at use — or the staleness is declared acceptable, with a stated bound. Revocation, ACL change, consent withdrawal, or secret rotation that doesn't invalidate sessions, caches, jobs, and materialized copies is a decision honored nowhere.
+- Why: decisions age. The window between check and use is a race against every event that could invalidate the check.
+- Bad: a token validated at login authorizes operations for a week with no recheck after a role downgrade. Good: short-lived decisions re-verified at each consequential use; long-lived ones carry an explicit TTL and revalidation points, and revocation propagates to sessions, caches, and queued work.
+- Boundary: cheap local decisions (a loop bound read once) aren't freshness contracts — the rule fires where the decision gates a consequential action. (cloudflare/security-audit-skill `ATTACK-CLASSES.md:89`, `DATA-ISOLATION-AND-LIFECYCLE.md:63-64`)
 
 ## 5. Data-Access Discipline
 
