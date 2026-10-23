@@ -19,7 +19,7 @@ last_reviewed: 2026-10-23
 - **5. One thought per sentence, whole sentences** — 20/25 tripwires, no over-compression
 - **6. PR bodies are under-a-minute briefings** — brief, then link the evidence
 - **7. Rules have stable numbers** — a retired rule leaves a gap
-- **8. Durable prose has a rot budget** — line numbers, generated docs, live facts
+- **8. Durable prose has a rot budget** — line numbers, generated docs, live facts, brief-vs-code authority
 
 ## 1. Pick the mode before writing
 
@@ -99,7 +99,7 @@ Boundary: a complex PR earns more than a minute of reading, but never as pasted 
 *Why: a line number is a pointer into a moving target. The next edit invalidates it and leaves a lie the reader trusts because prose looks authoritative.*
 *Bad:* "the retry logic at `worker.py:412` handles the timeout" — after the next edit, 412 is a blank line.
 *Good:* "the retry logic in `retry_with_backoff` handles the timeout."
-Boundary: line numbers are fine in ephemeral text (a chat message, a review-thread reply) where staleness costs nothing — the rule binds prose that outlives the edit.
+Boundary: line numbers are fine in ephemeral text (a chat message, a review-thread reply) where staleness costs nothing — the rule binds prose that outlives the edit. Provenance citations are the other exemption: an attribution like `(langchain-ai/langchain AGENTS.md:156)` points into a source pinned at the commit the mine recorded — it is evidence about where a rule came from, not navigation into a living file.
 
 **Every section earns its lines.** A "Test plan" section that says "CI passed" in every PR is a ritual, not information. Include a section only when its content is non-obvious, risky, or otherwise notable — mention tests then; otherwise the linked checks carry the verdict. (langchain-ai/langchain `AGENTS.md:160`)
 *Why: ritual sections train reviewers to skim, and skimming trains them to miss the one section that actually mattered.*
@@ -143,8 +143,8 @@ Boundary: when the generator is gone and the page is all that remains, say so in
 *Good:* open the provider's docs, quote the current endpoint, link the page.
 Boundary: the bar scales with reach — an ephemeral message earns a glance; a reference doc or an example users copy earns the full check.
 
-**When the source code and the brief disagree, the source code wins.** Treat source code and tests as authoritative. A generated brief's unknowns and review items are verification gaps to check, not requirements to implement. (langchain-ai/langchain `AGENTS.md:385`)
+**When the source code and the brief disagree, the source code wins.** Treat source code and tests as authoritative. A generated brief's unknowns and open items are verification gaps to check, not requirements to implement. (langchain-ai/langchain `AGENTS.md:385`)
 *Why: a brief describes a plan; the code describes what runs. Building to the brief after the code moved builds the wrong thing.*
 *Bad:* implementing the brief's "verify rate limiting" TODO after the limiter was removed in the previous PR.
 *Good:* "The brief lists rate-limit verification as an unknown; the limiter was removed in #57 — flagged, not implemented."
-Boundary: the code is authoritative about what exists, not what was intended. An ADR's intended-but-unbuilt requirement still needs building — read the code to see whether it is.
+Boundary: the code is authoritative about what exists, not what was intended. An ADR's intended-but-unbuilt requirement still needs building — read the code to see whether it is. And items a human reviewer raises in a review thread are requirements to answer, not gaps to wave at — this rule governs briefs, not reviewers.
