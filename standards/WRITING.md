@@ -3,7 +3,7 @@ title: Writing
 version: "1.0"
 scope: "Prose the agent writes: docs, PR bodies, reports, comments"
 consult_when: "When writing anything a human reads — documentation, PR descriptions, reports, commit messages — and the draft feels like it could have come from any project."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-23
 ---
 
 # Writing
@@ -19,6 +19,7 @@ last_reviewed: 2026-10-08
 - **5. One thought per sentence, whole sentences** — 20/25 tripwires, no over-compression
 - **6. PR bodies are under-a-minute briefings** — brief, then link the evidence
 - **7. Rules have stable numbers** — a retired rule leaves a gap
+- **8. Durable prose has a rot budget** — line numbers, generated docs, live facts
 
 ## 1. Pick the mode before writing
 
@@ -94,6 +95,30 @@ Cover three things: what changes, why, how to verify. The sycophancy and closers
 *Good:* three lines (what / why / verify) plus a link to the full logs.
 Boundary: a complex PR earns more than a minute of reading, but never as pasted logs — the body briefs, links carry the evidence. Conversational response shape is AGENTIC-DESIGN.md §10; this section covers prose that persists.
 
+**Never cite line numbers in durable prose.** They go stale as soon as the file changes. Reference the symbol, class, or subsystem by name instead of the location; include a file path only when the prose is about file layout, and even then prefer a link over a baked-in number. (langchain-ai/langchain `AGENTS.md:156-157`)
+*Why: a line number is a pointer into a moving target. The next edit invalidates it and leaves a lie the reader trusts because prose looks authoritative.*
+*Bad:* "the retry logic at `worker.py:412` handles the timeout" — after the next edit, 412 is a blank line.
+*Good:* "the retry logic in `retry_with_backoff` handles the timeout."
+Boundary: line numbers are fine in ephemeral text (a chat message, a review-thread reply) where staleness costs nothing — the rule binds prose that outlives the edit.
+
+**Every section earns its lines.** A "Test plan" section that says "CI passed" in every PR is a ritual, not information. Include a section only when its content is non-obvious, risky, or otherwise notable — mention tests then; otherwise the linked checks carry the verdict. (langchain-ai/langchain `AGENTS.md:160`)
+*Why: ritual sections train reviewers to skim, and skimming trains them to miss the one section that actually mattered.*
+*Bad:* "## Testing — Ran the full suite. All green."
+*Good:* no Testing section at all; or one that says the flaky retry test failed twice before passing, with the run linked.
+Boundary: a project whose CI never posts check results earns the section; a repo whose PR template mandates it follows the template.
+
+**Write the why as a user story, for an outsider.** Who benefits, what problem they had, and how this solves it — written for a reader who has never seen this subsystem. Avoid insider shorthand; say what the thing is, not what the team calls it. (langchain-ai/langchain `AGENTS.md:154-155`)
+*Why: the reviewer in six months is that outsider. A user story reconstructs the decision; a bare summary restates the diff the diff already shows.*
+*Bad:* "Refactored the foobarifier to be less janky for the queue folks."
+*Good:* "Worker teams hit duplicate reviews when the timeout fired mid-run; the new idempotency key makes a retried review collapse onto the original record."
+Boundary: the user story is a shape, not a length — three tight sentences beat three loose paragraphs.
+
+**Point the reviewer at the hard parts.** Call out the areas of the change that require careful review — the one or two places where the review actually matters: the locking order, the migration, the generated-code diff. (langchain-ai/langchain `AGENTS.md:161`)
+*Why: reviewers have finite attention. An unmarked diff spreads it evenly across the safe and the risky alike.*
+*Bad:* 400 changed lines with "PTAL."
+*Good:* "Review carefully: the token-refresh ordering — a reorder there deadlocks the callback path."
+Boundary: flag where the risk concentrates, not where you feel insecure — "not sure about any of this" is a review request, not a pointer.
+
 ## 7. Rules have stable numbers
 
 **A retired rule leaves a gap. Never renumber — in files that use numbered rules.**
@@ -102,4 +127,24 @@ In a file with a numbered-rule catalog, rule numbers are stable IDs other rules 
 *Why: renumbering silently breaks every citation. A gap is honest — it says something used to live here and was deliberately removed.*
 *Bad:* deleting rule 12 and renumbering 13 to 12, orphaning every "see rule 13" pointer.
 *Good:* rule 12 is removed and its entry reads "[retired]" until the next edit cycle; then the number simply stays empty.
-Boundary: this file's own sections are prose sections (§§1–7), not a numbered-rule catalog — the rule binds when this file or any file grows one. New files start at 1 with no gaps — gaps appear only through retirement, never through authoring.
+Boundary: this file's own sections are prose sections (§§1–8), not a numbered-rule catalog — the rule binds when this file or any file grows one. New files start at 1 with no gaps — gaps appear only through retirement, never through authoring.
+
+## 8. Durable prose has a rot budget
+
+**Never hand-edit a generated document.** Fix the source it was generated from and regenerate; a generated page is a copy, not the source. (langchain-ai/langchain `AGENTS.md:388`)
+*Why: a hand-edited generated page is guaranteed drift. The next regeneration either overwrites the edit or never comes, and then the edit is a lie nobody owns.*
+*Bad:* patching the rendered API docs for a renamed parameter instead of fixing the docstring.
+*Good:* fix the docstring, rebuild.
+Boundary: when the generator is gone and the page is all that remains, say so in the commit — then it is the source, not the copy.
+
+**Check live facts against their authority before writing them down.** Model IDs, versions, endpoints, pricing, API shapes — anything that changes without telling you — get verified at write time against the authoritative source, never reconstructed from memory. (langchain-ai/langchain `AGENTS.md:265`)
+*Why: a memorized fact is a rumor with confidence. Writing it down locks the rumor in where the next reader trusts it as documentation.*
+*Bad:* "as of v3 the endpoint is `/v3/reviews`" written from memory.
+*Good:* open the provider's docs, quote the current endpoint, link the page.
+Boundary: the bar scales with reach — an ephemeral message earns a glance; a reference doc or an example users copy earns the full check.
+
+**When the source code and the brief disagree, the source code wins.** Treat source code and tests as authoritative. A generated brief's unknowns and review items are verification gaps to check, not requirements to implement. (langchain-ai/langchain `AGENTS.md:385`)
+*Why: a brief describes a plan; the code describes what runs. Building to the brief after the code moved builds the wrong thing.*
+*Bad:* implementing the brief's "verify rate limiting" TODO after the limiter was removed in the previous PR.
+*Good:* "The brief lists rate-limit verification as an unknown; the limiter was removed in #57 — flagged, not implemented."
+Boundary: the code is authoritative about what exists, not what was intended. An ADR's intended-but-unbuilt requirement still needs building — read the code to see whether it is.
