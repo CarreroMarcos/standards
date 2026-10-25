@@ -181,6 +181,6 @@ Long endpoint catalogs, full schema dumps, repeated auth snippets, tutorials, ba
 - Helpers own their mechanics — no duplicated protocol in prose?
 - Always-load flag (`includeInPrompt` in frontmatter `metadata`, or your runtime's equivalent) unset unless the skill must load into every conversation?
 - `wc -w SKILL.md` within budget (≤ 500)?
-- Wording: hedge grep on the draft's rule sentences — `should|generally|consider|try to|where possible|unless` in a rule sentence is a bug (quoted examples excluded)?
+- Wording: hedge grep on the draft's rule sentences — `should|generally|consider|try to|where possible|unless` in a rule sentence is a bug. Procedure: skip fenced blocks and quoted terms; grep bold leads and imperative line-starts only.
 - Wording: bold-skeleton test — read only the bold text; if the argument doesn't survive, the markers are wrong?
 - Wording: close test — the last line directs action, not summary?

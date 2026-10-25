@@ -66,7 +66,7 @@ Deploy checklist (`references/authoring_guide.md`); untested edits never go to m
 
 Never force-load a reference — link it by name.
 
-Log verification tokens per skill. Verification costlier than lifetime use = overkill — drop a tier.
+Log verification tokens per skill (`references/testing_method.md`). Verification costlier than lifetime use = overkill — drop a tier.
 
 ## Target runtime
 
