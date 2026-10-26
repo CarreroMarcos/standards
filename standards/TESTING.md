@@ -1,9 +1,9 @@
 ---
 title: Testing Discipline
-version: "1.1"
+version: "1.2"
 scope: "Test creation for agents: what to measure, seam agreement, when tests are required, anti-cheating, cost placement, suppression guards, mocking design, test shape, red-first discipline, dead-test detection, suite redundancy, verification runs"
 consult_when: "When writing tests and tempted to test everything or nothing — 'do I need a test for this?', 'what should I mock?', 'is this test actually proving anything?' — or when a suite is slow, flaky, or green-but-meaningless."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-26
 ---
 
 # Testing Discipline
@@ -161,6 +161,30 @@ For scripted verification runs — the harness that launches the app and proves 
 
 **The guard and its test come out together.** When a guard is cut because its input can't occur (AGENTS.md rule 5 — not merely imaginable), the test guarding it goes in the same edit. A test for a removed guard is a test for nothing.
 *Why: guards and tests are one unit of "handling." Removing one and keeping the other leaves either dead code or a dead test.*
+
+**Refactor tests for speed; hold coverage as the invariant.** When a change is a test refactor — its diff predominantly test files, or marked as one — the win it must show is faster execution, and coverage must come out unchanged or improved. A test refactor that slows the suite, or drops coverage to buy readability, is a regression wearing cleanup's clothes.
+*Why: test refactors are where suites quietly get slower: fixtures extracted, helpers layered, setup generalized — each step defensible alone, the total a suite nobody wants to run. Speed as the stated win and coverage as the invariant give the refactor a verdict instead of a vibe.*
+*Boundary: the coverage comparison is §1's changed-lines coverage, not whole-suite coverage — moving setup between fixtures wobbles whole-suite numbers for benign reasons. And if the refactor changes what a test asserts, it is not a refactor — it is a behavior change, and it re-earns its green under §9.*
+
+```text
+❌ Test refactor extracts shared fixtures beautifully — and doubles suite
+   runtime. Merged as "cleanup."
+
+✅ Same refactor, suite faster, coverage unchanged or improved. The
+   refactor earned its diff.
+```
+
+**Record the suite's price when you touch it.** Test count and wall-clock runtime, beside §1's changed-lines coverage. A suite that grows in count or minutes while its §12 mutation-uniqueness stays flat got more expensive without getting stronger — report that at review, not the growth as progress.
+*Why: count and runtime are the suite's rent, and rent compounds silently — a suite that doubles in size while killing the same mutations is not "better tested," it is a slower feedback loop (§5) charging more for the same protection.*
+*Boundary: this is a recorded signal for review, not a threshold to gate on — a slower suite that names new unique mutations is a justified cost, and §1's ratchet rule already bans aspirational bars. The numbers come from any representative local run — or CI, when it exists; comparability within the task is what matters, not a canonical harness.*
+
+```text
+❌ "Suite grew from 400 to 620 tests" reported as progress — runtime up 3×,
+   no new unique mutation named.
+
+✅ "Suite: 620 tests, 4m10s, up from 400 / 1m20s; the new tests name 6 new
+   unique mutations — the rest were merged per §12."
+```
 
 ---
 
