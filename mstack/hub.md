@@ -20,7 +20,7 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim 
 
 ## State
 
-All runbook-created state lives under `.mstack/` in the working directory — run dirs, ledgers, logs, decision files. One root, so one gitignore entry covers it. A runbook that needs a state file puts it under `.mstack/`; the `parked:` note names its path. Run slugs under `.mstack/runs/` must be unique per concurrent run: if the slug directory already exists, suffix `-2`, `-3`, … until unique. Never share a run directory between runs.
+All runbook-created state lives under `.mstack/` in the working directory — run dirs, ledgers, logs, decision files. One root, so one gitignore entry covers it. The first write to `.mstack/` in a working directory also writes `.mstack/.gitignore` containing a single `*` line, so run state never shows up in git status and is never committed. The in-directory file is the mechanism — no edit to the repo's own `.gitignore` is needed, and the file is re-created on first write if it is ever deleted. A runbook that needs a state file puts it under `.mstack/`; the `parked:` note names its path. Run slugs under `.mstack/runs/` must be unique per concurrent run: if the slug directory already exists, suffix `-2`, `-3`, … until unique. Never share a run directory between runs.
 
 A `parked:` note is pause-safely degenerately applied: Where (the runbook or goal), Contract (the exit predicate or done-check), Next (the first action on resume); Lanes and Blocked-on stay empty until a runbook owns state. When the runbook owns a state file, the note names its path — that path is how the resumed session finds the state.
 
@@ -62,7 +62,7 @@ Restatement-first: for noisy input, send one restatement message before any code
 
 Pre-invocation filter (runs before the intake gate above): if the task is a small obvious edit — one file, mechanical change, self-evident done-check — close the hub and do the edit; or if it is a question answerable from the codebase without a work loop (a locate, a summary, a what-does-X-do), close the hub and answer it directly. A direct answer suffices when it requires no code execution and no multi-file synthesis — past that boundary is a work loop, and the work loop routes. Intake verdict NEVER-ASKED (the gate never runs on a filtered task). The hub is for work that needs rigor.
 
-Match the prompt against these rows, top to bottom. First match wins. The "None of the above" row is the fallthrough — it never preempts the skill-symptom check below; the check runs before the catch-all.
+Match the prompt against these rows, top to bottom. First match wins. A row whose target file is absent is not a match: it is an unmet Require — park the run with the prerequisite named, never fall through to the skill-symptom check. The "None of the above" row is the fallthrough — it never preempts the skill-symptom check below; the check runs before the catch-all.
 
 | Prompt looks like | Route to |
 |---|---|

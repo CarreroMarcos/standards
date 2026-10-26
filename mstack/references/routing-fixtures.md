@@ -33,6 +33,17 @@ failing simulation pass; that is tuning the test to the code.
   deliberate semantics corrections, recorded here — not tuning to a
   failing sim: the same run left P8 at PROCEED against a 3/2 CLEAN
   split, because its correctness predicate is genuinely unstated.
+- Verification corrections (2026-10-26, router-clause run for the
+  contradiction-audit + .gitignore change): five blind sims returned CLEAN
+  unanimously on P13, F4, and F5 against this file's PROCEED — the same
+  anomaly class as the 2026-10-20 corrections (skill-contract done-checks
+  already counted as CLEAN-compatible in P1/P2/P6/P14, and nothing in the hub
+  treats a read-only analysis row differently). P13/F4/F5 corrected to CLEAN,
+  F4's route named as the `how` skill (5/5 sims). Residual splits left as-is:
+  P8's route (validate-only in 3/5 sims, verdict PROCEED unanimous — the
+  pairing question is genuinely debatable, no done-claim in the prompt),
+  P15 (4/5 PROCEED) and P16 (4/5 PROCEED) — majority agrees with the fixture,
+  the minority reads are defensible judgment calls, not text bugs.
 - Method: one simulation = one fresh agent routing every row blind (the
   expected columns withheld), walking the pre-invocation filter → intake
   gate → trigger table → skill-symptom check in `hub.md`, quoting the
@@ -55,14 +66,14 @@ failing simulation pass; that is tuning the test to the code.
 | P10 | what does the ingress lambda do? | declined: direct answer (a what-does-X-do) | NEVER-ASKED |
 | P11 | make the worker faster | `runbooks/figure-it-out.md` with a measurement step | PROCEED |
 | P12 | I'm about to merge, give it a final check | `runbooks/final-gate.md` | CLEAN |
-| P13 | are there security issues in the webhook handler? | skill: `hunt-bugs` solo (security as a bug-class lens) | PROCEED |
+| P13 | are there security issues in the webhook handler? | skill: `hunt-bugs` solo (security as a bug-class lens) | CLEAN |
 | P14 | write the test first, then implement the SQS handler fix | skill: `tdd` (the skill check runs before the catch-all) | CLEAN |
 | P15 | how will we verify this works before shipping? | skill: `verification-planning` solo | PROCEED |
 | P16 | find the bug in this stack trace: KeyError: 'severity' at findings.py:42 in render | `runbooks/debugging.md` | PROCEED |
 | F1 | clean up the formatting in lambda/common/diff.py | declined: small-edit | NEVER-ASKED |
 | F2 | find the function that validates webhooks | declined: direct answer (a locate; `hunt-bugs` must not fire) | NEVER-ASKED |
 | F3 | summarize what the last commit did | declined: direct answer (a summary) | NEVER-ASKED |
-| F4 | run the retry logic and report what it does | work loop, not a direct answer (requires code execution — past the valve boundary) | PROCEED |
-| F5 | summarize how auth works across the worker and API | skill: `how` (past the valve boundary — multi-file synthesis is a work loop, not a direct answer) | PROCEED |
+| F4 | run the retry logic and report what it does | work loop via the `how` skill, not a direct answer (requires code execution — past the valve boundary) | CLEAN |
+| F5 | summarize how auth works across the worker and API | skill: `how` (past the valve boundary — multi-file synthesis is a work loop, not a direct answer) | CLEAN |
 | P17 | the fanout module got wiped, rebuild it so everything works again | `runbooks/rebuild-from-contract.md` | CLEAN |
 | F6 | the worker keeps crashing and the fanout module looks suspicious, find what's wrong | `runbooks/debugging.md` (present-but-broken is debugging; rebuild is only for gone-or-replaced) | PROCEED |
