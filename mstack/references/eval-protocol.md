@@ -11,7 +11,7 @@ runbook against a scratch target. For skills, trigger-probe execution:
 fire the skill on 3–5 trigger-shaped prompts and check it does its job —
 blinded per the `validate` skill whenever the run compares the draft against
 a baseline or incumbent.
-Then the artifact itself passes four audits:
+Then the artifact itself passes five audits:
 
 1. **Bold-skeleton read.** Read only the bold lines top to bottom. The
    skeleton reads as coherent imperatives. A skeleton that doesn't make
@@ -22,8 +22,20 @@ Then the artifact itself passes four audits:
    markdown references it by name, never inline.
 4. **`check-refs.sh` clean.** `bash scripts/check-refs.sh <file>` exits 0.
    Nothing references outside `mstack/`.
+5. **Contradiction pass.** List the artifact's normative statements: every
+   bold imperative, every must / never / always, every exit predicate and
+   done-check, every route (trigger-table row, skill-symptom mapping). Then
+   check pairs, twice: (a) inside the artifact — for any two statements on
+   the same subject, does one permit what the other forbids, define a term
+   the other uses differently, or route a prompt shape to X where the other
+   routes it to Y; (b) against the artifact's own description and the hub
+   steering it inherits — a skill whose description promises one behavior
+   cannot contain a rule permitting the opposite. A hit is a finding, not
+   a judgment call: narrow the broader statement, scope the exception
+   explicitly, or delete the weaker one — never keep both and let the
+   agent pick. Re-run the pass after the fix.
 
-All four green, or the artifact never leaves the playground.
+All five green, or the artifact never leaves the playground.
 
 ## Stage 2 — pilot
 
@@ -41,7 +53,7 @@ A runbook or skill ships when all three hold:
   run would, with nothing beyond the single intake round.
 - **(b) Zero bypassed gates.** Every hold fires as a blocking step. A gate
   skipped is a failure, not a shortcut.
-- **(c) Audit pass.** All four Stage 1 audits green on the final text.
+- **(c) Audit pass.** All five Stage 1 audits green on the final text.
 
 **If it fails, the runbook is the defect, not the agent.** Fix the
 artifact, re-run both stages. Never tune the agent's prompt to work
