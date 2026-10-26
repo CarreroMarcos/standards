@@ -24,6 +24,11 @@ Each cell names the native primitive. `Muse agents` and `Antigravity` claims are
 (observed in runtime; no public URL exists). First-hand claims carry their
 date (`first-hand YYYY-MM-DD`) and outrank doc-sourced claims for that
 runtime — docs describe the product, first-hand describes the machine.
+OpenCode claims dated 2026-10-26 were audited under the oh-my-opencode-slim
+plugin over opencode v2.1.4 — not vanilla opencode; its surface (agent
+roster, task lifecycle, wake behavior) is what the cells describe. The
+earlier 2026-10-10 findings came from a vanilla v2.0.26 audit, which is
+why some are refused below.
 
 ### Spawn a subagent
 
@@ -31,7 +36,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | `subagent.spawn` with a self-contained brief unverified (under ruling, see §6; child agent, own context, result delivered back) |
 | Claude Code | Task / Agent tool: `subagent_type`, optional `run_in_background`, optional `isolation` (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | `subagent` tool spawning one of the runtime's named agents — this runtime (v2.1.4): `council`, `designer`, `explorer`, `fixer`, `librarian`, `observer`, `oracle`; `general` refuted first-hand 2026-10-26 ("Unknown agent: general"). Optional `model`, `sessionID` (resume a previous child session), and `background` parameters; `@` mentions; child sessions with results delivered back (first-hand 2026-10-26; earlier audit 2026-10-10; official docs still name `task` + `scout`: https://opencode.ai/docs/agents/) |
+| OpenCode | `subagent` tool spawning one of the runtime's named agents — this runtime is opencode v2.1.4 under the oh-my-opencode-slim plugin, so vanilla's `general`/`explore` are not exposed here: `council`, `designer`, `explorer`, `fixer`, `librarian`, `observer`, `oracle` (`general` refuted first-hand 2026-10-26: "Unknown agent: general"). Optional `model`, `sessionID` (resume a previous child session), and `background` parameters; `@` mentions; child sessions with results delivered back (first-hand 2026-10-26; earlier audit 2026-10-10; official docs still name `task` + `scout`: https://opencode.ai/docs/agents/) |
 | Cursor | Agent's Task tool; custom subagents as markdown files in `.cursor/agents/` (also reads `.claude/agents/`, `.codex/agents/`) (https://cursor.com/docs/subagents) |
 | Codex | Prompt-driven subagent workflows ("spawn two agents", "one agent per point"); custom agents as TOML files in `.codex/agents/` (https://developers.openai.com/codex/subagents) |
 | Antigravity | `invoke_subagent` tool: `TypeName` (`self`, `research`, `image-generator`, or defined type), `Role`, `Prompt`, optional `Model` (`inherit`, `flash_lite`, `flash`, `pro`), optional `Workspace` (`inherit`, `branch`, `share`). Child runs detached with own context and delivers results back via reactive messaging; `send_message` delivers follow-ups. Dynamic agent definition via `define_subagent`; lifecycle management via `manage_subagents` (`list`, `kill`, `kill_all`) (first-hand 2026-10-26) |
