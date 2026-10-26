@@ -2,7 +2,7 @@
 
 Runbooks are harness-neutral. They name verbs (spawn a subagent, keep a
 todo list, wake on an event); this file translates each verb into the
-five supported harnesses. A runbook never hardcodes a harness primitive —
+six supported harnesses. A runbook never hardcodes a harness primitive —
 it points here.
 
 The six harnesses: **Muse agents**, **Claude Code**, **OpenCode**,
@@ -31,7 +31,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | `subagent.spawn` with a self-contained brief unverified (under ruling, see §6; child agent, own context, result delivered back) |
 | Claude Code | Task / Agent tool: `subagent_type`, optional `run_in_background`, optional `isolation` (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | `subagent` tool spawning a subagent (`general`, `explore` — no `scout`); optional `background` and `sessionID` parameters; `@` mentions; child sessions (first-hand 2026-10-10; official docs still name `task` + `scout`: https://opencode.ai/docs/agents/) |
+| OpenCode | `subagent` tool spawning one of the runtime's named agents — this runtime (v2.1.4): `council`, `designer`, `explorer`, `fixer`, `librarian`, `observer`, `oracle`; `general` refuted first-hand 2026-10-26 ("Unknown agent: general"). Optional `model`, `sessionID` (resume a previous child session), and `background` parameters; `@` mentions; child sessions with results delivered back (first-hand 2026-10-26; earlier audit 2026-10-10; official docs still name `task` + `scout`: https://opencode.ai/docs/agents/) |
 | Cursor | Agent's Task tool; custom subagents as markdown files in `.cursor/agents/` (also reads `.claude/agents/`, `.codex/agents/`) (https://cursor.com/docs/subagents) |
 | Codex | Prompt-driven subagent workflows ("spawn two agents", "one agent per point"); custom agents as TOML files in `.codex/agents/` (https://developers.openai.com/codex/subagents) |
 | Antigravity | `invoke_subagent` tool: `TypeName` (`self`, `research`, `image-generator`, or defined type), `Role`, `Prompt`, optional `Model` (`inherit`, `flash_lite`, `flash`, `pro`), optional `Workspace` (`inherit`, `branch`, `share`). Child runs detached with own context and delivers results back via reactive messaging; `send_message` delivers follow-ups. Dynamic agent definition via `define_subagent`; lifecycle management via `manage_subagents` (`list`, `kill`, `kill_all`) (first-hand 2026-10-26) |
@@ -42,7 +42,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | `muse.exec` with `background: true`; poll with `process.poll` / `process.log` unverified (under ruling, see §6) |
 | Claude Code | Task `run_in_background`; background sessions via `claude agents` (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | first-hand 2026-10-10: `subagent(background: true)` detached runs confirmed in this runtime; official docs silent. Fallback unchanged: shell backgrounding (`&`, `nohup`) |
+| OpenCode | first-hand 2026-10-26 on v2.1.4: `subagent(background: true)` detached runs confirmed; the runtime tracks the child on a background job board and wakes the parent automatically on completion, result delivered — no polling. Lifecycle tools: `task_result` (retrieve a completed child's final message — verified), `task_status` (tracked state by alias; its deep status probe errors on this build, non-fatal), `task_message` (queue a non-interrupting message), `task_cancel`, `task_revive`. Earlier: confirmed 2026-10-10. Fallback unchanged: shell backgrounding (`&`, `nohup`) |
 | Cursor | Subagent foreground vs background modes; `is_background` frontmatter on custom subagents; `/in-cloud` hands work to a cloud subagent (https://cursor.com/docs/subagents) |
 | Codex | `degraded` — no first-class detached background subagent documented. Fallbacks: `codex exec` (headless, JSONL stream) backgrounded with `&` and polled; hook handlers may set `async: true` to run in the background (https://developers.openai.com/codex/hooks) |
 | Antigravity | `run_command` with `WaitMsBeforeAsync` (auto-backgrounds to a task if command exceeds threshold) or `IsDaemon: true`; `manage_task` (`list`, `status`, `send_input`, `kill`). Completed background tasks notify and wake the agent automatically without polling (first-hand 2026-10-26) |
@@ -53,7 +53,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | Todo lists (tracked items) — unverified (under ruling, see §6) |
 | Claude Code | TodoWrite / TodoRead tools (https://docs.claude.com/en/api/agent-sdk/todo-tracking — cited via search; not confirmed on code.claude.com this session) |
-| OpenCode | refuted first-hand 2026-10-10 on this runtime (opencode v2.0.26): no todo tool exists under any name. Fallback: plan state in repo files — same as Cursor |
+| OpenCode | refuted first-hand 2026-10-10 (opencode v2.0.26), re-confirmed 2026-10-26 (v2.1.4): no todo tool exists under any name. Fallback: plan state in repo files — same as Cursor |
 | Cursor | `unverified` — no official todo tool found in the docs surveyed. Fallback: plan state in repo files (e.g. `plan.md` checklists) |
 | Codex | `todo_write` / `update_plan` built-in solver tools (https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide/) |
 | Antigravity | Artifact system (`write_file` with `ArtifactMetadata` for persistent task lists and experiment logs stored in `<appDataDir>/brain/<conversation-id>`) or plan files in repo (`plan.md`); `/plan` slash command for plan generation. No dedicated `todo_write` tool (first-hand 2026-10-26) |
@@ -64,7 +64,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | Read the `SKILL.md` and follow its instructions unverified (under ruling, see §6) |
 | Claude Code | Native `SKILL.md` + Skill tool; Agent Skills open standard; `disable-model-invocation` frontmatter (https://code.claude.com/docs/en/skills) |
-| OpenCode | `skill` tool; native `SKILL.md` support (https://opencode.ai/docs/tools/; https://opencode.ai/docs/skills/ — skills page cited via search results, not opened this session) |
+| OpenCode | `skill` tool (loads a `SKILL.md` by id; confirmed first-hand 2026-10-26 on v2.1.4); native `SKILL.md` support (docs: https://opencode.ai/docs/tools/; https://opencode.ai/docs/skills/ — skills page cited via search results, not opened this session) |
 | Cursor | Agent Skills (`SKILL.md`); the official subagents doc directs single-purpose tasks to "a skill or command instead" (https://cursor.com/docs/subagents). Skill directory path `.cursor/skills/` is third-party-reported, `unverified` in official docs |
 | Codex | `.agents/skills/<name>/SKILL.md` with `name` + `description` frontmatter (https://developers.openai.com/codex/skills) |
 | Antigravity | Native Agent Skills: directories with `SKILL.md` containing YAML frontmatter (`name`, `description`). Agent reads instructions via `read_file` on trigger, or executes helper scripts in `scripts/`. Built-in: `~/.gemini/antigravity-cli/builtin/skills/`; user: `~/.gemini/skills/` (first-hand 2026-10-26) |
@@ -75,7 +75,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | No event system — unverified (under ruling, see §6). Fallback: heartbeat polling loop (section 2) |
 | Claude Code | Hooks: `Stop`, `SubagentStop`, `Notification`, `SessionEnd` fire scripts on agent-loop events (https://code.claude.com/docs/en/hooks). No timer primitive — external conditions still need the heartbeat fallback |
-| OpenCode | Plugin hooks: `session.idle`, `session.created`, `session.deleted`, `tool.execute.before/after`, `todo.updated`, `file.watcher.updated` (https://opencode.ai/docs/plugins/). No condition-watch primitive — heartbeat fallback |
+| OpenCode | Plugin hooks: `session.idle`, `session.created`, `session.deleted`, `tool.execute.before/after`, `todo.updated`, `file.watcher.updated` (https://opencode.ai/docs/plugins/). First-hand 2026-10-26: completed background subagents/tasks wake the parent automatically, no polling; `wait_for_user` pauses for external human action until the next user message; `question` tool collects structured user input mid-run. No timer/condition primitive — heartbeat fallback stands for external conditions |
 | Cursor | Hooks in `.cursor/hooks.json`: `stop` hook may return `followup_message` to re-arm the loop, bounded by `loop_limit`; also `subagentStart` / `subagentStop`, `sessionStart` / `sessionEnd` (https://cursor.com/docs/hooks). No timer primitive — heartbeat fallback |
 | Codex | `notify` in `config.toml`: runs a program on `agent-turn-complete` with a JSON payload — fire-and-forget, observer-only, cannot block (https://developers.openai.com/codex/config-reference). Lifecycle hooks `Stop`, `SubagentStop` (trust-reviewed before first run) (https://developers.openai.com/codex/hooks). No timer primitive — heartbeat fallback |
 | Antigravity | First-class `schedule` tool: one-shot timers (`DurationSeconds`) or recurring cron (`CronExpression`), with optional early wakeup via `TimerCondition` (`'never'`, `'any'`, or matching sender ID). Background tasks and subagents wake the agent reactively without polling sleep (first-hand 2026-10-26) |
@@ -86,7 +86,7 @@ runtime — docs describe the product, first-hand describes the machine.
 |---|---|
 | Muse agents | `git worktree` via shell; subagents share the parent checkout unverified (under ruling, see §6) |
 | Claude Code | `git worktree` via Bash; the Agent tool exposes an `isolation` option (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | `degraded` — no first-class agent-facing worktree command found in official docs. Fallbacks: plain `git worktree` via Bash; plugin context exposes a worktree path (https://opencode.ai/docs/plugins/) |
+| OpenCode | First-class on this runtime: `worktree_create` / `worktree_list` / `worktree_remove` (first-hand 2026-10-26 on v2.1.4; create → list → remove cycle exercised live; worktrees live under the opencode data dir at `worktree/<hash>/<name>`). Fallback: plain `git worktree` via Bash (https://opencode.ai/docs/plugins/) |
 | Cursor | First-class: "ask for isolation and each subagent runs in its own copy of the project" — an isolated git worktree with its own branch and working directory, or a cloud environment with a dedicated VM (https://cursor.com/docs/subagents) |
 | Codex | `degraded` — no native per-subagent worktree. Fallbacks: `git worktree` via shell; `sandbox_mode` (`read-only` for verifiers) (https://developers.openai.com/codex/subagents) |
 | Antigravity | First-class: `invoke_subagent` exposes `Workspace: 'share'` (worktree-style shared repo directory without duplicating storage) and `Workspace: 'branch'` (isolated branch/clone); plain `git worktree` via `run_command` (first-hand 2026-10-26) |
@@ -109,7 +109,7 @@ Per-harness `/loop` mapping:
 |---|---|---|
 | Muse agents | none available | background exec loop unverified (under ruling, see §6) |
 | Claude Code | `Stop` / `Notification` hooks | background task + sleep |
-| OpenCode | `session.idle` / `file.watcher.updated` plugin hooks | shell loop |
+| OpenCode | `session.idle` / `file.watcher.updated` plugin hooks; background task completion wakes the agent automatically (first-hand 2026-10-26) | shell loop |
 | Cursor | `stop` hook with `followup_message` + `loop_limit` | hook script sleeps between re-arms |
 | Codex | `notify` script writes a flag file on `agent-turn-complete`; `Stop` hook | shell loop polling the flag |
 | Antigravity | `schedule` tool with `TimerCondition`, or reactive wakeup on subagent/task message | `schedule` tool with `DurationSeconds` interval from `values.md` (no shell sleep, native reactive wakeup) |
@@ -124,7 +124,7 @@ each tick is logged so a stalled loop is distinguishable from a quiet one.
 |---|---|
 | Muse agents | `git worktree` via shell unverified (under ruling, see §6). Subagents share the checkout — isolate by hand before delegating write work |
 | Claude Code | `git worktree` via Bash; Agent tool `isolation` option (https://code.claude.com/docs/en/sub-agents) |
-| OpenCode | `git worktree` via Bash (no first-class command; https://opencode.ai/docs/plugins/) |
+| OpenCode | first-class `worktree_create` / `worktree_list` / `worktree_remove` (first-hand 2026-10-26); `git worktree` via Bash (https://opencode.ai/docs/plugins/) |
 | Cursor | Per-subagent isolated git worktree with own branch (first-class); whole-agent isolation via worktree or cloud subagent VM (https://cursor.com/docs/subagents) |
 | Codex | `git worktree` via shell; `sandbox_mode: read-only` for verifier-style subagents (https://developers.openai.com/codex/subagents) |
 | Antigravity | `invoke_subagent` with `Workspace: 'share'` (shared repo worktree) or `Workspace: 'branch'` (isolated clone/branch); `git worktree` via `run_command` (first-hand 2026-10-26) |
@@ -150,7 +150,7 @@ review count flattens; fixer and verifier subagents in the loop.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | degraded — background primitive unverified; run the poll loop via shell backgrounding |
+| OpenCode | degraded — background subagents confirmed first-hand 2026-10-26; poll loop via shell heartbeat; round tracking falls back to a state file (no todo tool) |
 | Cursor | degraded — loop maps to the `stop`-hook `followup_message` pattern, but round tracking falls back to a state file (no documented todo tool) |
 | Codex | degraded — loop maps to a shell heartbeat poll; `notify` cannot re-arm a loop (fires once per turn, observer-only) |
 | Antigravity | full — fixer and verifier via invoke_subagent, poll/timer via schedule or run_command |
@@ -163,7 +163,7 @@ Detached long run with wake-on-event, heartbeat, and escalation.
 |---|---|
 | Muse agents | full |
 | Claude Code | full |
-| OpenCode | degraded — background via shell; heartbeat covers wake |
+| OpenCode | full — background subagent tasks with automatic completion wake (first-hand 2026-10-26); `session.idle` plugin hook as watcher; shell heartbeat baseline |
 | Cursor | degraded — background and cloud subagents exist, but no documented timer/cron primitive; heartbeat fallback |
 | Codex | degraded — no first-class background session; `codex exec` backgrounded with `&`, `notify` + heartbeat for wake |
 | Antigravity | full — schedule tool handles detached cron/timer with reactive wakeup; background subagents and tasks |
@@ -216,7 +216,7 @@ Verifier-never-author on an isolated checkout; blocking verdict.
 |---|---|
 | Muse agents | full — worktree via shell |
 | Claude Code | full — worktree via Bash, Agent `isolation` option |
-| OpenCode | degraded — no first-class worktree command; `git worktree` via shell |
+| OpenCode | full — first-class `worktree_create` / `worktree_remove` (first-hand 2026-10-26); verifier child session in its own worktree |
 | Cursor | full — per-subagent isolated worktree is first-class |
 | Codex | degraded — no native per-subagent worktree; `git worktree` via shell plus `read-only` sandbox for the verifier |
 | Antigravity | full — invoke_subagent(Workspace: 'share') or git worktree via run_command; verifier subagent |
@@ -281,13 +281,14 @@ one artifact write, plus run-state writes (the recorded baseline).
 
 ### Matrix notes
 
-- 60 cells filled: 40 full, 20 degraded, 0 unsupported. No cell is
+- 60 cells filled: 42 full, 18 degraded, 0 unsupported. No cell is
   unsupported because every runbook degrades to shell + files +
   heartbeat, which all six harnesses provide. If a future harness lacks
   a shell, its column gets real `unsupported` cells with "run this
   runbook on a shelled harness" as the alternative.
 - Cursor's and OpenCode's recurring degradation is one missing primitive: no documented todo tool (Cursor), no existing todo tool — refuted first-hand 2026-10-10 (OpenCode). The fallback (plan files in the repo) is cheap and inspectable, so the degradation is minor.
-- Codex's recurring degradation is background + per-subagent worktrees, falling back to the same shell idioms the runbooks already use for polling. (OpenCode background execution was previously listed here; first-hand 2026-10-10 confirms the primitive exists.)
+- Codex's recurring degradation is background + per-subagent worktrees, falling back to the same shell idioms the runbooks already use for polling. (OpenCode background execution was previously listed here; first-hand 2026-10-10 confirms the primitive exists, re-confirmed 2026-10-26 with a full task lifecycle.)
+- OpenCode re-audit 2026-10-26 (opencode v2.1.4): spawnable agents are the named specialist set (`council`, `designer`, `explorer`, `fixer`, `librarian`, `observer`, `oracle` — `general` refuted); worktree commands are first-class (`worktree_create` / `worktree_list` / `worktree_remove`, exercised live); background tasks wake the parent reactively with results delivered. final-gate and overnight-orchestrator flipped degraded → full on these findings.
 - Antigravity achieves 10/10 full cells: native `schedule` tool (cron and timer with reactive wakeup) satisfies overnight-orchestrator and bot-review-loop without shell sleep; `invoke_subagent` provides native worktree isolation (`Workspace: 'share'` / `'branch'`); and brain artifacts provide persistent state tracking.
 
 ## 5. Push abstraction
@@ -314,11 +315,15 @@ runbook work — the runbooks stay unchanged either way.
 
 From official docs, during this session's research:
 
-- **OpenCode background subagents.** Third-party sources describe an
-  experimental flag; official docs are silent. Marked degraded, not
-  filled from memory.
-- **OpenCode worktrees.** No first-class agent-facing worktree command
-  in official docs; community plugins exist. Marked degraded.
+- **OpenCode background subagents — resolved.** Confirmed first-hand
+  2026-10-10; re-verified 2026-10-26 (v2.1.4) with the full lifecycle:
+  `task_result`, `task_status`, `task_message`, `task_cancel`,
+  `task_revive`; completion wakes the parent automatically with the
+  result delivered. Official docs remain silent.
+- **OpenCode worktrees — resolved first-hand 2026-10-26 (v2.1.4).**
+  `worktree_create` / `worktree_list` / `worktree_remove` exist and were
+  exercised live (create → list → remove). Official docs still don't
+  document them; the claims are first-hand, not doc-sourced.
 - **OpenCode skills page.** `skill` tool confirmed at
   https://opencode.ai/docs/tools/; the dedicated skills page
   (https://opencode.ai/docs/skills/) was cited from search results, not
@@ -342,13 +347,14 @@ From official docs, during this session's research:
   baseline). Antigravity provides a first-class native `schedule` tool (cron +
   one-shot timer with `TimerCondition` and reactive wakeups), verified
   first-hand 2026-10-26.
-- **OpenCode tool names (corrected first-hand 2026-10-10).** The spawn
-  primitive is the `subagent` tool (`general`, `explore` — no `scout`),
-  not the documented `task` tool; no todo tool exists in this runtime
-  under any name (`todowrite`/`todoread` refuted); background subagents
-  (`subagent(background: true)`) confirmed, previously marked unverified.
-  Five matrix cells flipped `full` → `degraded` on the todo finding; the
-  §4 count and notes updated in the same change.
+- **OpenCode tool names (corrected first-hand 2026-10-10; re-audited
+  2026-10-26 on v2.1.4).** The spawn primitive is the `subagent` tool,
+  not the documented `task` tool. The 2026-10-26 roster: `council`,
+  `designer`, `explorer`, `fixer`, `librarian`, `observer`, `oracle` —
+  `general` refuted ("Unknown agent: general"), superseding the earlier
+  `general`/`explore` audit. No todo tool exists under any name
+  (`todowrite`/`todoread` refuted 2026-10-10; re-confirmed 2026-10-26).
+  No timer/condition primitive — heartbeat fallback stands.
 - **Muse-agents first-hand cells vs this runtime (operator ruling
   needed).** The Muse column claims first-hand `subagent.spawn`,
   `muse.exec`, `process.poll`, and todo lists — but the 2026-10-10
