@@ -19,7 +19,7 @@ Give the goal and a checkable finish condition. Leave out the how and your theor
 | `hub.md` | The router: matches your prompt to a runbook, copies its steps into the todo list. Thin — it never does the work itself |
 | `values.md` | SSOT for magic numbers. Every number lives here as a named entry; runbooks reference it by name, never inline literals |
 | `principles-distilled.md` | Distilled principle pointers — the named vocabulary the hub cites. Re-distilled on the biweekly sync; no-change is valid |
-| `HARNESS.md` | Per-harness translation notes (Muse agents, Claude Code, OpenCode, Cursor, Codex). Runbooks stay harness-neutral |
+| `HARNESS.md` | Per-harness translation notes (Muse agents, Claude Code, OpenCode, Cursor, Codex, Antigravity). Runbooks stay harness-neutral |
 | `runbooks/` | Ten loop procedures: bot-review-loop, overnight-orchestrator, skill-authoring-run, biweekly-standards-research, measurement-eval, final-gate, figure-it-out (fallback), deep-work, debugging, rebuild-from-contract |
 | `runbooks/examples/` | Worked examples — concrete instantiations of a portable runbook, labeled non-portable |
 | `skills/` | Seventeen situational tools invoked by runbook steps, one directory per skill (`skills/<name>/SKILL.md`, the standard Agent Skills layout): validate, measure, prove-it, interrogate, show-work, correct, verify-app, architect, how, why, blast-radius, reflect, mstack-help, tdd, verification-planning, simplify, hunt-bugs |

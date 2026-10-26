@@ -5,8 +5,8 @@ todo list, wake on an event); this file translates each verb into the
 five supported harnesses. A runbook never hardcodes a harness primitive —
 it points here.
 
-The five harnesses: **Muse agents** (this runtime), **Claude Code**,
-**OpenCode**, **Cursor**, **Codex**.
+The six harnesses: **Muse agents**, **Claude Code**, **OpenCode**,
+**Cursor**, **Codex**, **Antigravity** (Google DeepMind / agy runtime).
 
 Research rule, enforced: every verb claim carries its official-doc source
 URL inline. Claims that could not be verified in official docs are marked
@@ -20,8 +20,8 @@ inherits it from here; debugging.md's ledger row is the per-run record.
 
 ## 1. Verb translations
 
-Each cell names the native primitive. `Muse agents` claims are first-hand
-(observed in this runtime; no URL exists). First-hand claims carry their
+Each cell names the native primitive. `Muse agents` and `Antigravity` claims are first-hand
+(observed in runtime; no public URL exists). First-hand claims carry their
 date (`first-hand YYYY-MM-DD`) and outrank doc-sourced claims for that
 runtime — docs describe the product, first-hand describes the machine.
 
@@ -34,6 +34,7 @@ runtime — docs describe the product, first-hand describes the machine.
 | OpenCode | `subagent` tool spawning a subagent (`general`, `explore` — no `scout`); optional `background` and `sessionID` parameters; `@` mentions; child sessions (first-hand 2026-10-10; official docs still name `task` + `scout`: https://opencode.ai/docs/agents/) |
 | Cursor | Agent's Task tool; custom subagents as markdown files in `.cursor/agents/` (also reads `.claude/agents/`, `.codex/agents/`) (https://cursor.com/docs/subagents) |
 | Codex | Prompt-driven subagent workflows ("spawn two agents", "one agent per point"); custom agents as TOML files in `.codex/agents/` (https://developers.openai.com/codex/subagents) |
+| Antigravity | `invoke_subagent` tool: `TypeName` (`self`, `research`, `image-generator`, or defined type), `Role`, `Prompt`, optional `Model` (`inherit`, `flash_lite`, `flash`, `pro`), optional `Workspace` (`inherit`, `branch`, `share`). Child runs detached with own context and delivers results back via reactive messaging; `send_message` delivers follow-ups. Dynamic agent definition via `define_subagent`; lifecycle management via `manage_subagents` (`list`, `kill`, `kill_all`) (first-hand 2026-10-26) |
 
 ### Run in background
 
@@ -44,6 +45,7 @@ runtime — docs describe the product, first-hand describes the machine.
 | OpenCode | first-hand 2026-10-10: `subagent(background: true)` detached runs confirmed in this runtime; official docs silent. Fallback unchanged: shell backgrounding (`&`, `nohup`) |
 | Cursor | Subagent foreground vs background modes; `is_background` frontmatter on custom subagents; `/in-cloud` hands work to a cloud subagent (https://cursor.com/docs/subagents) |
 | Codex | `degraded` — no first-class detached background subagent documented. Fallbacks: `codex exec` (headless, JSONL stream) backgrounded with `&` and polled; hook handlers may set `async: true` to run in the background (https://developers.openai.com/codex/hooks) |
+| Antigravity | `run_command` with `WaitMsBeforeAsync` (auto-backgrounds to a task if command exceeds threshold) or `IsDaemon: true`; `manage_task` (`list`, `status`, `send_input`, `kill`). Completed background tasks notify and wake the agent automatically without polling (first-hand 2026-10-26) |
 
 ### Keep a todo list
 
@@ -54,6 +56,7 @@ runtime — docs describe the product, first-hand describes the machine.
 | OpenCode | refuted first-hand 2026-10-10 on this runtime (opencode v2.0.26): no todo tool exists under any name. Fallback: plan state in repo files — same as Cursor |
 | Cursor | `unverified` — no official todo tool found in the docs surveyed. Fallback: plan state in repo files (e.g. `plan.md` checklists) |
 | Codex | `todo_write` / `update_plan` built-in solver tools (https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide/) |
+| Antigravity | Artifact system (`write_file` with `ArtifactMetadata` for persistent task lists and experiment logs stored in `<appDataDir>/brain/<conversation-id>`) or plan files in repo (`plan.md`); `/plan` slash command for plan generation. No dedicated `todo_write` tool (first-hand 2026-10-26) |
 
 ### Invoke a skill / markdown file
 
@@ -64,6 +67,7 @@ runtime — docs describe the product, first-hand describes the machine.
 | OpenCode | `skill` tool; native `SKILL.md` support (https://opencode.ai/docs/tools/; https://opencode.ai/docs/skills/ — skills page cited via search results, not opened this session) |
 | Cursor | Agent Skills (`SKILL.md`); the official subagents doc directs single-purpose tasks to "a skill or command instead" (https://cursor.com/docs/subagents). Skill directory path `.cursor/skills/` is third-party-reported, `unverified` in official docs |
 | Codex | `.agents/skills/<name>/SKILL.md` with `name` + `description` frontmatter (https://developers.openai.com/codex/skills) |
+| Antigravity | Native Agent Skills: directories with `SKILL.md` containing YAML frontmatter (`name`, `description`). Agent reads instructions via `read_file` on trigger, or executes helper scripts in `scripts/`. Built-in: `~/.gemini/antigravity-cli/builtin/skills/`; user: `~/.gemini/skills/` (first-hand 2026-10-26) |
 
 ### Watch a condition / wake on an event
 
@@ -74,6 +78,7 @@ runtime — docs describe the product, first-hand describes the machine.
 | OpenCode | Plugin hooks: `session.idle`, `session.created`, `session.deleted`, `tool.execute.before/after`, `todo.updated`, `file.watcher.updated` (https://opencode.ai/docs/plugins/). No condition-watch primitive — heartbeat fallback |
 | Cursor | Hooks in `.cursor/hooks.json`: `stop` hook may return `followup_message` to re-arm the loop, bounded by `loop_limit`; also `subagentStart` / `subagentStop`, `sessionStart` / `sessionEnd` (https://cursor.com/docs/hooks). No timer primitive — heartbeat fallback |
 | Codex | `notify` in `config.toml`: runs a program on `agent-turn-complete` with a JSON payload — fire-and-forget, observer-only, cannot block (https://developers.openai.com/codex/config-reference). Lifecycle hooks `Stop`, `SubagentStop` (trust-reviewed before first run) (https://developers.openai.com/codex/hooks). No timer primitive — heartbeat fallback |
+| Antigravity | First-class `schedule` tool: one-shot timers (`DurationSeconds`) or recurring cron (`CronExpression`), with optional early wakeup via `TimerCondition` (`'never'`, `'any'`, or matching sender ID). Background tasks and subagents wake the agent reactively without polling sleep (first-hand 2026-10-26) |
 
 ### Isolate work (worktrees)
 
@@ -84,6 +89,7 @@ runtime — docs describe the product, first-hand describes the machine.
 | OpenCode | `degraded` — no first-class agent-facing worktree command found in official docs. Fallbacks: plain `git worktree` via Bash; plugin context exposes a worktree path (https://opencode.ai/docs/plugins/) |
 | Cursor | First-class: "ask for isolation and each subagent runs in its own copy of the project" — an isolated git worktree with its own branch and working directory, or a cloud environment with a dedicated VM (https://cursor.com/docs/subagents) |
 | Codex | `degraded` — no native per-subagent worktree. Fallbacks: `git worktree` via shell; `sandbox_mode` (`read-only` for verifiers) (https://developers.openai.com/codex/subagents) |
+| Antigravity | First-class: `invoke_subagent` exposes `Workspace: 'share'` (worktree-style shared repo directory without duplicating storage) and `Workspace: 'branch'` (isolated branch/clone); plain `git worktree` via `run_command` (first-hand 2026-10-26) |
 
 ## 2. The wake-on-event requirement
 
@@ -106,6 +112,7 @@ Per-harness `/loop` mapping:
 | OpenCode | `session.idle` / `file.watcher.updated` plugin hooks | shell loop |
 | Cursor | `stop` hook with `followup_message` + `loop_limit` | hook script sleeps between re-arms |
 | Codex | `notify` script writes a flag file on `agent-turn-complete`; `Stop` hook | shell loop polling the flag |
+| Antigravity | `schedule` tool with `TimerCondition`, or reactive wakeup on subagent/task message | `schedule` tool with `DurationSeconds` interval from `values.md` (no shell sleep, native reactive wakeup) |
 
 Requirement: the heartbeat arm never busy-waits. Its interval comes from
 `values.md#heartbeat.interval` by name, never as an inline literal, and
@@ -120,6 +127,7 @@ each tick is logged so a stalled loop is distinguishable from a quiet one.
 | OpenCode | `git worktree` via Bash (no first-class command; https://opencode.ai/docs/plugins/) |
 | Cursor | Per-subagent isolated git worktree with own branch (first-class); whole-agent isolation via worktree or cloud subagent VM (https://cursor.com/docs/subagents) |
 | Codex | `git worktree` via shell; `sandbox_mode: read-only` for verifier-style subagents (https://developers.openai.com/codex/subagents) |
+| Antigravity | `invoke_subagent` with `Workspace: 'share'` (shared repo worktree) or `Workspace: 'branch'` (isolated clone/branch); `git worktree` via `run_command` (first-hand 2026-10-26) |
 
 Rule of thumb for runbooks: verifiers get a worktree or a read-only
 sandbox; fixers get a branch. The runbook states which, this table says
@@ -127,7 +135,7 @@ how on each harness.
 
 ## 4. Capability matrix
 
-Rows: the ten runbooks. Columns: the five harnesses.
+Rows: the ten runbooks. Columns: the six harnesses.
 `full` = every step maps to a documented first-class primitive.
 `degraded` = all steps achievable, at least one via a fallback named in
 the cell. `unsupported` = a step cannot be done; the cell names the
@@ -145,6 +153,7 @@ review count flattens; fixer and verifier subagents in the loop.
 | OpenCode | degraded — background primitive unverified; run the poll loop via shell backgrounding |
 | Cursor | degraded — loop maps to the `stop`-hook `followup_message` pattern, but round tracking falls back to a state file (no documented todo tool) |
 | Codex | degraded — loop maps to a shell heartbeat poll; `notify` cannot re-arm a loop (fires once per turn, observer-only) |
+| Antigravity | full — fixer and verifier via invoke_subagent, poll/timer via schedule or run_command |
 
 ### overnight-orchestrator
 
@@ -157,6 +166,7 @@ Detached long run with wake-on-event, heartbeat, and escalation.
 | OpenCode | degraded — background via shell; heartbeat covers wake |
 | Cursor | degraded — background and cloud subagents exist, but no documented timer/cron primitive; heartbeat fallback |
 | Codex | degraded — no first-class background session; `codex exec` backgrounded with `&`, `notify` + heartbeat for wake |
+| Antigravity | full — schedule tool handles detached cron/timer with reactive wakeup; background subagents and tasks |
 
 ### skill-authoring-run
 
@@ -170,6 +180,7 @@ background, no wake, no push.
 | OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
+| Antigravity | full — native skill reading; brain artifacts or plan files for tracking |
 
 ### biweekly-standards-research
 
@@ -182,9 +193,7 @@ Research rotating topics, write files, open a dated branch + PR.
 | OpenCode | full |
 | Cursor | full |
 | Codex | full |
-
-Research and file mechanics are first-class everywhere; push auth is the
-operator's setup step (section 5).
+| Antigravity | full — research subagent, file tools, git via run_command |
 
 ### measurement-eval
 
@@ -197,6 +206,7 @@ Interleaved runs, median + range, falsifiable checks. Sequential.
 | OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
+| Antigravity | full — sequential execution via run_command, falsifiable checks, artifacts for run logs |
 
 ### final-gate
 
@@ -209,6 +219,7 @@ Verifier-never-author on an isolated checkout; blocking verdict.
 | OpenCode | degraded — no first-class worktree command; `git worktree` via shell |
 | Cursor | full — per-subagent isolated worktree is first-class |
 | Codex | degraded — no native per-subagent worktree; `git worktree` via shell plus `read-only` sandbox for the verifier |
+| Antigravity | full — invoke_subagent(Workspace: 'share') or git worktree via run_command; verifier subagent |
 
 ### figure-it-out
 
@@ -221,6 +232,7 @@ Fallback runbook: spawn, probe, track, report. Minimal verbs.
 | OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
+| Antigravity | full — invoke_subagent, run_command probe, artifacts for tracking |
 
 ### deep-work
 
@@ -236,6 +248,7 @@ no wake-on-event, no per-subagent isolation, no push.
 | OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
+| Antigravity | full — invoke_subagent with brief and Workspace isolation; artifacts for state tracking |
 
 ### debugging
 
@@ -249,6 +262,7 @@ and single-agent: shell, version control, and a todo list.
 | OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
+| Antigravity | full — repro and bisect via run_command, edit_file for minimal fix, verification test |
 
 ### rebuild-from-contract
 
@@ -263,16 +277,18 @@ one artifact write, plus run-state writes (the recorded baseline).
 | OpenCode | degraded — todo list falls back to plan files in the repo |
 | Cursor | degraded — todo list falls back to plan files in the repo |
 | Codex | full |
+| Antigravity | full — baseline recorded in artifacts, file tools, iterate against gates |
 
 ### Matrix notes
 
-- 50 cells filled: 30 full, 20 degraded, 0 unsupported. No cell is
+- 60 cells filled: 40 full, 20 degraded, 0 unsupported. No cell is
   unsupported because every runbook degrades to shell + files +
-  heartbeat, which all five harnesses provide. If a future harness lacks
+  heartbeat, which all six harnesses provide. If a future harness lacks
   a shell, its column gets real `unsupported` cells with "run this
   runbook on a shelled harness" as the alternative.
 - Cursor's and OpenCode's recurring degradation is one missing primitive: no documented todo tool (Cursor), no existing todo tool — refuted first-hand 2026-10-10 (OpenCode). The fallback (plan files in the repo) is cheap and inspectable, so the degradation is minor.
 - Codex's recurring degradation is background + per-subagent worktrees, falling back to the same shell idioms the runbooks already use for polling. (OpenCode background execution was previously listed here; first-hand 2026-10-10 confirms the primitive exists.)
+- Antigravity achieves 10/10 full cells: native `schedule` tool (cron and timer with reactive wakeup) satisfies overnight-orchestrator and bot-review-loop without shell sleep; `invoke_subagent` provides native worktree isolation (`Workspace: 'share'` / `'branch'`); and brain artifacts provide persistent state tracking.
 
 ## 5. Push abstraction
 
@@ -288,6 +304,7 @@ this — the runbooks name the contract, never the tool.
 | OpenCode | degraded — no equivalent binding; `gh` CLI via Bash (operator supplies auth) |
 | Cursor | degraded — no equivalent binding; `gh` CLI via Bash (operator supplies auth) |
 | Codex | degraded — no equivalent binding; `gh` CLI via Bash (operator supplies auth) |
+| Antigravity | degraded — no equivalent binding; `gh` CLI via `run_command` (operator supplies auth) |
 
 `gh_push.py` is the reference implementation of the contract. Porting it
 (or a thinner `gh`-CLI wrapper) to another harness is operator work, not
@@ -320,9 +337,11 @@ From official docs, during this session's research:
   re-verified against official docs this session.
 - **Muse agents.** First-hand observation only; no public docs URL
   exists for this runtime's tool surface.
-- **No harness documents a timer/cron primitive for agents.** Stated as
-  "not found in the docs surveyed" — that is why the heartbeat arm is
-  the portable baseline, not a claim about any harness's roadmap.
+- **Timer/cron primitive for agents.** Stated as "not found in the docs surveyed"
+  for the original five harnesses (why the heartbeat arm is their portable
+  baseline). Antigravity provides a first-class native `schedule` tool (cron +
+  one-shot timer with `TimerCondition` and reactive wakeups), verified
+  first-hand 2026-10-26.
 - **OpenCode tool names (corrected first-hand 2026-10-10).** The spawn
   primitive is the `subagent` tool (`general`, `explore` — no `scout`),
   not the documented `task` tool; no todo tool exists in this runtime
@@ -337,3 +356,10 @@ From official docs, during this session's research:
   todo tool. Either "Muse agents (this runtime)" names a different
   runtime than the one audited, or the Muse column is stale. No Muse
   cell rewritten pending the operator's ruling.
+- **Antigravity runtime (confirmed first-hand 2026-10-26).** Google DeepMind / agy runtime. Native primitives verified:
+  - Subagents: `invoke_subagent` (with `TypeName`, `Role`, `Prompt`, `Model`, `Workspace: 'inherit'|'branch'|'share'`), `define_subagent`, `manage_subagents` (`list`, `kill`, `kill_all`), `send_message`. Child execution runs detached with automatic reactive wakeup upon message delivery or completion.
+  - Background execution: `run_command` with auto-backgrounding via `WaitMsBeforeAsync` threshold or `IsDaemon: true`; `manage_task` (`list`, `status`, `send_input`, `kill`). Completed tasks wake the agent reactively without polling.
+  - Scheduling / Wake-on-event: first-class `schedule` tool supporting one-shot timers (`DurationSeconds`) and recurring cron expressions (`CronExpression`) with `TimerCondition` early wakeups. Never use shell sleep for agent timing.
+  - State tracking: conversation brain artifacts (`write_file` with `ArtifactMetadata` for task lists, plans, and persistent state); `/plan` slash command. No dedicated `todo_write` solver tool.
+  - Skills: native `SKILL.md` support with YAML frontmatter at `~/.gemini/antigravity-cli/builtin/skills/` and `~/.gemini/skills/`.
+  - Push abstraction: uses `gh` CLI via `run_command` with ambient operator credentials (e.g. `gh auth git-credential`).
