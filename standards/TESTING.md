@@ -162,9 +162,9 @@ For scripted verification runs — the harness that launches the app and proves 
 **The guard and its test come out together.** When a guard is cut because its input can't occur (AGENTS.md rule 5 — not merely imaginable), the test guarding it goes in the same edit. A test for a removed guard is a test for nothing.
 *Why: guards and tests are one unit of "handling." Removing one and keeping the other leaves either dead code or a dead test.*
 
-**Refactor tests for speed; hold coverage as the invariant.** When a test refactor touches the suite, the win it must show is faster execution — and coverage must come out unchanged or improved. A test refactor that slows the suite, or drops coverage to buy readability, is a regression wearing cleanup's clothes.
+**Refactor tests for speed; hold coverage as the invariant.** When a change is a test refactor — its diff predominantly test files, or marked as one — the win it must show is faster execution, and coverage must come out unchanged or improved. A test refactor that slows the suite, or drops coverage to buy readability, is a regression wearing cleanup's clothes.
 *Why: test refactors are where suites quietly get slower: fixtures extracted, helpers layered, setup generalized — each step defensible alone, the total a suite nobody wants to run. Speed as the stated win and coverage as the invariant give the refactor a verdict instead of a vibe.*
-*Boundary: if the refactor changes what a test asserts, it is not a refactor — it is a behavior change, and it re-earns its green under §9.*
+*Boundary: the coverage comparison is §1's changed-lines coverage, not whole-suite coverage — moving setup between fixtures wobbles whole-suite numbers for benign reasons. And if the refactor changes what a test asserts, it is not a refactor — it is a behavior change, and it re-earns its green under §9.*
 
 ```text
 ❌ Test refactor extracts shared fixtures beautifully — and doubles suite
@@ -176,7 +176,7 @@ For scripted verification runs — the harness that launches the app and proves 
 
 **Record the suite's price when you touch it.** Test count and wall-clock runtime, beside §1's changed-lines coverage. A suite that grows in count or minutes while its §12 mutation-uniqueness stays flat got more expensive without getting stronger — report that at review, not the growth as progress.
 *Why: count and runtime are the suite's rent, and rent compounds silently — a suite that doubles in size while killing the same mutations is not "better tested," it is a slower feedback loop (§5) charging more for the same protection.*
-*Boundary: this is a recorded signal for review, not a threshold to gate on — a slower suite that names new unique mutations is a justified cost, and §1's ratchet rule already bans aspirational bars.*
+*Boundary: this is a recorded signal for review, not a threshold to gate on — a slower suite that names new unique mutations is a justified cost, and §1's ratchet rule already bans aspirational bars. The numbers come from any representative local run — or CI, when it exists; comparability within the task is what matters, not a canonical harness.*
 
 ```text
 ❌ "Suite grew from 400 to 620 tests" reported as progress — runtime up 3×,
