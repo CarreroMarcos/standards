@@ -7,3 +7,5 @@ The goal is simple: make AI write senior-level code instead of slop. Every rule 
 - `AGENTS.md` — the portable starter. Drop it into any repo as-is.
 - `AGENTS-PUBLIC.md` — the same starter, zero dependencies on this library. Share freely.
 - `standards/` — the full library, one topic per file.
+- `skills/` — portable agent skills: followable-docs, hunt-bugs, simplify, skill-authoring.
+- `mstack/` — the multi-agent runbook system that drives goal → done-check loops.

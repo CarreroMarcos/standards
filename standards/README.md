@@ -1,9 +1,9 @@
 ---
 title: Standards
-version: "2.1"
+version: "2.2"
 scope: Index and routing table for the standards library
 consult_when: "When you need to find which standard covers your current task."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-26
 ---
 
 # Standards
@@ -29,6 +29,7 @@ These are best practices, not laws. Context matters — some rules don't fit cer
 | Writing tests — unit, integration, edge cases, e2e — or deciding what to mock, what coverage to require, or whether a test is actually proving anything | TESTING.md | Skip when not writing tests. Philosophy lives in ENGINEERING_PRINCIPLES.md §4; the TDD loop in WORKFLOW.md Phase 4. |
 | Trusting a number you measured — a speedup, a regression, a throughput, a latency, or an eval result — before reporting or acting on it | MEASUREMENT.md | Skip when no number is being trusted. A number without a named limiter is a rumor. |
 | Debugging a failure — building the repro, minimizing it, testing hypotheses, instrumenting, attacking the premise when fixes keep failing — or when a debug session is spiraling | DEBUGGING.md | Skip when nothing is broken. The gates (red-capable repro, three-strikes) live in AGENTIC-DESIGN.md §4 and DEV-LOOP.md. |
+| Writing or following a runbook, responding to an alert, or deciding whether something counts as an incident at all | RUNBOOKS.md | Skip when no runbook or incident is involved. |
 | Writing Python — style, typing, async, errors, tooling, or performance | languages/PYTHON.md | Skip when not writing Python. Language-neutral principles live in ENGINEERING_PRINCIPLES; per-task quality rules in CODE-QUALITY. |
 | Writing TypeScript — strictness, narrowing, casts, guards, schemas | languages/TYPESCRIPT.md | Skip when not writing TypeScript. Shared type-system discipline lives in TYPED-LANGUAGES.md. |
 | Designing with a type system — sum types, branding, exhaustive matching, parse-at-boundary | languages/TYPED-LANGUAGES.md | Skip when the language is untyped. Language mechanics live in the language files under languages/. |
