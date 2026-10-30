@@ -1,9 +1,9 @@
 ---
 title: Python Standard
-version: "1.10"
+version: "1.11"
 scope: "Python-specific coding rules for agents: tooling, style, readability, typing, async, errors, architecture, packaging, testing, runtimes, performance"
 consult_when: "When writing Python and reaching for the old habits — bare `except`, mutable defaults, sync calls in async code, 'just pip install it' — or when the code runs but a Python review would flag it."
-last_reviewed: 2026-10-09
+last_reviewed: 2026-10-28
 ---
 
 # Python Standard
@@ -250,6 +250,12 @@ Handle a narrow, named exception with a defined recovery. Surface a broad failur
 **Preserve the exception chain.** Use `raise DomainError(...) from err` so the original traceback remains available to the person debugging at 2 AM.
 
 **Exceptions carry structured data, not just text.** Follow the httpx pattern: a small hierarchy per domain (`HTTPError → RequestError → TimeoutException → ConnectTimeout`), with the relevant objects attached (`.request`, `.response`) — not just a message string. Callers catch at the precision they need (`except TimeoutException` for retry logic, `except HTTPError` for total failure), and structured attributes beat message-parsing. Put the object on the exception, not just text in the message.
+
+**Caller misuse gets its own branch, never the operational one.** httpx's stream errors (`StreamConsumed`, `StreamClosed`, `ResponseNotRead`, `RequestNotRead`) extend `RuntimeError`, not `HTTPError` — reading a stream twice is a bug in the caller's code, not a failure of the request — and `InvalidURL` and `CookieConflict` likewise sit outside `HTTPError`. Why: a catch-all `except HTTPError` retry loop must never swallow and retry a programming error. *Bad:* `except HTTPError: retry` silently re-running a twice-read stream. *Good:* the misuse error escapes the operational catch and fails loudly at the call site. Split protocol violations the same way — `LocalProtocolError` (we broke the contract) versus `RemoteProtocolError` (the peer did) — so the fix lands on the side that broke it. Boundary: a separate branch is not silence — convert misuse errors into a caller-facing message at the entrypoint; never retry them as if the network failed.
+
+**A peer's error verdict is not a transport failure — keep it out of the request-failure branch.** httpx makes `HTTPStatusError` a sibling of `RequestError` under `HTTPError`, raised only by an explicit `raise_for_status()`, never by the transport itself. Why: a 4xx/5xx means the transport succeeded and the peer answered with a failure — and retry policy keys off the branch, so a verdict nested under the transport branch gets retried as if the network had failed. *Bad:* `except RequestError: retry` re-sending a request the peer already rejected. *Good:* the transport branch retries, the verdict branch handles or surfaces. Boundary: the shared `HTTPError` parent still lets a caller catch total failure in one clause — the split is between the two child branches, not a second root.
+
+**When one failure class spans phases, give each phase its own leaf.** httpx splits timeouts into `ConnectTimeout` / `ReadTimeout` / `WriteTimeout` / `PoolTimeout` and network errors into `ConnectError` / `ReadError` / `WriteError` / `CloseError` — leaves that differ in nothing but the phase that failed. Why: the phase decides the fix — a pool timeout blames local capacity, a connect timeout blames reachability, a read timeout blames a slow peer — and a generic timeout forces the handler to guess. *Bad:* `except TimeoutException: retry` re-trying a pool-exhausted client into the same exhausted pool. *Good:* `except PoolTimeout: back off locally; except ConnectTimeout: fail fast`. Boundary: §5's "do not invent an elaborate hierarchy" still holds — add a phase leaf only when ≥2 handlers branch on the phase; a phase nobody branches on is a docstring, not a class.
 
 **Retry lives in one wrapper per boundary.** All hand-rolled retry logic in a single `_request_with_retry` — never scattered at call sites. If the SDK already retries correctly (boto3's standard mode), configure it instead of wrapping it. Exponential backoff `min(base * 2**attempt, cap)` plus jitter; honor `Retry-After`; cap attempts. Retry policy: ARCHITECTURE.md §6 — retry what can self-heal, never blind-retry 4xx. Jitter prevents thundering-herd synchronized retries. Note that httpx timeouts are per-socket-operation, not a wall-clock total — don't confuse "timed out" with "deadline exceeded" in retry policy.
 
@@ -517,6 +523,8 @@ def cmd_stats(...):
 ## 13. API design
 
 **Keyword-only arguments for flags and future growth.** `def get(url, *, timeout=..., follow_redirects=...)`. Positional booleans are unreadable at call sites (§9), and keyword-only lets the signature grow for years without breaking positional callers. New parameters are added keyword-only with defaults — backward-compatible by construction. This is how httpx-style clients keep stable APIs.
+
+**Omit parameters a narrowed wrapper's semantics forbid — let the type checker refuse the call.** httpx's `get` / `head` / `options` / `delete` omit `content` / `data` / `files` / `json` entirely, while `post` / `put` / `patch` carry them, with the note that the body parameters "are not available on this function, as `GET` requests should not include a request body." Why: accept-and-ignore silently drops the caller's intent — the body they thought they sent never left the machine. *Bad:* `get(url, json=payload)` accepted and silently dropped. *Good:* the same call fails at the call site with `TypeError`, and the generic `request()` still accepts a body for the rare case that genuinely needs one. Boundary: narrowing lives in the verb wrappers — never remove the capability from the generic core to enforce it. The `TypeError` guarantee holds only when the wrapper has an explicit, narrow signature; a `**kwargs` passthrough re-admits the forbidden argument silently.
 
 **Sensible defaults, explicit overrides.** Defaults cover the common case; overrides are explicit keywords. (And never mutable defaults — §6.)
 
