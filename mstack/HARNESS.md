@@ -75,7 +75,7 @@ live tool schemas, which are the harness surface, not the model.
 | OpenCode | `skill` tool (loads a `SKILL.md` by id; confirmed first-hand 2026-10-26 on v2.1.4); native `SKILL.md` support (docs: https://opencode.ai/docs/tools/; https://opencode.ai/docs/skills/ — skills page cited via search results, not opened this session) |
 | Cursor | Agent Skills (`SKILL.md`); the official subagents doc directs single-purpose tasks to "a skill or command instead" (https://cursor.com/docs/subagents). Skill directory path `.cursor/skills/` is third-party-reported, `unverified` in official docs |
 | Codex | `.agents/skills/<name>/SKILL.md` with `name` + `description` frontmatter (https://developers.openai.com/codex/skills) |
-| Antigravity | Native Agent Skills: directories with `SKILL.md` containing YAML frontmatter (`name`, `description`). Agent reads instructions via `read_file` on trigger, or executes helper scripts in `scripts/`. Built-in: `~/.gemini/antigravity-cli/builtin/skills/`; user: `~/.gemini/skills/` (first-hand 2026-10-26) |
+| Antigravity | Native Agent Skills: directories with `SKILL.md` containing YAML frontmatter (`name`, `description`). Agent reads instructions via `read_file` on trigger, or executes helper scripts in `scripts/`. Built-in: `$HOME/.gemini/antigravity-cli/builtin/skills/`; user: `$HOME/.gemini/skills/` (first-hand 2026-10-26) |
 
 ### Watch a condition / wake on an event
 
@@ -391,5 +391,5 @@ From official docs, during this session's research:
   - Background execution: `run_command` with auto-backgrounding via `WaitMsBeforeAsync` threshold or `IsDaemon: true`; `manage_task` (`list`, `status`, `send_input`, `kill`). Completed tasks wake the agent reactively without polling.
   - Scheduling / Wake-on-event: first-class `schedule` tool supporting one-shot timers (`DurationSeconds`) and recurring cron expressions (`CronExpression`) with `TimerCondition` early wakeups. Never use shell sleep for agent timing.
   - State tracking: conversation brain artifacts (`write_file` with `ArtifactMetadata` for task lists, plans, and persistent state); `/plan` slash command. No dedicated `todo_write` solver tool.
-  - Skills: native `SKILL.md` support with YAML frontmatter at `~/.gemini/antigravity-cli/builtin/skills/` and `~/.gemini/skills/`.
+  - Skills: native `SKILL.md` support with YAML frontmatter at `$HOME/.gemini/antigravity-cli/builtin/skills/` and `$HOME/.gemini/skills/`.
   - Push abstraction: uses `gh` CLI via `run_command` with ambient operator credentials (e.g. `gh auth git-credential`).
