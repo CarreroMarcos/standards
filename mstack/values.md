@@ -121,3 +121,4 @@ each carries its reason so the list stays honest.
 - "step 1" (and other step numbers) — document numbering, not a quantity.
 - the version string (e.g. "v0.0.1") — the version string, not a measurement.
 - "3 times" — small fixed procedural counts in prose, not tuned thresholds.
+- "30 min" — Claude Code Monitor's per-arm cap, an external product limit cited in HARNESS.md; not an mstack tunable.
