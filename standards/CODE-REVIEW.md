@@ -197,7 +197,7 @@ A passing opposition review answers all four. A general statement that none appl
 **A scanner-alert dismissal carries its homework.** Dismissing a CodeQL, secret-scanning, or equivalent scanner alert requires two things first: check the pattern docs for whether a sanctioned helper already covers the flagged code, and record the technical justification in the dismissal comment.
 - Why: a bare dismissal teaches the next reviewer the alert was noise; a justified one teaches them the boundary — and the next identical alert gets dismissed (or fixed) correctly without re-litigating.
 - Bad: an alert dismissed with no comment — the same pattern reappears next month and nobody knows why it was "fine." Good: "false positive — callsites already route through the error sanitizer; the scanner doesn't recognize custom sanitizers" — the reason lives where the next reviewer looks.
-- Boundary: this fires on scanner alerts, not human findings — human findings follow the Dismissed-list discipline above. (diegosouzapw/OmniRoute `AGENTS.md:392`, Hard Rule 14)
+- Boundary: this fires on scanner alerts, not human findings — human findings follow the Dismissed-list discipline above. (cheaper-inference/OmniRoute `AGENTS.md:392`, Hard Rule 14)
 
 **Re-grade findings by effect, not by the spec's silence.** A finding's grade is what a reasonable person using this software gets if it ships — not whether the spec names the input that triggers it. A reviewer who set Minor because the spec was silent graded the spec, not the effect.
 

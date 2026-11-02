@@ -60,7 +60,7 @@ Pre-commit hooks catch secrets going into git. They miss everything else the age
 - **Error responses carry no internals.** HTTP, SSE, and handler error responses route through one sanitizer — never a raw stack trace or raw error message in a response body — and tests assert no stack-trace leak.
   - Why: a stack trace in a 500 body hands the attacker file paths, dependency versions, and internal structure for free.
   - Bad: `res.status(500).json({ error: err.stack })`. Good: a sanitized body to the client, the full traceback to the server log only (LOGGING.md rule 8).
-  - Boundary: the sanitizer gates the response, not the log — server-side logs still carry the full traceback for diagnosis. (diegosouzapw/OmniRoute `AGENTS.md:160`, Hard Rule 12, `:188`)
+  - Boundary: the sanitizer gates the response, not the log — server-side logs still carry the full traceback for diagnosis. (cheaper-inference/OmniRoute `AGENTS.md:160`, Hard Rule 12, `:188`)
 
 ## Storage and lifetime
 
@@ -72,13 +72,13 @@ Pre-commit hooks catch secrets going into git. They miss everything else the age
 - **Public credentials still go through one resolver.** OAuth client IDs, Firebase Web keys, and other values extracted from public CLIs are public — and still never string literals. One resolver function owns every such value, so rotation, audit, and a grep for every use site are one place, not a scavenger hunt.
   - Why: "public" is not "unimportant" — a literal in ten provider configs rotates ten times, or never.
   - Bad: the same `client_id` pasted into each provider config. Good: every provider calls the one resolver; the literal lives in exactly one place.
-  - Boundary: genuinely non-sensitive constants (endpoint URLs, keys meant for public distribution) don't need the resolver — the rule fires when the value authenticates anything, even weakly. (diegosouzapw/OmniRoute `AGENTS.md:159`, Hard Rule 11)
+  - Boundary: genuinely non-sensitive constants (endpoint URLs, keys meant for public distribution) don't need the resolver — the rule fires when the value authenticates anything, even weakly. (cheaper-inference/OmniRoute `AGENTS.md:159`, Hard Rule 11)
 - **Encrypt credentials the app itself stores — and never log the key.** Provider keys persisted in app storage (database rows, local vaults) are encrypted at rest with an authenticated cipher (AES-256-GCM); the encryption keys themselves never appear in logs, traces, or error payloads.
   - Why: a database dump without its keys leaks ciphertext; a log line carrying the key turns it into a leak of credentials.
-  - Boundary: manager-issued short-lived tokens follow the manager path above — this rule covers credentials the app stores itself, not tokens it borrows. (diegosouzapw/OmniRoute `AGENTS.md:156`)
+  - Boundary: manager-issued short-lived tokens follow the manager path above — this rule covers credentials the app stores itself, not tokens it borrows. (cheaper-inference/OmniRoute `AGENTS.md:156`)
 - **Ship no working default credential; treat any observed demo value as compromised.** A shipped default rotates on first login and never survives setup; real secrets are generated, not chosen (`openssl rand`). Any credential ever observed in a previous version of a file — even one labeled a demo — is treated as compromised and never reused. The standard names no default value: reproducing one here would hand the next reader a working-looking credential to copy.
   - Why: defaults ship to every install, and "demo" values get copied into production by the next reader who assumes they're inert.
-  - Boundary: documented placeholder *names* (`{{API_KEY}}`, `YOUR_KEY_HERE`) are not credentials — the rule fires on values that would authenticate if tried. (diegosouzapw/OmniRoute `AGENTS.md:438`, `:350`)
+  - Boundary: documented placeholder *names* (`{{API_KEY}}`, `YOUR_KEY_HERE`) are not credentials — the rule fires on values that would authenticate if tried. (cheaper-inference/OmniRoute `AGENTS.md:438`, `:350`)
 
 ## `.env`, when unavoidable
 

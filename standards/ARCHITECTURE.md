@@ -76,7 +76,7 @@ Feature flags and progressive rollout controls reduce change blast radius; they 
 - **Check locality before auth on dangerous endpoints.** An endpoint that can spawn processes, install software, or run shell commands is classified loopback/local-only first, and that check runs unconditionally before any auth check — a leaked token must not be enough to reach it through a tunnel.
   - Why: auth answers "who are you"; locality answers "where are you standing." A token leaked through a tunnel passes auth from anywhere; a loopback-first gate fails it before auth is even consulted.
   - Bad: a process-spawning route guarded by JWT alone, reachable via a forwarded tunnel. Good: the route guard classifies loopback first; non-loopback requests are rejected regardless of token validity.
-  - Boundary: fires where the endpoint executes code or mutates the host — ordinary data routes don't need a locality gate. (diegosouzapw/OmniRoute `AGENTS.md:393`, `:395`, Hard Rules 15/17)
+  - Boundary: fires where the endpoint executes code or mutates the host — ordinary data routes don't need a locality gate. (cheaper-inference/OmniRoute `AGENTS.md:393`, `:395`, Hard Rules 15/17)
 
 Introduce separately deployable services when independent scaling, ownership, security boundaries, reliability requirements, technology constraints, or release cadence justify the operational cost of distribution.
 
