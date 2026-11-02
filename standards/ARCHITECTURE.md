@@ -1,9 +1,9 @@
 ---
 title: Architecture
-version: "1.2"
+version: "1.3"
 scope: "Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation"
 consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-11-02
 ---
 
 # Architecture
@@ -72,6 +72,11 @@ Blast radius is a design property, not only an infrastructure property. A shared
 Default toward a modular monolith when one deployment can satisfy ownership, scaling, security, reliability, and release needs. Within a process or deployment, use resource bulkheads where failure coupling is real — for example separate pools, bounded queues, concurrency limits, or worker groups for workloads that must not exhaust each other's capacity.
 
 Feature flags and progressive rollout controls reduce change blast radius; they are rollout mechanisms, not resource-isolation bulkheads.
+
+**Check locality before auth on dangerous endpoints.** An endpoint that can spawn processes, install software, or run shell commands is classified loopback/local-only first, and that check runs unconditionally before any auth check — a leaked token must not be enough to reach it through a tunnel.
+- Why: auth answers "who are you"; locality answers "where are you standing." A token leaked through a tunnel passes auth from anywhere; a loopback-first gate fails it before auth is even consulted.
+- Bad: a process-spawning route guarded by JWT alone, reachable via a forwarded tunnel. Good: the route guard classifies loopback first; non-loopback requests are rejected regardless of token validity.
+- Boundary: fires where the endpoint executes code or mutates the host — ordinary data routes don't need a locality gate. (diegosouzapw/OmniRoute `AGENTS.md:393`, `:395`, Hard Rules 15/17)
 
 Introduce separately deployable services when independent scaling, ownership, security boundaries, reliability requirements, technology constraints, or release cadence justify the operational cost of distribution.
 
