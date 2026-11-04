@@ -1,9 +1,9 @@
 ---
 title: Rules-File Integrity
-version: "2.6"
+version: "2.7"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
 consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — 'it's just a formatting tweak', 'the bot's PR, just merge it'."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-11-04
 ---
 
 # Rules-File Integrity
@@ -146,6 +146,11 @@ If you find a violation:
 4. **Version instruction-file changes like behavior changes.** Skill instructions, authored examples, build inputs, and generated-site sources are behavioral inputs even when they look like documentation (tt-a1i/archify `CONTRIBUTING.md:96`). A change to any of them is a behavior change: versioned, evidence-backed, and reviewed like code — never a prose touch-up. Policy changes need process review (they're contracts); the runtime evidence required follows whether the change affects runtime inputs.
    - Why: agents and builds don't distinguish "docs" from "code" — they execute both. A prose-touch-up review bar on a behavior change ships untested behavior with a spellcheck.
    - Boundary: purely mechanical corrections (typos, broken links to their intended destination) stay mechanical — this rule fires when the words shape behavior.
+
+5. **Retiring an instruction-file field records why it died, not just that it died.** Add the retired field to the retired list with its reason — what replaced it, or what made it wrong — because a bare "deprecated" makes agents preserve it "just in case", and a retired axis keeps steering current output through that preservation. (pbakaus/impeccable `CLAUDE.md:85`)
+   - Why: the agent reading the template is the consumer — a reasonless deprecation reads as "maybe still needed", and "just in case" is exactly how dead fields survive.
+   - Bad: the template marks `Register` deprecated, no reason — agents keep writing it into new briefs. Good: "Register (retired: replaced by per-surface Mode; v3 axis, read by nothing)".
+   - Boundary: this governs agent-read templates and briefs, not published contracts — ENGINEERING_PRINCIPLES.md §6's warn → document → remove policy (name the replacement and the removal version) governs consumers; this rule governs the agent itself, where the failure mode is preservation rather than breakage.
 
 ## References
 
