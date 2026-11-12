@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.13"
+version: "2.14"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-11-02
+last_reviewed: 2026-11-09
 ---
 
 # Code Review Standard
@@ -184,6 +184,11 @@ A passing opposition review answers all four. A general statement that none appl
 
 - Bad — the echo: a branch titled *"remove the staging fallback"* earns *"staging fallback removed"* as a High finding.
 - Good — the report stays silent on the intended removal, and spends its words on the unbounded part: *"removal drags `jobs/nightly.py`, which the branch description doesn't mention — confirm intentional."*
+
+**State the behavior transition for a refactor.** A refactor review names the baseline — the PR base is the normal previous-behavior baseline — and the transition: what the behavior was, what it becomes. A behavior change the PR description doesn't name is a finding, not a silent passenger; when the change fixes or extends an earlier feature, describe each transition explicitly ("Before `<commit>`, ... After `<commit>`, ... With this PR, ...").
+- Why: "no behavior change" is the refactor's core claim, and a claim with no stated baseline is unverifiable — the reviewer can't tell a behavior-preserving restructure from a behavior change the author didn't notice. TESTING.md §12 already defines the test-side verdict (a refactor that changes what a test asserts is a behavior change, and it re-earns its green under §9); this is the review-side statement of it.
+- Bad: a 400-line restructure reviewed as "looks like a pure refactor" with no named baseline. Good: "Baseline is the PR base; behavior before: X; after: X — the only delta is the renamed seam, pinned by the unchanged assertions." (NVIDIA/OpenShell `.agents/skills/review-github-pr/SKILL.md:143`)
+- Boundary: the transition statement is one or two lines for a true refactor — it grows only when behavior actually changes, and then the change earns its own finding, not a longer transition paragraph.
 
 **Keep findings that name a concrete execution path.** Three signals a finding survives the filter: independent reviewers flag the same issue, the finding walks a real call path instead of a hypothetical, or it exposes a gap in your own mental model of the code. Security and correctness findings get this scrutiny even when they come from a single reviewer — discomfort is not a filter.
 

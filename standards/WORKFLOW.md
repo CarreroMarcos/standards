@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.7"
+version: "3.8"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-09
 ---
 
 # Workflow Standard
@@ -65,6 +65,11 @@ The plan file is the durable record of implementation detail. On conflict, the s
 Spend the reasoning budget on planning, not execution — plan in the strongest mode available; implement in a cheaper one.
 
 End the plan with an acceptance contract: checkable pass/fail criteria, not *vague* prose — each criterion states the check and expected result; one line of why per criterion is prose doing its job.
+
+**Split multi-PR work into closable units at plan time.** When the work spans multiple PRs, each PR gets its own closable unit — its own issue, its own acceptance — and a tracking issue links them; the tracker stays open until the last unit lands. Closing the tracker on a partial landing is a false completion claim: the work reads done while a unit is still unshipped.
+- Why: a stacked series with no per-PR acceptance is one big change wearing a trench coat — no PR carries its own definition of done, and a half-landed series looks complete in the tracker.
+- Bad: three stacked PRs under one issue, tracker closed when the first merges. Good: three issues, one per PR, tracker open until the third lands; each PR's body names the unit it closes (NVIDIA/OpenShell `.agents/skills/build-from-issue/SKILL.md:32`, `CONTRIBUTING.md:452`).
+- Boundary: a single PR earns no tracker — this rule fires only when the work genuinely spans PRs. Automated dependency updates and build/flaky-test fixes are exempt from the one-issue-per-PR shape; they close no issue at all.
 
 **A decision that varies per unit of work lives in that unit's plan, not in the project-wide doc.** The project doc holds only what is true for every unit; a choice that differs per surface, per service, or per screen is recorded in that unit's brief, and the unit's brief wins on it. (pbakaus/impeccable `CLAUDE.md:41-42` — mode is per surface, and persists only in that surface's brief, never in the project-wide PRODUCT.md)
 *Why: a project-wide value that contradicts the unit in hand reads as the decision — the agent follows the global doc and builds the wrong unit.*
