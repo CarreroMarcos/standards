@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.5"
+version: "3.6"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-10-14
+last_reviewed: 2026-11-04
 ---
 
 # Workflow Standard
@@ -59,6 +59,26 @@ The plan file is the durable record of implementation detail. On conflict, the s
 Spend the reasoning budget on planning, not execution — plan in the strongest mode available; implement in a cheaper one.
 
 End the plan with an acceptance contract: checkable pass/fail criteria, not *vague* prose — each criterion states the check and expected result; one line of why per criterion is prose doing its job.
+
+**A decision that varies per unit of work lives in that unit's plan, not in the project-wide doc.** The project doc holds only what is true for every unit; a choice that differs per surface, per service, or per screen is recorded in that unit's brief, and the unit's brief wins on it. (pbakaus/impeccable `CLAUDE.md:41-42` — mode is per surface, and persists only in that surface's brief, never in the project-wide PRODUCT.md)
+*Why: a project-wide value that contradicts the unit in hand reads as the decision — the agent follows the global doc and builds the wrong unit.*
+*Bad:* the product doc says "Operate", so the landing-page plan builds an Operate surface. *Good:* the landing-page brief records "Persuade" even though the product is Operate — the brief governs the surface in hand.
+Boundary: when the project doc and the unit brief genuinely disagree with no unit-level reason, that is a spec conflict to resolve, not a tie the brief silently wins — flag it, don't just record over it.
+
+**Load-bearing constraints ride in the handoff, not behind a pointer.** When a decision governs the next step, inline the deciding lines in the plan or handoff the agent is already reading; a pointer to another file is a constraint the agent may never load. (pbakaus/impeccable `CLAUDE.md:44` — the router never sends the agent to the mode files; the engine prints them as a block, because a printed line is followed where an extra file read gets skipped)
+*Why: the handoff is the last text guaranteed to be read — anything behind one more fetch is optional in practice, however mandatory in intent.*
+*Bad:* the plan says "see mode-persuade.md for direction rules" and the build ignores them. *Good:* the plan prints the two direction rules inline and cites the file as their source.
+Boundary: inlining carries the deciding lines, it does not replace the canonical doc — cite the source so the full rule stays findable and the inline copy stays checkable against it.
+
+**A plan records only confirmed values.** An ambiguous field is confirmed before it is written, and an unrecognized value is reported by name together with the fallback it took — never silently defaulted. (pbakaus/impeccable `CLAUDE.md:58` — an unrecognized platform value falls back to web *and* prints a WARNING naming the bad value, so a typo never silently gets web guidance; `init` confirms an ambiguous platform before recording it)
+*Why: a silently defaulted field looks decided, so nobody revisits it — the plan carries a choice nobody made.*
+*Bad:* the brief says "react-native" and the plan silently records `web`. *Good:* the plan records "platform: web (fallback; brief said 'react-native', unrecognized — confirm with owner)".
+Boundary: a documented legacy default for a *missing* field is not a silent default — the rule fires on values present-but-unrecognized and fields ambiguous at write time. This is the recording half of ENGINEERING_PRINCIPLES.md §8's stop-vs-assume rule: that rule decides whether to proceed, this one decides what the plan is allowed to claim as decided.
+
+**A phase's brief carries that phase's decisions only.** A check owned by a later phase lives in that phase's list, not in the build brief — loading the build brief with later-phase warnings distorts the work it governs. (pbakaus/impeccable `CLAUDE.md:47` — accessibility lives in `audit.md`, not in the design guidance, because models reminded about it at design time over-cautious themselves into safe, underdesigned output)
+*Why: a warning read at the wrong phase doesn't add care, it changes the shape of the work — caution in place of the decision the phase was supposed to make.*
+*Bad:* the build plan front-loads the full accessibility audit checklist and ships a safe, underdesigned surface. *Good:* the build plan ships the design; the audit checklist runs the accessibility check where it belongs, in the review phase.
+Boundary: a later-phase check that *changes* a build decision (an accessibility requirement forcing a component choice) belongs in the brief as a decision, not as a checklist dump — the line is decision versus audit list.
 
 **Skip when:** No spec was needed.
 

@@ -1,9 +1,9 @@
 ---
 title: Writing
-version: "1.0"
+version: "1.1"
 scope: "Prose the agent writes: docs, PR bodies, reports, comments"
 consult_when: "When writing anything a human reads — documentation, PR descriptions, reports, commit messages — and the draft feels like it could have come from any project."
-last_reviewed: 2026-10-23
+last_reviewed: 2026-11-04
 ---
 
 # Writing
@@ -148,3 +148,8 @@ Boundary: the bar scales with reach — an ephemeral message earns a glance; a r
 *Bad:* implementing the brief's "verify rate limiting" TODO after the limiter was removed in the previous PR.
 *Good:* "The brief lists rate-limit verification as an unknown; the limiter was removed in #57 — flagged, not implemented."
 Boundary: the code is authoritative about what exists, not what was intended. An ADR's intended-but-unbuilt requirement still needs building — read the code to see whether it is. And items a human reviewer raises in a review thread are requirements to answer, not gaps to wave at — this rule governs briefs, not reviewers.
+
+**Version a brief's schema, not the tool release.** A brief written under v4.0.0 is not stale under v4.0.1; its version moves only when its shape moves — a field added, removed, or reshaped. (pbakaus/impeccable `CLAUDE.md:83` — stamps are schema versions, not release versions)
+*Why: release-number staleness forces rewrites of documents that changed in no way that matters, and teaches readers to ignore staleness flags — the flag stops meaning anything.*
+*Bad:* flagging every brief stale on a patch release and re-issuing them unchanged. *Good:* the brief carries a schema stamp; the stamp bumps only when the shape changes, so a stale flag means the shape actually moved.
+Boundary: when no stamp exists, staleness is a heuristic reconstruction of what era a file came from — say so, don't assert an era the evidence can't support.
