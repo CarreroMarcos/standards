@@ -1,9 +1,9 @@
 ---
 title: Rules-File Integrity
-version: "2.7"
+version: "2.8"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
 consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — 'it's just a formatting tweak', 'the bot's PR, just merge it'."
-last_reviewed: 2026-11-04
+last_reviewed: 2026-11-09
 ---
 
 # Rules-File Integrity
@@ -147,7 +147,12 @@ If you find a violation:
    - Why: agents and builds don't distinguish "docs" from "code" — they execute both. A prose-touch-up review bar on a behavior change ships untested behavior with a spellcheck.
    - Boundary: purely mechanical corrections (typos, broken links to their intended destination) stay mechanical — this rule fires when the words shape behavior.
 
-5. **Retiring an instruction-file field records why it died, not just that it died.** Add the retired field to the retired list with its reason — what replaced it, or what made it wrong — because a bare "deprecated" makes agents preserve it "just in case", and a retired axis keeps steering current output through that preservation. (pbakaus/impeccable `CLAUDE.md:85`)
+5. **A behavior change lands with its instruction updates in the same branch.** When a change alters behavior, commands, or development workflows, the agent skills and instruction files that describe the changed behavior are updated in the same branch — not in a follow-up. A behavior change that leaves its instructions describing the old behavior ships a lie to the next agent: the file that governs the next session contradicts the code it governs.
+   - Why: instruction files are behavioral inputs (item 4) — so a behavior change that doesn't update them leaves the corpus describing a system that no longer exists, and the next agent follows the stale description over the live code. The review-side check is the same rule in reverse: a PR that changes behavior without its companion skill updates is incomplete.
+   - Bad: a CLI flag renamed in code, the skill still documenting the old flag — the next agent passes the dead flag and debugs a ghost. Good: the flag rename and the skill edit land in the same branch; the PR's changed-files list includes the skill (NVIDIA/OpenShell `AGENTS.md:222`, `.agents/skills/build-from-issue/SKILL.md:28`, `.agents/skills/review-github-pr/SKILL.md:157`).
+   - Boundary: mechanical-only code changes (no behavior, command, or workflow change) don't trigger it — the rule fires on behavior, not on diffs. And a skill update that is itself the change follows item 4's versioning, not this one.
+
+6. **Retiring an instruction-file field records why it died, not just that it died.** Add the retired field to the retired list with its reason — what replaced it, or what made it wrong — because a bare "deprecated" makes agents preserve it "just in case", and a retired axis keeps steering current output through that preservation. (pbakaus/impeccable `CLAUDE.md:85`)
    - Why: the agent reading the template is the consumer — a reasonless deprecation reads as "maybe still needed", and "just in case" is exactly how dead fields survive.
    - Bad: the template marks `Register` deprecated, no reason — agents keep writing it into new briefs. Good: "Register (retired: replaced by per-surface Mode; v3 axis, read by nothing)".
    - Boundary: this governs agent-read templates and briefs, not published contracts — ENGINEERING_PRINCIPLES.md §6's warn → document → remove policy (name the replacement and the removal version) governs consumers; this rule governs the agent itself, where the failure mode is preservation rather than breakage.

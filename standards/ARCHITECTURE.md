@@ -1,9 +1,9 @@
 ---
 title: Architecture
-version: "1.3"
+version: "1.4"
 scope: "Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation"
 consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
-last_reviewed: 2026-11-02
+last_reviewed: 2026-11-09
 ---
 
 # Architecture
@@ -385,5 +385,29 @@ Circuit-breaker thresholds, rate limits, queue bounds, and concurrency settings 
 If any answer is "it depends on what state was left behind," the operation needs a reconciliation step.
 
 **Boundary:** spend the reconciliation budget on operations that mutate shared state. Read-only and pure operations converge trivially — don't armor what can't break.
+
+### 16.8. New mechanism beside an existing seam
+
+**Symptom tripwire:** a new module, hook, or service call built beside an existing middleware, interceptor, provider — or the project's equivalent seam — that already serves that concern.
+
+**Use the existing seam before building a new mechanism.** At plan time, list the extension points the codebase already offers for the concern; if one satisfies the use case, use it.
+
+**Why:** every new mechanism is a second way to do one task (§16.4) — it gains callers, drifts, and doubles the surface the next change must touch. A seam that already exists was already reviewed, tested, and wired into the system's failure behavior; a new mechanism re-earns all of that from zero.
+
+**Bad:** a new ad-hoc auth check in a handler beside the middleware that already enforces auth for that route family. **Good:** the handler registers on the existing middleware; the plan names the seam it checked and why it fits (NVIDIA/OpenShell `.agents/skills/build-from-issue/SKILL.md:21`).
+
+**Boundary:** when no existing seam satisfies the use case — a genuinely new concern, or a seam that can't express it — building new is correct. Say which seams were checked and why they don't fit. And the need to run another service alone doesn't disqualify an extension — if the system already supports that service, the seam still counts.
+
+### 16.9. Bypassed sanctioned layer
+
+**Symptom tripwire:** call-site code implementing what a sanctioned layer exists to do — the layer is missing the operation, so the caller re-implements it inline.
+
+**When the sanctioned layer lacks the operation you need, extend the layer — don't route around it.** Add the operation to the layer (and its backend or contract) instead of writing a direct implementation at the call site.
+
+**Why:** a bypass is a second live path (§16.4) that no future change to the layer will reach — fixes, policy, and failure handling applied to the layer silently skip the bypass. The layer is the one place the behavior is reviewed; the bypass is the one place it isn't.
+
+**Bad:** a handler that hand-rolls the operation because the shared layer "doesn't have that op yet" — the next fix to the layer never reaches it. **Good:** the operation lands in the layer with its tests; the handler calls it.
+
+**Boundary:** documented, classified exceptions stay permitted — a protocol or parsing type, or an explicitly classified exception the layer's own docs allow, isn't a bypass. An undocumented bypass is. (Translated from crypto-specific: NVIDIA/OpenShell `AGENTS.md:240` — "Route first-party security-sensitive cryptographic operations through `openshell-crypto`. If an operation is missing, extend the facade and backend implementation instead of adding a direct cryptographic implementation in an application crate.")
 
 ---
