@@ -1,9 +1,9 @@
 ---
 title: Writing
-version: "1.1"
+version: "1.2"
 scope: "Prose the agent writes: docs, PR bodies, reports, comments"
 consult_when: "When writing anything a human reads — documentation, PR descriptions, reports, commit messages — and the draft feels like it could have come from any project."
-last_reviewed: 2026-11-04
+last_reviewed: 2026-11-08
 ---
 
 # Writing
@@ -20,6 +20,7 @@ last_reviewed: 2026-11-04
 - **6. PR bodies are under-a-minute briefings** — brief, then link the evidence
 - **7. Rules have stable numbers** — a retired rule leaves a gap
 - **8. Durable prose has a rot budget** — line numbers, generated docs, live facts, brief-vs-code authority
+- **9. Agent-written docs drift by default** — same-PR co-change, docs as an agent-read surface, human verifies before publish
 
 ## 1. Pick the mode before writing
 
@@ -153,3 +154,28 @@ Boundary: the code is authoritative about what exists, not what was intended. An
 *Why: release-number staleness forces rewrites of documents that changed in no way that matters, and teaches readers to ignore staleness flags — the flag stops meaning anything.*
 *Bad:* flagging every brief stale on a patch release and re-issuing them unchanged. *Good:* the brief carries a schema stamp; the stamp bumps only when the shape changes, so a stale flag means the shape actually moved.
 Boundary: when no stamp exists, staleness is a heuristic reconstruction of what era a file came from — say so, don't assert an era the evidence can't support.
+
+## 9. Agent-written docs drift by default
+
+**A behavior change ships its doc update in the same PR. A code change without one is drift, and drift is what agent PRs do by default.**
+
+In a 2026 study of 29,669 AI-generated PRs across 2,585 repositories, 63.2% changed code without co-updating any documentation — worst on refactors (77.5%), best on features (55.2%). Every agent in the study drifted in 48–73% of its PRs. (De Michele & Tantithamthavorn, arXiv:2610.27381)
+*Why: an agent that finishes the code considers the job done. The doc update is a second job nobody assigned, so it never happens — and the gap compounds: a file changed without documentation is re-documented at roughly half the rate of one changed with it (24% vs. 48% within 90 days).*
+*Bad:* a refactor PR that renames the queue field and leaves the runbook, the README example, and the spec describing the old name.
+*Good:* the same PR touches the code, the runbook line, and the spec paragraph — one diff, one review, no follow-up ticket that never gets filed.
+Boundary: not every code change needs a doc change — a pure internal refactor with no documented behavior needs none. The test is whether a reader of the docs would now be misled; if yes, the doc ships in this PR, not a later one. Treat the study's numbers as measured association, not proven causation: its drift measure is the absence of a doc co-change (a proxy, not a verified inconsistency), and it carries no human baseline — the rate is not claimed agent-specific.
+
+**Undocumented code costs fixes, not just confusion.** Files changed without documentation were followed by a same-file fix 8.6–11.7% more often than documented ones across 30–90 day windows. The direction is what matters: documented changes do not cost more; they cost less.
+Boundary: the fix association is temporal, not causal — a file that needed a doc update may simply have been the riskier change. The rule stands on the cheaper reading either way: the doc update costs one PR, the missing one costs a second fix.
+
+**Docs are now an agent-read surface, not a human-only one.** In March 2026, AI coding agents made 45.3% of requests to Mintlify-hosted documentation — nearly tied with browsers at 45.8% — and by August 2026 agents were the majority of readers. A stale page no longer misleads one reader: it feeds every agent that reads it, and those agents write the code. (Mintlify, "The state of agent traffic in documentation", March 2026; 2026 State of Knowledge Report)
+*Why: a human who hits a stale page can smell it and check the code. An agent treats the page as ground truth and builds on it — one wrong endpoint becomes wrong code in every session that reads it before anyone notices.*
+*Bad:* an API reference that still documents the retired `/v2/reviews` endpoint while the code serves `/v3`.
+*Good:* the endpoint-change PR updates the reference page, the `llms.txt` entry, and the example — the surfaces agents actually read — in the same diff.
+Boundary: the traffic share is Mintlify's hosted-docs measurement by user-agent header; OpenAI Codex sends no identifiable header, so agents are undercounted, not overcounted. The direction is the rule's load-bearing part, not the decimal.
+
+**The agent drafts; a human verifies before publish.** 83% of surveyed companies say AI agents now draft documentation updates; only 9% let them publish without a human in the loop. (Mintlify 2026 State of Knowledge Report, survey of 329 companies) A generated doc that cannot name the code, test, or doc it came from is a draft, not documentation — it does not ship until a human has checked its claims against their authority (§8).
+*Why: generation is cheap and verification is the work. An unverified generated page is §8's memorized fact at scale: a rumor with confidence, now multiplied across every agent that reads it.*
+*Bad:* merging an agent's freshly generated architecture page that describes a queue removed two PRs ago.
+*Good:* the agent drafts the page from the current tree with file citations; the reviewer checks the three claims that matter and merges.
+Boundary: the 9% is a survey self-report — cite it as what teams say they do, not what they do.

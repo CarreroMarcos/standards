@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.6"
+version: "3.7"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-11-04
+last_reviewed: 2026-11-08
 ---
 
 # Workflow Standard
@@ -45,6 +45,12 @@ Portable feature-development discipline — seven phases: brainstorm → spec �
 - Self-review: no *unowned* TBDs — every open question names its owner and decision date; no contradictions, no ambiguity
 - Get user approval before proceeding
 - For batch/async sources, define poison-message behavior (fail loudly — route to the dead-letter queue, never swallow) and partial-failure semantics (per-item results so only failed items retry, never the whole batch)
+
+**The spec is the source of truth, not the first draft.** When behavior changes, change the spec first, then the code — a behavior change without a spec update in the same PR is a review blocker. A spec the code has outgrown is a stale map: it misleads every agent and reader that follows it. (Drift evidence: WRITING.md §9.)
+**Phase-gate: no code before the spec is approved.** Specify → Plan → Tasks → Implement, each with its human checkpoint. Jumping from idea straight to generated code is vibe coding with a spec file nearby, not spec-driven development.
+**Acceptance criteria in testable form.** Write each criterion so it can be checked without interpretation: "when `<trigger>`, the system shall `<behavior>`" (EARS-style). A criterion the agent can misread is a spec bug — fix the sentence, not the implementation.
+**One spec, one feature, one to three pages.** State what is explicitly out of scope alongside what is in it. A spec that tries to cover everything authorizes nothing clearly.
+**Trace every change to the spec that authorized it.** The commit message or PR body names the spec file. A change with no authorizing spec is either small enough to skip the spec (see "Skip when") or work that skipped Phase 2.
 
 **Output:** the spec, committed to git.
 

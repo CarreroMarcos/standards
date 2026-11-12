@@ -1,9 +1,9 @@
 ---
 title: Agentic Design
-version: "1.5"
+version: "1.6"
 scope: "Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation"
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
-last_reviewed: 2026-10-09
+last_reviewed: 2026-11-08
 ---
 
 # Agentic Design
@@ -271,6 +271,15 @@ When one agent dispatches others, **the orchestrator owns verification.** A suba
 **Watch spawn volume.** ≤6 spawns per rolling 2 hours (AGENTIC-SAFETY.md, "Agent Spawn-Volume Advisory") — each agent is a new poisonable context, and volume makes verifying their reports harder.
 
 **Bound worker authority.** Delegation is intersection (TRUST-CLASSIFICATION.md, Rule 7): a worker acts only within the overlap of each party's authorization, never the union — the narrower grant wins.
+
+**Climb the coordination ladder only when the rung below fails.** Five levels, ordered by coordination cost: (1) one agent with good practices — the default; (2) subagents, for side work that would flood the main context; (3) headless pipelines, for batch work over many items; (4) parallel sessions in separate worktrees, for independent workstreams; (5) agent teams, for parallel exploration with communication between workers. Move up only when the current level demonstrably fails — never because parallelism sounds faster.
+*Why: the top of the ladder pays only for the shape that earns it. Anthropic's multi-agent research system reported a 90.2% improvement over a single agent on an internal research eval — parallel exploration with cross-communication, the level-5 case, not routine implementation. The gain belongs to the shape, not to the count.*
+
+**Parallelism is bought, not free.** Token spend scales linearly with agent count — five teammates cost roughly five single-session budgets at once — while coordination failures scale worse than linearly. A level-5 team that saves an hour of wall-clock time and spends five hours of tokens plus a merge conflict has not saved anything.
+
+**Parallel work must be truly independent.** Fan out only over workstreams that do not write the same files, rows, or state. Shared writable state needs a claim or fencing mechanism first (ARCHITECTURE.md §4.1) — otherwise the workers belong in one session. Two agents writing the same tree without a claim is a race, not parallelism.
+
+**Log every handoff.** One line per handoff: who handed what to whom, with the artifact path. A handoff with no record is un-auditable by construction — when the merge goes wrong, the log is the only map.
 
 **The common failure:** chaining agents on prose handoffs, accepting "done, all green" at face value, and discovering three stages later that stage one edited the wrong tree.
 
