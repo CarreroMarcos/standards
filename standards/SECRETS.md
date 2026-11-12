@@ -1,9 +1,9 @@
 ---
 title: SECRETS.md — Ephemeral by Default
-version: "2.6"
+version: "2.7"
 scope: "Secrets management: storage, rotation, agent exposure"
 consult_when: "When handling credentials, API keys, or tokens — storing, passing, logging, or reviewing code that touches them. Especially when an agent is about to touch credentials: 'the agent needs the key just for this run'."
-last_reviewed: 2026-10-03
+last_reviewed: 2026-11-02
 ---
 
 # SECRETS.md — Ephemeral by Default
@@ -57,6 +57,10 @@ Pre-commit hooks catch secrets going into git. They miss everything else the age
 - **Hide inputs at sensitive boundaries.** Structured validation errors that echo the offending input are a secret-leak vector — passwords land in 422 responses, then in logs. At sensitive boundaries, suppress the input field (`errors(include_input=False)` / `hide_input_in_errors` in pydantic).
 - **Secrets ride as redacted types.** Config values that hold secrets use a secret-string type so they redact in logs, tracebacks, and error payloads by default.
 - **Redaction runs before rendering.** In the logging pipeline, the secret-scrubbing step sits before the formatter — the secret must never reach the string that gets emitted. Full policy: `LOGGING.md`.
+- **Error responses carry no internals.** HTTP, SSE, and handler error responses route through one sanitizer — never a raw stack trace or raw error message in a response body — and tests assert no stack-trace leak.
+  - Why: a stack trace in a 500 body hands the attacker file paths, dependency versions, and internal structure for free.
+  - Bad: `res.status(500).json({ error: err.stack })`. Good: a sanitized body to the client, the full traceback to the server log only (LOGGING.md rule 8).
+  - Boundary: the sanitizer gates the response, not the log — server-side logs still carry the full traceback for diagnosis. (cheaper-inference/OmniRoute `AGENTS.md:160`, Hard Rule 12, `:188`)
 
 ## Storage and lifetime
 
@@ -65,6 +69,16 @@ Pre-commit hooks catch secrets going into git. They miss everything else the age
 - **Dev-only fallback:** an OS keychain (`keyring`, Credential Manager, `libsecret`) combined with short-lived tokens, where no secrets manager is available.
 - **Never store credentials in hidden context** — system prompts, tool schemas, agent memory configs, or policy text the model sees but the user doesn't. Assume hidden context will be discovered; it is never an authorization control.
 - **Default lifetimes:** dev tokens ≤ 12 hours; CI tokens ≤ 1 hour; production service tokens ≤ 24 hours with automatic rotation. Any long-lived token needs a documented rotation SLA and an owner.
+- **Public credentials still go through one resolver.** OAuth client IDs, Firebase Web keys, and other values extracted from public CLIs are public — and still never string literals. One resolver function owns every such value, so rotation, audit, and a grep for every use site are one place, not a scavenger hunt.
+  - Why: "public" is not "unimportant" — a literal in ten provider configs rotates ten times, or never.
+  - Bad: the same `client_id` pasted into each provider config. Good: every provider calls the one resolver; the literal lives in exactly one place.
+  - Boundary: genuinely non-sensitive constants (endpoint URLs, keys meant for public distribution) don't need the resolver — the rule fires when the value authenticates anything, even weakly. (cheaper-inference/OmniRoute `AGENTS.md:159`, Hard Rule 11)
+- **Encrypt credentials the app itself stores — and never log the key.** Provider keys persisted in app storage (database rows, local vaults) are encrypted at rest with an authenticated cipher (AES-256-GCM); the encryption keys themselves never appear in logs, traces, or error payloads.
+  - Why: a database dump without its keys leaks ciphertext; a log line carrying the key turns it into a leak of credentials.
+  - Boundary: manager-issued short-lived tokens follow the manager path above — this rule covers credentials the app stores itself, not tokens it borrows. (cheaper-inference/OmniRoute `AGENTS.md:156`)
+- **Ship no working default credential; treat any observed demo value as compromised.** A shipped default rotates on first login and never survives setup; real secrets are generated, not chosen (`openssl rand`). Any credential ever observed in a previous version of a file — even one labeled a demo — is treated as compromised and never reused. The standard names no default value: reproducing one here would hand the next reader a working-looking credential to copy.
+  - Why: defaults ship to every install, and "demo" values get copied into production by the next reader who assumes they're inert.
+  - Boundary: documented placeholder *names* (`{{API_KEY}}`, `YOUR_KEY_HERE`) are not credentials — the rule fires on values that would authenticate if tried. (cheaper-inference/OmniRoute `AGENTS.md:438`, `:350`)
 
 ## `.env`, when unavoidable
 
