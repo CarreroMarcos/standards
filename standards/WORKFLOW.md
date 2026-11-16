@@ -8,7 +8,7 @@ last_reviewed: 2026-11-09
 
 # Workflow Standard
 
-Portable feature-development discipline — seven phases: brainstorm → spec → plan → implement (TDD) → simplify → security review → commit.
+Portable feature-development discipline — seven phases (brainstorm → spec → plan → implement (TDD) → simplify → security review → commit), plus a migration discipline and handoff.
 
 **Core principle:** never write code before understanding what to build — the most common AI coding failure mode.
 
