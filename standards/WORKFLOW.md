@@ -8,7 +8,7 @@ last_reviewed: 2026-11-09
 
 # Workflow Standard
 
-Portable feature-development discipline — seven phases: brainstorm → spec → plan → implement (TDD) → simplify → security review → commit.
+Portable feature-development discipline — seven phases (brainstorm → spec → plan → implement (TDD) → simplify → security review → commit), plus a migration discipline and handoff.
 
 **Core principle:** never write code before understanding what to build — the most common AI coding failure mode.
 
@@ -23,6 +23,7 @@ Portable feature-development discipline — seven phases: brainstorm → spec �
 - **Phase 5 — Simplify** — the simplification pass
 - **Phase 6 — Security Review** — the security gate
 - **Phase 7 — Commit** — changelog, deprecation, commit discipline
+- **Migrating a system** — parallel-run migration: parity, workarounds, progress file
 - **Handoff** — passing work between agents
 
 ## Phase 1 — Brainstorm
@@ -262,6 +263,30 @@ Full review vocabulary and procedure: `CODE-REVIEW.md`.
 Update the changelog in the same commit — Keep-a-Changelog sections (Added/Changed/Deprecated/Removed/Fixed/Security), one entry per user-visible change, curated prose. Users decide whether to upgrade by reading the changelog, not the diff.
 
 Deprecating a published contract: three phases — warn (name the replacement and the removal version) → document (changelog entry in the same commit) → remove in a major version after a real warning window. Principle: `ENGINEERING_PRINCIPLES.md` §6 "Preserve Backward Compatibility".
+
+## Migrating a system
+
+A migration replaces one working system with another — a test runner, a framework, a data store, a service. The rules below govern the migration itself, not the systems at either end. (The in-repo case — a new internal API with no external consumers — is `CODE-QUALITY.md` §5 "Migrate callers, then delete the legacy API"; this section is for migrations where the old system keeps running.)
+
+**Run the old system beside the new one until each ported piece is proven — retirement is a separate, confirmed decision.** A migration is never one change: port one slice, prove it, and leave both systems green — the old one keeps everything it had, the new one passes beside it. Delete an old test, helper, or config only when the user confirms, and mark it retired then. The migration changes the harness, not the system under test: never edit app code to make a port pass — propose the app change instead.
+- Why: the old system is the only oracle for what the new one must do. Deleting it before the port is proven destroys the evidence the port is judged against — and a migration that edits the thing under test can "prove" parity by changing the answers.
+- Bad: the old suite is deleted in the same PR that lands the port, so nothing can show the port dropped a check. Good: the port lands with the old suite still running beside it; retirement is its own confirmed step, after the port is green.
+- Boundary: a slice the new system genuinely cannot do stays in the old system on purpose — marked `stays` with its reason, not silently dropped. (e2e-inc/e2e `skills/migrate-to-e2e/SKILL.md:15-19`, `:379-381`, `:255-258`)
+
+**A port is done when it is as strict as the source — count the assertions, don't weaken them to green.** Inventory the source's assertions before porting — explicit ones plus steps that are themselves checks (a tap that fails when its target is missing) — and the port's count across its tests is at least the source's. Never weaken an assertion, widen a timeout without a reason, or drop a step to go green. A test that cannot pass honestly stays blocked, with what failed written down. A failure both systems show is an app or environment bug: report it, don't port around it. Repeat the port three times on each target the source covered; three of three, or it is not done.
+- Why: a migration that quietly drops checks is a suite that got smaller and called it progress. The count is the only cheap proof that nothing was lost in translation — and a failure both systems show belongs to the app, not to either harness.
+- Bad: the port drops two assertions the source had, passes, and ships as "migrated". Good: the port's assertion count meets or beats the inventory's, three runs per target are green, and a shared failure is filed against the app.
+- Boundary: splitting one source test into several ported tests adds tests, never removes a check — the count is summed across the split tests. A source assertion that only guarded a precondition becomes the wait that closes the arrange block; it still counts, since it fails on timeout. (e2e-inc/e2e `skills/migrate-to-e2e/SKILL.md:271-282`)
+
+**Re-prove every workaround in the new system — try the plain step first.** A workaround the old system needed is a workaround for the old system. Port the plain step; keep a workaround only when the new system needs it too, with its own comment saying why.
+- Why: workarounds encode the old system's failures, not the new system's. Porting them blindly imports bugs the new system never had — and hides them under comments that describe a problem that no longer exists.
+- Bad: the port copies a retry loop around a picker because the source had one, with the source's comment intact. Good: the plain step runs first; only if it fails does the workaround come over, with a new comment naming the new system's reason.
+- Boundary: a workaround the new system genuinely needs keeps its comment and its reason — re-proving is not deleting on principle. (e2e-inc/e2e `skills/migrate-to-e2e/SKILL.md:245-248`)
+
+**A multi-session migration keeps a progress file, updated as you go — not at the end.** What moved, what is left, and why; one row per source file with its status (`todo`, `ported`, `retired`, `blocked`, `stays`). Write the next slice into it before starting, so an interrupted session leaves a trail; update statuses as they change.
+- Why: a migration that spans sessions has no other memory. A progress file written at the end is a reconstruction; one updated as you go is the state — and the next session starts from it instead of from scratch.
+- Bad: three sessions in, nobody can say which files are ported and the `stays` list lives in someone's head. Good: the file beside the config says what moved, what is left, and what is blocked with its reason.
+- Boundary: a migration one session finishes doesn't earn a file — the rule starts when a second session may resume the work. (e2e-inc/e2e `skills/migrate-to-e2e/SKILL.md:185-187`, `:323-325`)
 
 This standard ends at a clean commit. What happens between push and merge — review rounds, gates, merge discipline — is the dev loop (`DEV-LOOP.md`).
 

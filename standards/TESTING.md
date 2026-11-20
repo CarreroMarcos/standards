@@ -106,6 +106,11 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
    behavior before the implementation changed.
 ```
 
+**Prove a new suite is a witness by planting a bug it must catch.** When a migration (or a new suite replacing an old one) claims parity, plant a small defect in an end state the old suite asserts and run both suites: both must fail at the step that checks the planted state. Only the old suite fails: the old suite was weaker than believed — record it. Only the new suite fails: the port lost an assertion, so it is not done. Neither fails: pick another bug. Revert the planted defect in the same session.
+- Why: a green new suite proves nothing on its own — it may pass because it checks less. A planted defect is the red-first proof for the suite itself: the suite demonstrated it observes the broken behavior, so its green afterward means the behavior holds, not that the checks were thinned.
+- Bad: the port is green on day one and ships as "proven" — nobody ever saw it fail. Good: both suites fail on the planted wrong total at the step that checks it; the defect is reverted and the diff is empty.
+- Boundary: the planted defect goes into a file with no uncommitted changes, is reverted before the session ends, and the revert is verified empty — a planted bug left behind is a real bug. A failure before the step that checks the planted state is not a catch. (e2e-inc/e2e `skills/migrate-to-e2e/SKILL.md:286-300`)
+
 ## 10. Kill dead tests
 
 **A test is dead if it would pass when every function it imports returned nothing.** Call the subject inside the test body with one concrete input and assert the literal output or the observable effect. Five shapes that pass anyway:
