@@ -1,9 +1,9 @@
 ---
 title: Workflow Standard
-version: "3.8"
+version: "3.9"
 scope: The seven-phase development workflow
 consult_when: "When starting or planning a unit of work, from idea through clean commit — especially when tempted to skip straight to code ('I already know what to build')."
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-20
 ---
 
 # Workflow Standard
@@ -24,6 +24,7 @@ Portable feature-development discipline — seven phases (brainstorm → spec �
 - **Phase 6 — Security Review** — the security gate
 - **Phase 7 — Commit** — changelog, deprecation, commit discipline
 - **Migrating a system** — parallel-run migration: parity, workarounds, progress file
+- **Release** — gating, tagging, failure recovery, and artifact verification
 - **Handoff** — passing work between agents
 
 ## Phase 1 — Brainstorm
@@ -289,6 +290,55 @@ A migration replaces one working system with another — a test runner, a framew
 - Boundary: a migration one session finishes doesn't earn a file — the rule starts when a second session may resume the work. (e2e-inc/e2e `skills/migrate-to-e2e/SKILL.md:185-187`, `:323-325`)
 
 This standard ends at a clean commit. What happens between push and merge — review rounds, gates, merge discipline — is the dev loop (`DEV-LOOP.md`).
+
+## Release
+
+Pushing the tag is the release action — everything around it is choosing, gating, watching, and proving. The rules below are that discipline, mined from a working release procedure (usememos/memos `.agents/skills/release/SKILL.md`).
+
+**Release a committed SHA on the main line, never a working tree.** Tag a commit that is on the main branch; uncommitted or unpushed local work is not part of the release. Do not stash, commit, push to main, or rebase to make a release — if the work isn't on main, it isn't in this release.
+
+- Why: a release cut from a working tree ships code nobody reviewed and nobody else can reproduce — the tag points at a commit that doesn't contain what was published.
+- Boundary: a release *candidate* is still a committed SHA — the rule governs where the code lives, not how stable it is.
+
+**Risky ranges earn a candidate first.** When the range since the last stable release includes migrations, API or protocol changes, auth or permission changes, or more than a few weeks of features, cut a release candidate before the stable tag. A fixes-only patch can go straight to stable. The call is recorded in the release plan, which already names the range's commit count and the last stable tag — a range nobody can summarize from those two numbers is a candidate range.
+
+- Why: the candidate is the cheapest full-dress rehearsal that exists — real artifacts, real publishing path, no stability promise. Risky ranges are exactly the ones whose failures you want discovered there.
+- Bad: a month of features plus a schema migration tagged straight to stable; the migration bug is found by users. Good: the same range ships as a candidate, the bug surfaces in candidate verification, stable is cut after the fix.
+
+**Gate the candidate before the tag exists.** All three, before proposing the tag: the tag name is unused (no tag, no release with that name), the candidate SHA is reachable from the main branch, and CI is green on every named suite *for that exact SHA* — wait for in-progress runs; a failure blocks the release.
+
+- Why: a tag is forever (next rule). Every check that can run before it exists is free; every check discovered after it exists costs a new tag number.
+- Bad: "CI was green yesterday" — on a different commit. Good: the gate names the SHA and the suites, and each suite's verdict is for that SHA.
+
+**Dry-run a stable release before spending the tag.** For a stable tag that is not a promotion, run the full release pipeline once without publishing — smoke tests and every build — and confirm it ran on the candidate SHA and passed.
+
+- Why: a failing build discovered by the dry run costs nothing; the same failure after the tag costs the tag number and leaves a dead release in the list.
+- Boundary: candidates and promotions skip the dry run — the candidate *is* the dry run, and a promotion re-tags a commit already proven as one.
+
+**Show the plan and get an explicit go before the publishing push.** The plan names: the tag, the candidate SHA and its subject, the last stable tag, the commit count, the gate results, which published tags or images will move, and the drafted notes. The plan is always shown; the push then waits for an explicit go. The only bypass is the wait, never the plan: when the original request already named the tag (or "next candidate" / "next stable") and said to proceed without asking, post the plan and push without waiting.
+
+- Why: the push is the one irreversible step in the procedure, and it publishes to every surface at once. The plan is the last cheap moment to catch a wrong tag, a wrong SHA, or a missing gate.
+- Bad: tagging on "ship it" with the gates unreported. Good: the plan above, one "go" — then the push.
+
+**A pushed tag does not move.** Never delete, move, or force-push a pushed tag, and never delete a published release or image, without explicit approval for that specific tag. The default recovery is the next tag number.
+
+- Why: consumers pin, mirror, and cache by tag. A moved tag silently changes what a pinned name delivers — the supply-chain failure this library's pinning rules exist to prevent, self-inflicted.
+- Bad: force-moving a tag to "just fix" a bad release; every mirror now disagrees about what the tag means. Good: the bad release stays, documented; the fix ships as the next number.
+
+**Classify the failure before rerunning anything.** Read the failed job's log and name the class before acting:
+
+- **Infrastructure** (runner loss, network timeout, registry rate limit or 5xx, action download failure): rerun only the failed jobs. Retry at most twice per run.
+- **Defect** (test failure, compile error, smoke assertion, bad build file): stop. Do not rerun — the rerun cannot pass. Report the failing step, the root cause, and the files involved; the fix lands on the main branch through the normal workflow, then the next tag carries it. The failed tag stays as is.
+- **Partial publish** (release published but images failed, or the reverse): report exactly which surfaces exist. Rerun only the failed jobs — they are idempotent for the same tag.
+
+- Why: an unclassified rerun treats a defect like weather. Rerunning a defect wastes the run and can turn a clean failure into a partial publish; rerunning everything republishes surfaces that were already correct.
+- Bad: "the release failed, rerunning the whole workflow" — three times, on a compile error. Good: classified as defect in one read of the log; fix on main; next tag.
+
+**Verify the published artifacts before reporting success.** The release is not done when the pipeline goes green; it is done when the published surfaces check out: the release carries exactly the expected asset list plus checksums, a downloaded archive verifies against its checksum line, the extracted binary reports the tag as its version, and every published image lists every architecture the project publishes for. For a stable tag, any alias tags the project moves (such as `stable` or a period tag) resolve to the same digest as the release tag.
+
+- Why: the pipeline's green is a claim about its own steps. The artifact checks are the only evidence about what consumers actually received — a build can succeed and still publish the wrong binary under the right name.
+- Bad: "workflow green, release done" — the checksum file lists five archives, six were built. Good: each check run and reported; the mismatch is caught before the announcement.
+- Boundary: a check that cannot run in this environment is reported as not run, with the reason — never silently skipped. An unverified release reported as verified is worse than an unverified one reported honestly.
 
 ## Rerunnable artifacts
 
