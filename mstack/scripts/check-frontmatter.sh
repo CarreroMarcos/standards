@@ -4,6 +4,12 @@
 # A file with no leading `---` block passes (nothing to validate).
 # Reports `file:line:` for the frontmatter line where the parser failed.
 set -u
+# Portability guard: PyYAML is a hard dependency — fail loudly (exit 2)
+# instead of reporting every file as unparseable when it is missing.
+if ! python3 -c 'import yaml' 2>/dev/null; then
+  echo "check-frontmatter.sh: requires PyYAML (python3-yaml) — install it; the frontmatter lint cannot run without it." >&2
+  exit 2
+fi
 bad=0
 for f in "$@"; do
   [ -f "$f" ] || { echo "$f: file not found"; bad=1; continue; }

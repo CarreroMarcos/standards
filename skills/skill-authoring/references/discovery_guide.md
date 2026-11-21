@@ -24,7 +24,7 @@ Use the words an agent would search for: error messages ("Hook timed out"), symp
 
 ## Naming
 
-Verb-first, active voice: `condition-based-waiting`, not `async-test-helpers`. Gerunds work for processes: `creating-skills`, `debugging-with-logs`. Name by what you DO or the core insight — never by the mechanism alone.
+Capability-based, not mechanism-based: `condition-based-waiting`, not `async-test-helpers`. Gerunds work for processes: `creating-skills`, `debugging-with-logs`. Name by what you DO or the core insight — never by the mechanism alone.
 
 ## Token efficiency
 

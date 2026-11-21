@@ -50,7 +50,7 @@ Used-in: bot-review-loop.md
 Value: 5
 Unit: interleaved runs
 Why: Minimum runs for a trustworthy measurement (median + range). Fewer runs cannot separate signal from run-to-run noise.
-Used-in: measurement-eval.md, skills/validate/SKILL.md
+Used-in: measurement-eval.md, skills/validate/SKILL.md, skills/measure/SKILL.md
 
 ### router.simulation-count
 Value: 5
@@ -117,7 +117,7 @@ Used-in: runbooks/deep-work.md
 Structural literals that are not magic numbers. The lint ignores these;
 each carries its reason so the list stays honest.
 
-- "9 runbooks" — the runbook file count; structural, not a tuned threshold.
+- "ten runbooks" — the runbook file count; structural, not a tuned threshold.
 - "step 1" (and other step numbers) — document numbering, not a quantity.
 - the version string (e.g. "v0.0.1") — the version string, not a measurement.
 - "3 times" — small fixed procedural counts in prose, not tuned thresholds.

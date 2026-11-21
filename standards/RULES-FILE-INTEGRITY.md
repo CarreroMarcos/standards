@@ -1,9 +1,9 @@
 ---
 title: Rules-File Integrity
-version: "2.8"
+version: "2.9"
 scope: Integrity rules for AI assistant rules files (AGENTS.md, CLAUDE.md, etc.)
 consult_when: "When writing or modifying agent instruction files (AGENTS.md, CLAUDE.md, rules, skills) — 'it's just a formatting tweak', 'the bot's PR, just merge it'."
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-21
 ---
 
 # Rules-File Integrity
@@ -56,8 +56,9 @@ if grep -rqP "[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{E000}-\x{F8
 fi
 # Rule 3: guardrail-bypass phrases (this document holds the denylist
 # specification, so it is excluded from its own scan — rule 6 requires
-# human review of every change to it)
-if grep -rqEi --exclude=RULES-FILE-INTEGRITY.md "ignore (previous|the above|prior) instructions|disregard prior|disable guardrails|bypass (BLOCK|CONFIRM)|override CONFIRM|god mode|unrestricted mode" <rules-dir>; then
+# human review of every change to it). Rule 3's exfiltration-imperative
+# bullets are not pattern-matched here — they stay human-review items.
+if grep -rqEi --exclude=RULES-FILE-INTEGRITY.md "ignore (previous|the above|prior)( instructions)?|disregard prior|disable guardrails|bypass (BLOCK|CONFIRM)|override CONFIRM|god mode|unrestricted mode|developer mode|full access to" <rules-dir>; then
   echo "ERROR: Guardrail-bypass pattern found in rules files — possible injection"
   exit 1
 fi

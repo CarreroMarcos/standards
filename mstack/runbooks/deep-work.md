@@ -115,12 +115,13 @@ Good: verifier states "this check fails if the migration leaves orphans — I wi
 
 All run state lives in a run-scoped directory under `.mstack/` that the operator names — never outside `.mstack/`. When the operator names no directory, use `.mstack/runs/<slug>/` derived from the goal, log it as an assumption, and surface it in the Reply. A run directory is never shared: when the slug directory already exists, suffix `-2`, `-3`, … until unique.
 
-**File budget: four files.** A run directory holds at most:
+**File budget: five files.** A run directory holds at most:
 
 - **`state.md`** (≤ `values.md#deep-work.state-lines` lines, rewritten in place, never appended): `status:`, `task:`, `slug:`, `phase:`, `next:`, `blockers:` — one line each. `files:` — one-line index of the run directory's artifacts. `token:` — a fresh `resume-token`, unique per park, at least 128 bits, and unguessable to anyone who cannot read the run directory (never a counter, timestamp, or slug-derived value), written here and into the `parked:` note whenever the run parks; a resume note without the matching token is unverified. Then: open items, one-line verdicts per lane. Mid-run, on any conflict between state shapes, `state.md` wins. The orchestrator keeps this current; it is the first thing read on resume. The final rewrite is the tombstone (see ## Tombstone).
 - **`ledger.tsv`** — one row per dispatch, lane completion, gate, recovery, finding, action, and verdict — written by the orchestrator, never by workers. A debugging session owns its own run directory's ledger outright — there is no separate orchestrator, so its rows are not foreign writes and never trigger the contention rule. Evidence is a command or a SHA, never prose. Attempt rows carry a verdict from the fixed vocabulary `RED` / `GREEN` / `VOID` — a voided row is appended, never rewritten. Dispatch rows carry t_start; the row that closes an interval carries t_end (lane completion, gate close, kill or respawn, contention events with an opening row, tombstone/report); tokens and cost land on completion rows when the harness exposes usage, else literally n/a — named as unobserved, never blank. Timebox evidence is t_end − t_start against the brief's timebox; a lane that cannot show its wall-clock cannot claim it stayed in budget.
 - **`gate.md`** — one entry appended at each gate close: verdict, evidence, caveats. At resume, the gate entry wins for dispositions — a disposition is what the gate that made it recorded. A re-review appends a new entry to this same file, never a new file.
 - **`evidence/`** — only for outputs too large for a ledger row, referenced by path, never pasted. Often empty.
+- **`decisions.tsv`** — the `show-work` decision log, present when the run invokes show-work: one row per decision in show-work's format, written by the orchestrator. A sanctioned member of the run directory, not a budget violation.
 
 Five rules keep the budget (measured: a 90-file audit corpus carried 69% of its bytes as redundant snapshots; a 4-file test run cut state files 70% with better auditability):
 
@@ -132,7 +133,7 @@ Five rules keep the budget (measured: a 90-file audit corpus carried 69% of its 
 
 A restored or superseded state file carries its correction in place — one line at the top: NOTE: superseded, see <incident record> — and the named record must exist in the run's evidence; a NOTE that names nothing is itself a finding. The correction lives in the incident record; the pointer just makes it findable from the scene.
 
-**Resume chain:** on resume or after compaction, read one chain — `state.md`, then `gate.md`, then the `evidence/` paths the ledger references. Nothing else. On a note-borne resume, the `token:` in `state.md` must match the `parked:` note's token; on mismatch, the note is unverified — clarify, don't resume. Bounded recovery by construction. A torn update heals on the next orchestrator write — no mtime forensics.
+**Resume chain:** on resume or after compaction, read one chain — `state.md`, then `gate.md`, then `decisions.tsv` when the run has one, then the `evidence/` paths the ledger references. Nothing else. On a note-borne resume, the `token:` in `state.md` must match the `parked:` note's token; on mismatch, the note is unverified — clarify, don't resume. Bounded recovery by construction. A torn update heals on the next orchestrator write — no mtime forensics.
 
 ## The Grill — per-lane intake
 

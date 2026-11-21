@@ -65,7 +65,7 @@ A finding with no disposition keeps the loop open. A confident-stop without evid
 10. **Off-thread coordination.** Only the bot and the human post in PR threads. Dismissals, debates, and coordination live in the Reply disposition report or off-thread — never as thread replies.
 11. **Stale-review SHA check.** The review's commit SHA matches the PR head SHA, or the review is stale. On mismatch: freeze or dismiss the review with the SHA evidence — never re-litigate its findings against new code.
 12. **One babysitter per PR.** When another babysitter is active on the same PR, stand down and report the collision.
-13. **Confident-stop on bot infra failure.** Stop the loop, attach the failure evidence, and report. Never fake a trigger commit to force the bot awake.
+13. **Confident-stop on bot infra failure.** Stop the loop, attach the failure evidence, and report. Never fake a trigger commit to force the bot awake. The single sanctioned exception is DEV-LOOP's empty-commit retrigger for a dropped/errored trigger event: exactly one, logged as a retrigger row; a second failure is a confident-stop.
 
 ## Worked example — one operator's setup
 

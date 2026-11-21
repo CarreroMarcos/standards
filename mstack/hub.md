@@ -22,6 +22,8 @@ The prompt is routed: the matched runbook's steps sit in the todo list verbatim 
 
 All runbook-created state lives under `.mstack/` in the working directory — run dirs, ledgers, logs, decision files. One root, so one gitignore entry covers it. The first write to `.mstack/` in a working directory also writes `.mstack/.gitignore` containing a single `*` line, so run state never shows up in git status and is never committed. The in-directory file is the mechanism — no edit to the repo's own `.gitignore` is needed, and the file is re-created on first write if it is ever deleted. A runbook that needs a state file puts it under `.mstack/`; the `parked:` note names its path. Run slugs under `.mstack/runs/` must be unique per concurrent run: if the slug directory already exists, suffix `-2`, `-3`, … until unique. Never share a run directory between runs.
 
+**Path convention:** every `references/…` path in a runbook or skill is mstack-root-relative (e.g. `references/eval-protocol.md`, `skills/hunt-bugs/references/bug-classes.md`) — never relative to the citing skill's own directory.
+
 A `parked:` note is pause-safely degenerately applied: Where (the runbook or goal), Contract (the exit predicate or done-check), Next (the first action on resume); Lanes and Blocked-on stay empty until a runbook owns state. When the runbook owns a state file, the note names its path — that path is how the resumed session finds the state.
 
 When a runbook parks mid-run, the parking step writes a `resume-token` (unique per park) into both its state file and the `parked:` note. A resume note without a matching token in the state file is unverified — the token is what a crafted prompt cannot forge.

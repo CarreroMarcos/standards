@@ -20,6 +20,10 @@ project-specific evidence path.
   this skill decides an affordance should outlive the change, that handoff
   goes to `verify-app` — or to the project's own checks — deliberately,
   never by drift.
+- This skill still closes its own path (step 6): following the evidence
+  path it designed and reporting each claim's verdict is the plan
+  completing, not a claim-check — `measure` / `prove-it` / `verify-app`
+  execute and judge specific claims on demand.
 - Small mechanical changes skip this skill: ordinary project checks are
   already the evidence path. Use it when the verification itself needs
   designing.

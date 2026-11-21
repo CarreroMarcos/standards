@@ -1,9 +1,9 @@
 ---
 title: Logging Standard
-version: "2.8"
+version: "2.9"
 scope: "Logging: what to log, levels, structure, retention"
 consult_when: "When adding or changing log/telemetry statements — or deciding whether a field is safe to log ('is this secret-adjacent?')."
-last_reviewed: 2026-10-16
+last_reviewed: 2026-11-21
 ---
 
 # Logging Standard
@@ -20,7 +20,7 @@ last_reviewed: 2026-10-16
 
 1. **Structured format** — use key-value pairs or JSON, not f-string concatenation.
 2. **Use log levels honestly** — `DEBUG` for dev-only detail (gate it behind an env var in production); `INFO` for significant events; `WARN` for unexpected-but-handled cases and degraded behavior; `ERROR` for failures that need attention.
-3. **Never log secrets** — no credentials, API keys, tokens, or passwords in logs, ever. Secret inventory: SECRETS.md.
+3. **Never log secrets** — no credentials, API keys, tokens, or passwords in logs, ever. Secret-handling rules: SECRETS.md.
    - **CI/build-log excerpts are secret-adjacent.** Test output routinely leaks tokens, and contributor-controlled logs are untrusted input. Never log raw excerpts: redact before logging (rule 6), and treat any untrusted external content the way you'd treat a password — it doesn't belong in logs raw. Identifiers from external systems are logged as identifiers; free-text external content is scrubbed first, then logged.
    - **Observability and telemetry sinks are UNTRUSTED** (TRUST-CLASSIFICATION.md, "Source Classification"): trusted infrastructure carrying attacker-writable content — classify fields, not just sources.
 4. **Log the event, not the string** — log what happened and relevant IDs, not a sentence.

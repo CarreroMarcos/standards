@@ -20,7 +20,7 @@ stated reason is the contract.
 
 ## Procedure
 
-1. **Name the intended behavior.** Write down what the code should do,
+1. **Name the intended behavior.** Write down the behavior the code must have,
    in one sentence, before writing anything executable. A test written
    from a vague intention encodes the vagueness.
 2. **Write the failing test first.** The smallest check that implicates

@@ -19,7 +19,7 @@ signal is not a plan.
   Indirection must earn its keep.
 - **Dead code, unreachable branches, obsolete comments → delete.**
   Flag during the pass; delete with proof (no callers, no references).
-- **Generic or misleading names → rename.** The name should say what the
+- **Generic or misleading names → rename.** The name says what the
   thing is for, not what it is (`users_to_notify`, not `data`).
 - **Compatibility shims with no remaining caller → delete.** Check
   callers first; a shim with one caller gets inlined.
