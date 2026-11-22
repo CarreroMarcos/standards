@@ -1,9 +1,9 @@
 ---
 title: Measurement
-version: "1.0"
+version: "1.1"
 scope: "Trusting numbers: benchmarks, performance measurements, eval results"
 consult_when: "Before trusting, reporting, or acting on a number you measured — a speedup, a regression, a throughput, a latency, or an eval result."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-11-22
 ---
 
 # Measurement
@@ -21,6 +21,7 @@ last_reviewed: 2026-10-08
 7. [Confirm the work ran inside the timed region](#7-confirm-the-work-ran-inside-the-timed-region)
 8. [Rule out what else the number could be](#8-rule-out-what-else-the-number-could-be)
 9. [Report the evidence with the number](#9-report-the-evidence-with-the-number)
+10. [A number needs a budget to be a verdict](#10-a-number-needs-a-budget-to-be-a-verdict)
 
 ## 1. Name the limiter
 
@@ -99,6 +100,21 @@ last_reviewed: 2026-10-08
 **Call the verdict inconclusive when you claim a difference but cannot name the limiter, when a side ran untuned, or when you could not check §4 and §7.** Name the gap — an inconclusive number is honest; a confident number without evidence is not.
 *Why: "inconclusive, limiter unknown" stops the number from being quoted as a result later. Doubt written down stays doubt; doubt omitted becomes fact.*
 
+## 10. A number needs a budget to be a verdict
+
+**Pre-register the threshold before you measure.** A metric without a budget is a number, not a verdict: "LCP 2.1s" means nothing until the budget says whether 2.1s passes. Set the budget first; measure second.
+*Why: a threshold chosen after the measurement is a rationalization, not a standard. The budget is what turns §9's evidence into a pass/fail the next reader can trust.*
+
+**Budget three layers — what the user feels, what causes it, what you don't control.** For web pages: user-facing metrics (LCP ≤ 2.5s, INP ≤ 200ms, CLS < 0.1 — Google's Core Web Vitals "good" thresholds at the 75th percentile of real visits), resource sizes (JavaScript, page weight, images, fonts), and third-party scripts. Each layer catches failures the others miss: a page can pass LCP while a third-party script doubles its weight.
+*Why: a single-layer budget is a single point of failure — the metric you didn't budget is the one that regresses silently.*
+
+**Set resource budgets from your own baseline, then tighten — never copy generic numbers as limits.** Measure the key templates, record today's values, set the budget at today's value where the template already passes, then tighten in steps. If the baseline already exceeds the budget, set an improvement budget (reduce 10%, then 20%) instead of enforcing an unreachable target on day one.
+*Why: a budget copied from another project's numbers is either unreachable (and ignored) or slack (and useless). Your baseline is the only honest starting point.*
+
+**Enforce the budget in CI on every pull request — and give every budget an owner and an over-budget rule.** A bundle-size check or Lighthouse CI assertion fails the build when a page or bundle goes over. A breach that nobody owns and nothing blocks is a suggestion, not a budget.
+*Why: the budget's job is to make the cost visible at the moment someone adds it, when it is cheap to change — not months later when the page fails Core Web Vitals and nobody remembers why.*
+*Boundary: budgets are thresholds on numbers, not a new file — this section is the library's performance-budget discipline, folded here because MEASUREMENT owns trusting numbers. Metric thresholds (the Core Web Vitals values) are Google's published targets; resource limits are always local to the project.*
+
 ## Before you report a number
 
 - [ ] I can name the limiter from a profile or counters, not from reading the code (§1)
@@ -110,3 +126,4 @@ last_reviewed: 2026-10-08
 - [ ] The work ran inside the timed region (§7)
 - [ ] Each alternative explanation ruled out with evidence (§8)
 - [ ] The evidence travels with the number — run count, spread, limiter stated; verdict called inconclusive where §9's tripwires fire (§9)
+- [ ] The threshold was set before the measurement, and the budget has an owner and an over-budget rule (§10)
