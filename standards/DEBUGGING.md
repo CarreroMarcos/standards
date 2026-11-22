@@ -1,9 +1,9 @@
 ---
 title: Debugging Discipline
-version: "1.2"
+version: "1.3"
 scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, premise attacks when fixes keep failing, cleanup"
 consult_when: "When something is broken and you're tempted to theorize first — 'I think the bug is probably in…', 'let me just try changing…' — or when a debug session is spiraling and nothing is converging."
-last_reviewed: 2026-10-09
+last_reviewed: 2026-11-22
 ---
 
 # Debugging Discipline
@@ -148,5 +148,45 @@ Two stop rules: (1) stop fixing and re-examine the premise after the second fail
 *Why: "no root cause" usually means incomplete investigation — but the cases where the cause genuinely lives outside the code still need an engineering response, not a shrug. Handling without monitoring guarantees the next session starts from zero again.*
 
 *Boundary: this section is reached only after the §1–§9 discipline, not instead of it. A cause declared "environmental" without the loop and the falsified hypotheses is incomplete investigation wearing a verdict's clothes. A disputed "environmental" goes to the reviewer with the loop log as evidence — no log, no verdict.*
+
+---
+
+## 12. Investigate at runtime before patching
+
+**Delegate runtime investigation to a dedicated debug subagent — don't hand raw debugger primitives to the main agent.** Static retry (read, patch, re-run, repeat) is the agent's default loop and the weakest one. Debug2Fix (Garg & Huang, Microsoft, arXiv:2602.18571, Feb 2026) puts the interactive debugger behind a debug subagent: the main agent asks a natural-language question ("why does `calculateTax()` return 0.0 when the rate is 0.15?") with the failing test, the subagent drives JDB/PDB — breakpoints, stepping, variable inspection — and returns observed values, stack traces, and source locations. On GitBug-Java: GPT-5 60.2% → 73.1% (+21.8% relative), Claude Haiku 4.5 +15.9%, Claude Sonnet 4.5 +12.9%; weaker models with the subagent matched or exceeded stronger models without it.
+*Why: raw debugger primitives exposed to the main agent go unused — the paper's design premise is that the main agent will not orchestrate breakpoints itself. The subagent is the interface that makes runtime evidence reachable, and the evidence is what the fix is built on.*
+
+**Enforce investigation before patch: no file edit until the debug subagent has been called at least once on the failing case.** Debug2Fix's tool-limiting variant disables the main agent's edit tools until the first debug-subagent call.
+*Why: given the choice, the agent patches first and investigates never — the enforcement is the workflow, not a suggestion. It is the runtime form of §1's "loop before theory."*
+
+**When static reading stalls, instrument and read the trace.** TraceCoder (ICSE 2026, arXiv:2602.06875) instruments the code with diagnostic probes, captures fine-grained runtime traces, and runs causal analysis on the traces to find the root cause — up to +34.43% relative Pass@1 over advanced baselines.
+*Why: the trace is the loop's evidence in a form reading cannot produce — the values the code actually held, in the order it actually held them. A hypothesis the trace contradicts is dead in one run instead of three patches.*
+
+*Boundary: the subagent is for bugs that resist the §1 loop — a failing test with an obvious one-line cause does not earn a full debug session. Spend the investigation where the loop hasn't converged.*
+
+---
+
+## 13. Learn from failed repairs — classify the failure first
+
+**After a failed fix, write down what it ruled out — and name the failure's module before repairing again.** Two mechanisms from 2026 research:
+
+- TraceCoder's Historical Lesson Learning: distill the insight from each failed repair attempt and carry it into the next one, so the same mistake doesn't recur; its Rollback Mechanism requires each repair iteration to be a strict improvement toward correct.
+- AgentDebug (ICML 2026): classify the failure first with an error taxonomy spanning memory, reflection, planning, action, and system-level operations — a fix aimed at the wrong module repeats the failure. On its benchmark the framework's feedback raised task success ~26% relative across ALFWorld, GAIA, and WebShop.
+
+*Why: a failed fix is evidence, not waste — but only if it is recorded. Unrecorded, the next attempt re-tests the same dead hypothesis. Classifying the module first stops a planning failure from being "fixed" with a code patch.*
+*Boundary: pairs with §10's premise rule — two failed fixes on the same assumption trigger the premise attack; this section governs what each single failure teaches. The 26% figure is the paper's reported result on three agent benchmarks, not a code-fix benchmark — cite the scope, don't generalize it.*
+
+---
+
+## 14. Supervise the session: read the trace, don't just accept the fix
+
+**When an agent debugged for you, read the trace before accepting the fix — "it passes now" is not understanding.** Two randomized trials, both small, both warning signs rather than verdicts:
+
+- METR (Becker et al., Jul 2025): 16 experienced open-source developers, 246 real issues in repos they maintained — with AI tools allowed, tasks took 19% longer, while developers estimated they were 20% faster.
+- Shen & Tamkin (Anthropic, Jan 2026): 52 developers learning a new Python library (Trio) — the AI-assisted group scored 50% vs 67% on a no-AI quiz taken minutes later, the largest gap on debugging questions; the patterns that preserved learning asked conceptual questions or generated code and then interrogated it until understood.
+
+*Why: debugging is the skill you need when agent-written code breaks, and it is the skill full delegation erodes fastest. The supervisor who never reads the trace cannot tell a real fix from a patch that silenced the symptom — and §6's seam judgment is exactly the check that gets skipped.*
+*Bad:* approving a fix because the test went green. *Good:* the trace, the falsified hypotheses, and the seam the regression test covers, stated in the review — then the green test.
+*Boundary: both studies are small and bounded — METR used early-2025 tools on maintainers' own repos; Shen & Tamkin measured short-term learning in a lab, not production debugging. Treat the numbers as the direction of the risk, not a rate to quote as a law.*
 
 ---
