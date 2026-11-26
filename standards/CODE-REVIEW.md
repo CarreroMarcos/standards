@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.16"
+version: "2.17"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # Code Review Standard
@@ -166,7 +166,7 @@ A passing opposition review answers all four. A general statement that none appl
 
 ## 6.5 Reviewer judgment
 
-**Apply judgment to the findings list before writing the report.** Opposition review asks whether any finding is overstated; this section is the filter that decides what survives.
+**Apply judgment to the findings list before writing the report.** Opposition review asks whether any finding is overstated; this section is the filter that decides what survives. The telemetry-change checklist item at the end of this section is mined from grafana/grafana `AGENTS.md:36`.
 
 **Watch for nitpick gravity.** Reviewers, especially adversarial ones, fill their review — find nothing critical and the nits inflate to fill the space. If every finding is a nit or a style preference, the code is probably fine. Say so in the verdict, and shrink the report to match.
 
@@ -225,6 +225,11 @@ Agreement across *different* reviewer angles — security vs quality, different 
 *Bad:* "this could be faster with a cache" as a review suggestion, or "2× faster" accepted on the author's word.
 *Good:* the claimed speedup survives an attempt to falsify it, or the review says so and moves on; a measured regression lands as Medium.
 *Boundary: a hypothesized future regression from a change that never touches the hot path is the speculative case and stays out — the finding needs a demonstration, not a hunch. The exclusion covers the speedup claim, not the correctness risk: an unjustified cache's staleness risk, or a whole-input fallback with no justification, is still a CODE-QUALITY.md §10 finding — the review questions the justification, not the speed.* (biomejs/biome `.agents/skills/biome-code-review/SKILL.md:79, :105, :156`)
+
+**Review metric changes against the telemetry checklist — registration, duplicate registration, label cardinality, and the impact of renames on dashboards and alerts.**
+- Why: a metric change is a contract change with consumers the diff doesn't show — the review is the only place the dashboard and alert queries get checked, because the code change itself compiles fine either way.
+- Bad: a renamed metric merged with no dashboard or alert query checked — every alert on the old name goes silent. Good: the rename lists every dashboard and alert query that references the old name, updated in the same change.
+- Boundary: the checklist fires on adding, renaming, or re-registering a metric — not on touching code that merely reads one.
 
 ---
 

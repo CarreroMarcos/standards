@@ -1,9 +1,9 @@
 ---
 title: Architecture
-version: "1.4"
+version: "1.5"
 scope: "Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation"
 consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-25
 ---
 
 # Architecture
@@ -252,6 +252,64 @@ Observe outcomes, not only machinery. CPU at 40% does not prove releases are pro
 Do not log everything merely because observability matters. Telemetry has privacy, security, cost, and signal-to-noise consequences. Instrument the decisions and flows operators actually need to understand.
 
 **The common failure:** adding logs after the first production incident. If a load-bearing failure can occur without leaving enough evidence to reconstruct it, observability is part of the missing design.
+
+### Telemetry naming, cardinality, and spans
+
+Telemetry is a contract with consumers the diff doesn't show — dashboards and alerts query names the code emits, so a sloppy name or an unbounded label is a defect in the system, not in the style guide. (grafana/grafana `contribute/backend/instrumentation.md`, `public/app/core/journeys/AGENTS.md`)
+
+**Label values come from a pre-defined set, declared where the metric is defined.** User-originated values are validated and sanitized first, and no label ever carries a secret.
+- Why: one unbounded label — a user ID, a URL, an error string — turns a metric into a cardinality bomb that takes down the store it reports to.
+- Bad: `http_requests_total{path="/users/48291/profile"}` — a new series per user. Good: `http_requests_total{route="/users/:id/profile"}` — a bounded set, declared up front.
+- Boundary: the set is per metric, not a global allowlist (unmaintainable) and not an ad-hoc per-call set (no set at all). The never-secrets half is owned by `SECRETS.md`.
+
+**One measurement, one name, everywhere.** Tell copies apart with a label, never by prefixing the name.
+- Why: a name that varies by deployment is a name nobody can grep for — the dashboard queries three names, the code contains none of them, and a rename silently orphans every alert that queried the old one.
+- Bad: `worker_a_queue_depth` vs `worker_b_queue_depth` as separate metric names. Good: `queue_depth{component="worker_a"}` — one name, one dashboard query.
+- Boundary: renaming is allowed, but only as a change with consumers checked first — dashboards and alerts queried for the old name before it moves — not as a drive-by cleanup.
+
+**Span only I/O-bound work or quantifiable CPU-bound work.** A thin wrapper that just calls the next layer gets no span of its own.
+- Why: a span that adds no timing beyond what its child span already shows is pure volume — it costs storage and attention while teaching the reader nothing the child didn't already say.
+- Bad: a `service.GetDashboard` span wrapping a `store.GetDashboard` span with identical start and end. Good: the span lives at the database call; the service passes context through and adds nothing.
+- Boundary: "quantifiable" is the gate for CPU work — a CPU-bound function earns a span when it carries a count or size worth reading (an integer attribute like `permissions_count`), not merely because it burns cycles.
+
+**A metric-name collision is a wiring bug — never catch it and carry on.** Do not resolve a duplicate registration by catching and ignoring the error, reusing another component's collector, passing a nil registerer, or otherwise skipping registration: every production component must report its metrics.
+- Why: swallowing the collision silently deletes a component's telemetry — the dashboard looks healthy because the missing series never existed, and the outage that component would have caught goes unwitnessed.
+- Bad: `try: register(m); except AlreadyRegistered: pass` — the component now reports nothing, quietly. Good: build the collectors once and pass them down to every contributor; or give each component a stable `component` label value under one shared name.
+- Boundary: build-once-and-pass-down applies when callers intentionally share one measurement; when components measure different concepts, distinct names (the one-name rule above) is the fix instead — same-name-with-label is not a license to merge unrelated measurements.
+
+**Span names are templates — the ID goes in an attribute, never in the name.** Name a span for the operation, not the instance: low-cardinality template names, with IDs and counts as attributes.
+- Why: a span name with an ID baked in is a new series per entity — the same cardinality bomb as an unbounded label, in the trace store instead of the metric store — and it makes "show me all `get_account` spans" unqueryable.
+- Bad: spans `get_account/42`, `get_account/43`, … — a thousand names for one operation. Good: span `get_account` with attribute `account_id=42`.
+- Boundary: the template may carry the route shape (`get_account/{accountId}`) — the parameter's position, not its value. A name with no operation at all (`get`) is the opposite failure and equally unqueryable.
+
+**The metric name encodes its type.** A counter takes a `_total` suffix (`http_requests_total`); a duration histogram takes a `_<unit>` suffix (`http_request_duration_seconds`); a gauge is named as a value that can rise and fall (`http_requests_in_flight`).
+- Why: the suffix is the type, readable at the query site — a reader who sees `_total` knows to rate it, and one who sees `_seconds` knows the unit without opening the definition.
+- Boundary: the suffix rule covers the three types; a metric that is none of these (an info- or enum-style series) falls outside it and gets its purpose in the name instead.
+
+**Write the full metric name out in one piece, so a dashboard name greps to the code.** Never assemble it from parts or leave a gatherer to add a prefix.
+- Why: the dashboard is where a metric is first seen; if its name doesn't appear verbatim in the code, the jump from "this graph is wrong" to "this is the code that emits it" is a guess, not a grep.
+- Boundary: existing metrics written the other way keep working and do not need renaming — this rule governs new metrics and renames, not a retrofit sweep.
+
+**Register collectors on the registry the service was wired with — never as package-level globals on a default registry.**
+- Why: a global registry is shared mutable state with init-time side effects — tests leak collectors into each other, and a service wired with a scoped registry silently reports to the wrong one.
+- Boundary: a nil or absent registerer is a legitimate "don't register" (what tests usually want) — the rule is about *where* registration lands when it happens, not about forcing registration in tests.
+
+**Declare the series at startup so a query sees zero, not a gap.** Guarantee a metric exists before its first observation.
+- Why: a missing series and a zero series mean different things to an alert — absence looks like "no data" and either pages nobody or pages everybody, while zero is a fact the alert can reason about.
+- Boundary: applies to metrics an alert or dashboard queries; a purely ad-hoc debug counter nobody queries needs no pre-registration. It applies only when registration happens — in tests, a nil registerer that skips registration entirely is still legitimate (see the rule above).
+
+**Every span you open, you close — in the same scope that opened it.** A span without an end is a leak, not telemetry.
+- Why: an unterminated span never reports its duration, so the trace shows work that never finished — indistinguishable from work still running, which is exactly the wrong signal during an incident.
+- Boundary: the close belongs to the scope that opened the span (defer-style, at the point of creation) — handing the end to a distant caller is how spans get forgotten.
+
+**Track a multi-step user workflow as one journey with named steps and explicit end conditions — success, discarded, and timeout — so the outcome is a fact, not an inference from a timeout.**
+- Why: a journey that only ends on success makes every abandonment look like a slow success — the timeout column absorbs the signal, and nobody learns the workflow was abandoned at step two.
+- Bad: a journey that ends only on save; abandoned edits pile up as timeouts. Good: close-without-saving maps to an explicit `discarded` end, so the dashboard shows success vs discarded vs timed-out as three distinct outcomes.
+- Boundary: the journey pattern is for multi-step user workflows (save flows, setup flows), not single actions — a one-click action is a point event, not a journey. Use measured steps for operations with a duration and point events for instants.
+
+**Telemetry-only events stay silent in product analytics.** Mark events added purely for instrumentation so they don't pollute product analytics; events with independent product value stay visible.
+- Why: an instrumentation event that lands in the analytics stream inflates the numbers product decisions are made on — the telemetry corrupts the signal it was meant to supplement.
+- Boundary: "silent" is for events created *for* instrumentation; an existing event that already has analytics value keeps its visibility — silencing it would delete real product signal.
 
 ## 14. Graceful Degradation
 
