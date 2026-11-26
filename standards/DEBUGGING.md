@@ -1,9 +1,9 @@
 ---
 title: Debugging Discipline
-version: "1.3"
+version: "1.4"
 scope: "Systematic debugging for agents: feedback loops, repro minimization, hypothesis testing, instrumentation, seam judgment, premise attacks when fixes keep failing, cleanup"
 consult_when: "When something is broken and you're tempted to theorize first — 'I think the bug is probably in…', 'let me just try changing…' — or when a debug session is spiraling and nothing is converging."
-last_reviewed: 2026-11-22
+last_reviewed: 2026-11-23
 ---
 
 # Debugging Discipline
@@ -84,6 +84,9 @@ This file owns the *phase discipline between* the gates. The gates themselves li
 
 **Perf regressions: baseline first, then bisect.** Logs are usually wrong about perf. Establish a baseline measurement (timing harness, profiler, query plan), then bisect. Measure first, fix second.
 *Why: without a baseline, "fixed" is unverifiable — the number before and after is the only verdict. Applies when the symptom is "too slow," not "wrong."*
+
+**A request that resolves more data than expected is the trigger — profile before changing code.** The profiler names the slow boundary; a hunch does not. (biomejs/biome `.agents/skills/type-inference/SKILL.md:193-194`)
+*Why: "more data than expected" is a concrete trigger, not a feeling — profiling at that point replaces guessing which boundary is slow.*
 
 ## 6. Test at a correct seam — or name its absence
 

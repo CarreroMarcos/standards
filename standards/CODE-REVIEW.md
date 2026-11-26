@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.15"
+version: "2.16"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-11-21
+last_reviewed: 2026-11-23
 ---
 
 # Code Review Standard
@@ -219,6 +219,12 @@ A passing opposition review answers all four. A general statement that none appl
 - Boundary: treat N correlated agreements as one signal. Correlated agreement still beats a single opinion for typos and mechanical issues; the discount applies to judgment calls, where shared blind spots live.
 
 Agreement across *different* reviewer angles — security vs quality, different prompts or different tools — earns weight the correlated case doesn't: independent angles sharing a blind spot is the rare case, not the common one. When two angles disagree, resolve it with your own judgment; don't average them.
+
+**Exclude speculative optimization from review; falsify claimed speedups.** Speculative optimization is out of scope — not a finding, not even an optional suggestion or question. When a change claims a performance win, try to falsify it — zero-copy, unchanged behavior, faster execution, no new dependencies — and rate counterexamples by impact. A demonstrated performance regression grades as Medium under §2's severity scale.
+*Why: unfalsified "faster" claims ship regressions disguised as wins. The bar is asymmetric on purpose: speculative optimization is noise, a demonstrated regression is real.*
+*Bad:* "this could be faster with a cache" as a review suggestion, or "2× faster" accepted on the author's word.
+*Good:* the claimed speedup survives an attempt to falsify it, or the review says so and moves on; a measured regression lands as Medium.
+*Boundary: a hypothesized future regression from a change that never touches the hot path is the speculative case and stays out — the finding needs a demonstration, not a hunch. The exclusion covers the speedup claim, not the correctness risk: an unjustified cache's staleness risk, or a whole-input fallback with no justification, is still a CODE-QUALITY.md §10 finding — the review questions the justification, not the speed.* (biomejs/biome `.agents/skills/biome-code-review/SKILL.md:79, :105, :156`)
 
 ---
 
