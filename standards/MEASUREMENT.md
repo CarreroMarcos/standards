@@ -1,9 +1,9 @@
 ---
 title: Measurement
-version: "1.1"
+version: "1.2"
 scope: "Trusting numbers: benchmarks, performance measurements, eval results"
 consult_when: "Before trusting, reporting, or acting on a number you measured — a speedup, a regression, a throughput, a latency, or an eval result."
-last_reviewed: 2026-11-22
+last_reviewed: 2026-11-23
 ---
 
 # Measurement
@@ -22,6 +22,7 @@ last_reviewed: 2026-11-22
 8. [Rule out what else the number could be](#8-rule-out-what-else-the-number-could-be)
 9. [Report the evidence with the number](#9-report-the-evidence-with-the-number)
 10. [A number needs a budget to be a verdict](#10-a-number-needs-a-budget-to-be-a-verdict)
+11. [Compare the same work; never add inclusive timings](#11-compare-the-same-work-never-add-inclusive-timings)
 
 ## 1. Name the limiter
 
@@ -115,6 +116,15 @@ last_reviewed: 2026-11-22
 *Why: the budget's job is to make the cost visible at the moment someone adds it, when it is cheap to change — not months later when the page fails Core Web Vitals and nobody remembers why.*
 *Boundary: budgets are thresholds on numbers, not a new file — this section is the library's performance-budget discipline, folded here because MEASUREMENT owns trusting numbers. Metric thresholds (the Core Web Vitals values) are Google's published targets; resource limits are always local to the project.*
 
+## 11. Compare the same work; never add inclusive timings
+
+**Compare benchmarks only when they invoke the same boundary and produce the same tables.** Do not compare benchmark names alone — two runs with the same name can measure different work.
+
+**Inclusive timings must not be added together.** Request and query timings include their children; summing them double-counts nested work.
+*Why: both errors manufacture fake wins — a same-named benchmark measuring different work, or a total inflated by double-counted nesting.*
+*Bad:* "p50 12 ms → 8 ms" from two benchmarks with the same name but different workloads, or a total built by summing request + query timings.
+*Good:* confirm same boundary and same tables before comparing; report inclusive timings as a tree, never as a sum. Benchmark workloads separately — cold vs warm lookup, dependency edit, deep import chain — so each number has one meaning. (biomejs/biome `crates/biome_module_graph/CONTRIBUTING.md:660-661, :605, :649-658`)
+
 ## Before you report a number
 
 - [ ] I can name the limiter from a profile or counters, not from reading the code (§1)
@@ -127,3 +137,5 @@ last_reviewed: 2026-11-22
 - [ ] Each alternative explanation ruled out with evidence (§8)
 - [ ] The evidence travels with the number — run count, spread, limiter stated; verdict called inconclusive where §9's tripwires fire (§9)
 - [ ] The threshold was set before the measurement, and the budget has an owner and an over-budget rule (§10)
+- [ ] Compared benchmarks invoke the same boundary and produce the same tables (§11)
+- [ ] Inclusive timings never summed (§11)

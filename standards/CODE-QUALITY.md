@@ -1,9 +1,9 @@
 ---
 title: Code Quality
-version: "2.13"
+version: "2.14"
 scope: "Code quality rules: comments, dead code, testing, verification"
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
-last_reviewed: 2026-11-21
+last_reviewed: 2026-11-23
 ---
 
 # Code Quality
@@ -30,6 +30,7 @@ boilerplate — nothing in this repo reads them.
 - **7. Dead Code** — flagging is always safe; deleting needs proof
 - **8. Naming, Function Size, and Control-Flow Discipline** — naming, guard clauses, rule of three
 - **9. Rules Bow to Context** — when to break a rule and how to say so
+- **10. Performance discipline** — measure before optimizing; budget the work; keep the slow path a deliberate choice
 
 ## 1. Prove Completion, Don't Claim It
 
@@ -583,3 +584,52 @@ rule is a performance decision, not a second source of truth.
 A hot loop, a legacy boundary, or an explicit user instruction can override a
 rule — when it does, say so in the change. An unexplained exception is
 indistinguishable from a mistake.
+
+## 10. Performance discipline
+
+Performance rules mined from biomejs/biome (commit
+`d965df8d692072418b8d421f794d45d98713f0ae`). The theme across all seven: measure
+before optimizing, budget the work, and keep the slow path a deliberate choice
+rather than the default the code falls into. MEASUREMENT.md governs whether a
+number is trustworthy; this section governs what the code may do in the name of
+speed.
+
+**No cache, memoization, or hand-rolled fast path without benchmark evidence and a correct invalidation strategy.**
+*Why: an unbenchmarked cache trades a measured cost for an unmeasured correctness risk — stale data — and the "optimization" can be slower and wrong.*
+*Bad:* a memo dict wrapped around a function because it "feels slow", with no invalidation rule.
+*Good:* the benchmark names the call as the bottleneck, and the cache lands with its invalidation stated beside it — TTL, key change, explicit clear.
+*Boundary: a cache that is part of the design — a memo table whose invalidation is in the spec — is not speculative; the evidence requirement is for optimizations added on a hunch.* (biomejs/biome `.agents/skills/biome-code-review/references/rust-safety-and-syntax.md:47`)
+
+**Give every recursive walk an explicit work budget; when the budget is exhausted, return the documented indeterminate result — never a definite negative.**
+*Why: an unbounded walk hangs or blows up on adversarial input, and "ran out of budget" reported as "not found" turns a performance limit into a wrong answer.*
+*Bad:* a resolver that recurses until the stack or the clock gives out.
+*Good:* the walk carries a stated node/edge budget and past it returns "unknown" — the same indeterminate result the caller already handles. (biomejs/biome `crates/biome_module_graph/CONTRIBUTING.md:451-454`)
+
+**The whole-input path is allowed only when explicitly justified.**
+*Why: a full scan is the slow path — permitted as a deliberate, named choice, not as the default the code falls into when the narrow path can't answer.*
+*Bad:* a lookup that silently falls back to scanning every module when the index misses.
+*Good:* the fallback runs only where the request contract or a tested fallback requires it, and the justification is written where the fallback lives — absent or explicitly justified.
+*Boundary: "justified" means named in the code or the request contract — a fallback nobody can point to a reason for is the default, not the exception.* (biomejs/biome `.agents/skills/type-inference/SKILL.md:189-191, :207`)
+
+**Choose the least expensive mechanism that answers the question; escalate only when the cheaper ones cannot.**
+*Why: each level costs more — local data, then index, then service call, then full inference or scan — and starting at the top pays the maximum price for every check.*
+*Bad:* full type inference (or a full scan) to answer a question the local data already settles.
+*Good:* the ladder is walked in order and the code stops at the first level that answers — the escalation is visible in the code, not hidden in a helper.
+*Translation: biome's ladder is `Ast<Node>` → `Semantic<Node>` → service query → type inference (`.agents/skills/lint-rule-development/SKILL.md:42-47`); the ladder generalizes to local data → index → service → full scan.*
+
+**Decide in the hot path; build action-only work outside it.**
+*Why: the decision runs once per candidate; building the fix there multiplies its cost by the candidate count, most of which never trigger the action.*
+*Bad:* a per-item loop that builds the replacement text for every node, then decides whether to emit it.
+*Good:* the per-item step decides only whether to act; the action step builds what the action needs, for the items that fired. (biomejs/biome `.agents/skills/lint-rule-development/SKILL.md:53`; `.agents/skills/biome-code-review/references/rust-safety-and-syntax.md:42`)
+
+**Never walk siblings, ancestors, or a whole list from a per-item callback — compute the answer once from the containing node.**
+*Why: per-item cost × list length is O(n²) on exactly the long inputs where it hurts most; hoisting the computation to the container makes it O(n).*
+*Bad:* a per-node check that walks the whole list to find its siblings.
+*Good:* the list or the root is queried once, and each item reads the precomputed answer.
+*Note: ARCHITECTURE.md's N+1-query rule is the same shape at the database boundary; this is the in-memory traversal form.* (biomejs/biome `.agents/skills/syntax-text-handling/references/traversal.md:100`)
+
+**Borrow or view text to compare it; never allocate a copy to compare, or to satisfy the borrow checker.**
+*Why: allocating per comparison in a hot loop turns a cheap check into allocator traffic; the borrow is free and the owned copy buys nothing.*
+*Bad:* calling `.to_string()` or `format!` merely to compare two pieces of syntax text.
+*Good:* compare the range, view, or token text directly; own the value only when it must genuinely outlive its source.
+*Boundary: ownership with a reason — the value outlives its source — is the correct call; the rule bans allocation as a workaround, not ownership itself. Translation: Rust borrow idiom → language-agnostic "view, don't copy" (slices, spans, views).* (biomejs/biome `.agents/skills/syntax-text-handling/SKILL.md:34, :85`; `.agents/skills/lint-rule-development/SKILL.md:55`)
