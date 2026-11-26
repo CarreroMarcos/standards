@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.14"
+version: "2.15"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-21
 ---
 
 # Code Review Standard
@@ -31,7 +31,7 @@ Scale the ceremony to the diff (§10) — a rename doesn't earn an opposition re
 
 ## 1. Coverage
 
-**Cover every change for five domains:** Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (AGENTIC-SAFETY.md), secret inventory (SECRETS.md) — not just generic checks.
+**Cover every change for five domains:** Security, Correctness, Maintainability, Testing, and Architecture Drift — changes that contradict established patterns in the project or introduce abstractions not established elsewhere in the project. Security means the corpus's rules — lethal trifecta, Rule of Two (TRUST-CLASSIFICATION.md, Rule 7), secret-handling rules (SECRETS.md) — not just generic checks.
 
 **Ask the reversibility question on every architecture-shaping review: "If this turns out wrong in a month, how hard is the rollback?"** Call out one-way doors explicitly — a change whose reversal is a rewrite gets named as one, with the recovery or forward-fix path stated. (PatrickJS/awesome-cursorrules `rules/pr-review-cursorrules-prompt-file.mdc:74`)
 
@@ -65,7 +65,7 @@ Severity scale: `Critical → High → Medium → Low → Info`
 
 **Give every finding eight fields:** Domain, Severity, Location, Evidence, Basis, Impact, Recommendation, Blocking. Impact is the concrete consequence if the finding is real; Severity is the risk rating. Cite the trust level in security findings (TRUST-CLASSIFICATION.md): `Issue: SQL injection via UNTRUSTED user input` — the level gates how the finding is handled.
 
-Value scales: Severity is `Critical | High | Medium | Low | Info`. Blocking is `true | false`. Basis is `VERIFIED | INFERRED | SPECULATIVE`.
+Value scales: Severity is `Critical | High | Medium | Low | Info`. Blocking is `true | false`. Basis is `VERIFIED | INFERRED | SPECULATIVE`. Legacy grades map onto the severity scale: Important = High, Minor = Low.
 
 Compatibility note: `Basis` replaced the earlier `Confidence` field — any parser keyed on `Confidence` must update.
 
@@ -250,6 +250,7 @@ A Testing assessment that reports "suite passes" without having established that
 - Evidence does not materially support the finding claim
 - A `SPECULATIVE` finding is marked `Blocking: true`
 - No Testing assessment, or a Testing assessment offering a non-discriminating test as evidence for a guard
+- A gate whose evidence names no external (non-circular) check
 - A completion claim presented as verified with no command and no output behind it
 - An absence or attribution claim stated without the scope actually searched, as the command
 - No Opposition review (where the tier requires one)

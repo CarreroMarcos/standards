@@ -1,9 +1,9 @@
 ---
 title: Code Quality
-version: "2.12"
+version: "2.13"
 scope: "Code quality rules: comments, dead code, testing, verification"
 consult_when: "When about to write or change code and tempted to skip the small stuff — 'it's just a quick fix', 'the diff is obvious', 'tests would take longer than the change' — or when a review came back with nits to preempt."
-last_reviewed: 2026-10-08
+last_reviewed: 2026-11-21
 ---
 
 # Code Quality
@@ -154,10 +154,12 @@ imaginable.
 | "Better safe than sorry" | A `try/except` around code that cannot fail hides real bugs — safety theater, not safety. |
 | "What if something unexpected comes in" | Handle it at the boundary where it's credible, not three layers deep where it isn't. |
 
-**In per-item paths, a permanently bad item gets logged and skipped — never raised through the loop.** When a handler processes a stream of items (webhook events, queue messages, digest loops) and one item is malformed beyond recovery, log it at warning with the item's identity and continue. A raise in a per-item hot path multiplies by volume: one bad payload shape in a continuously-firing handler becomes hundreds of thousands of errors. Raise when something downstream owns the failure (a queue's dead-letter, a retry budget); skip when the loop itself is the last owner.
+**In per-item paths, a permanently bad item gets logged and skipped — never raised through the loop — where the loop is the last owner (no DLQ, no retry budget).** When a handler processes a stream of items (webhook events, queue messages, digest loops) and one item is malformed beyond recovery, log it at warning with the item's identity and continue. A raise in a per-item hot path multiplies by volume: one bad payload shape in a continuously-firing handler becomes hundreds of thousands of errors. Raise when something downstream owns the failure (a queue's dead-letter, a retry budget); skip when the loop itself is the last owner.
 
 ```python
 # ❌ BAD - one poison item aborts the batch, then fires again on retry
+# (queue consumers: raise instead, so the DLQ owns it — PYTHON.md §15, WORKFLOW.md Phase 2;
+#  "fires again on retry" assumes whole-batch retry, which `batchItemFailures` replaces)
 installations = lookup_installations(slug)
 if installations.count() != 1:
     raise ValueError(f"Expected 1 installation for {slug}")
@@ -171,7 +173,7 @@ if installation is None:
 
 If the skip rate itself goes anomalous — every item suddenly "bad" — that's a systemic failure, not per-item noise. Alert on skip volume and let the overload path own it (→ ARCHITECTURE.md §15), rather than warning-logging your way through an outage.
 
-→ ENGINEERING_PRINCIPLES.md §1 "Simplicity vs. resilience mechanisms" (credible failures).
+→ ENGINEERING_PRINCIPLES.md §0 "Simplicity vs. resilience mechanisms" (credible failures).
 
 **Do not re-export wire/framework types through the public surface.** Validate
 at the boundary, then translate into domain types — and expose only the
@@ -306,7 +308,7 @@ nothing speculative.
 **Solve the stated problem at its stated scale.** Choose the simplest, most
 readable solution that fulfills the immediate requirement — no speculative
 generality, no framework for a script, no plugin system for two callers.
-Generalize for the second caller that exists, not the one you imagine.
+Generalize for the second caller that exists, not the one you imagine — the count is a heuristic, not a trigger; extraction timing is §8/EP §3's three-instance rule.
 Over-engineering is a defect: 1000 lines where 300 would do is not thoroughness,
 it is bug surface.
 

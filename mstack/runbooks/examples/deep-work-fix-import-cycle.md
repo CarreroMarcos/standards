@@ -23,13 +23,13 @@ One instantiation of `runbooks/deep-work.md`. The codebase is invented; the patt
 
 All seven questions, answered before dispatch:
 
-1. **Goal restated:** `config.py` imports cleanly with zero cycles.
-2. **Scope:** `config.py`, `models/config.py` (new), `app.py`, `cli.py`. Nothing else.
-3. **Done-check:** `python -c 'import config'` exits 0; `pytest tests/test_config.py` green.
-4. **Success type:** test — the suite is the verdict.
+1. **Goal:** `config.py` imports cleanly with zero cycles.
+2. **Success criteria:** `python -c 'import config'` exits 0; `pytest tests/test_config.py` green.
+3. **Success type:** test — the suite is the verdict.
+4. **Execute role:** fixer.
 5. **Verify role:** verifier — checks the import graph, not just the tests.
 6. **Max attempts:** 3, then the lane tombstones and the run re-plans.
-7. **Context:** `config.py`, `app.py`, current import graph.
+7. **Context files:** `config.py`, `app.py`, current import graph.
 
 ## Lane brief (L1, excerpt)
 
@@ -47,6 +47,6 @@ The finding routes back to a fixer lane with the evidence. The gate does not pas
 
 ## Tombstone (L3, when done)
 
-> status: complete. conclusion: cycle split, 41/41 green, no behavior change. pointers: `.mstack/runs/config-cycle/progress.md`, `models/config.py`. date: 2026-10-09.
+> status: complete. conclusion: cycle split, 41/41 green, no behavior change. pointers: `.mstack/runs/config-cycle/state.md`, `models/config.py`. date: 2026-10-09.
 
 Six lines. The next run starts here, not from zero.

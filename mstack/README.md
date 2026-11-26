@@ -15,7 +15,7 @@ Give the goal and a checkable finish condition. Leave out the how and your theor
 | Path | What |
 |---|---|
 | `README.md` | This file — what mstack is, usage, install |
-| `VERSION` | Current version (`0.5.0`) |
+| `VERSION` | Current version (`0.5.2`) |
 | `hub.md` | The router: matches your prompt to a runbook, copies its steps into the todo list. Thin — it never does the work itself |
 | `values.md` | SSOT for magic numbers. Every number lives here as a named entry; runbooks reference it by name, never inline literals |
 | `principles-distilled.md` | Distilled principle pointers — the named vocabulary the hub cites. Re-distilled on the biweekly sync; no-change is valid |
@@ -23,14 +23,14 @@ Give the goal and a checkable finish condition. Leave out the how and your theor
 | `runbooks/` | Ten loop procedures: bot-review-loop, overnight-orchestrator, skill-authoring-run, biweekly-standards-research, measurement-eval, final-gate, figure-it-out (fallback), deep-work, debugging, rebuild-from-contract |
 | `runbooks/examples/` | Worked examples — concrete instantiations of a portable runbook, labeled non-portable |
 | `skills/` | Seventeen situational tools invoked by runbook steps, one directory per skill (`skills/<name>/SKILL.md`, the standard Agent Skills layout): validate, measure, prove-it, interrogate, show-work, correct, verify-app, architect, how, why, blast-radius, reflect, mstack-help, tdd, verification-planning, simplify, hunt-bugs |
-| `scripts/` | `check-values.sh` (magic-number lint), `check-refs.sh` (self-containment lint), `check-frontmatter.sh` (YAML frontmatter lint), `test-lints.sh` (asserts the lints behave) |
-| `references/` | `eval-protocol.md` — how a runbook or skill earns its place |
+| `scripts/` | `check-values.sh` (magic-number lint), `check-refs.sh` (self-containment lint), `check-frontmatter.sh` (YAML frontmatter lint), `check-fixtures.sh` (routing-fixtures structural lint), `check-matrix.sh` (HARNESS capability-matrix totals), `test-lints.sh` (asserts the lints behave) |
+| `references/` | `eval-protocol.md` — how a runbook or skill earns its place; `routing-fixtures.md` — the router's expected-route fixtures; `2026-10-09-mstack-design.md` — the design record |
 
 ## Dependencies
 
 Runbooks and skills are standalone unless noted. The one real dependency: `overnight-orchestrator.md` delegates its delegation machinery to `deep-work.md` — read deep-work first when running or editing the orchestrator. The hub routes to runbooks; it doesn't execute them.
 
-## Install (v0.0.2)
+## Install
 
 Copy the `mstack/` folder into the target repo. Nothing references outside the folder — a copied folder works standalone. Automating distribution comes later.
 

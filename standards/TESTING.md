@@ -1,9 +1,9 @@
 ---
 title: Testing Discipline
-version: "1.2"
+version: "1.3"
 scope: "Test creation for agents: what to measure, seam agreement, when tests are required, anti-cheating, cost placement, suppression guards, mocking design, test shape, red-first discipline, dead-test detection, suite redundancy, verification runs"
 consult_when: "When writing tests and tempted to test everything or nothing — 'do I need a test for this?', 'what should I mock?', 'is this test actually proving anything?' — or when a suite is slow, flaky, or green-but-meaningless."
-last_reviewed: 2026-10-26
+last_reviewed: 2026-11-21
 ---
 
 # Testing Discipline
@@ -17,8 +17,8 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
 - **Testing philosophy** (observable behavior, I/O hoisting, fakes over mocks, property-based testing, DAMP, independent expected values) → ENGINEERING_PRINCIPLES.md §4
 - **The TDD loop** (one test per observable behavior — write, implement, verify, commit) → WORKFLOW.md Phase 4
 - **Evidence integrity at review gates** (break the guard, rank checks by circularity) → CODE-REVIEW.md §7
-- **Python test mechanics** (mock-at-boundaries list, DI, 0/1/2 guard contract) → languages/PYTHON.md §16
-- **Prove completion — never claim it; wire it in or delete it** → AGENTS-STARTER.md rules 2–3
+- **Python test mechanics** (mock-at-boundaries list, DI, 0/1/2 guard contract) → languages/PYTHON.md §16 (guard contract: §12)
+- **Prove completion — never claim it; wire it in or delete it** → AGENTS.md rules 2–3
 
 ## 1. Measure what you can move
 
@@ -121,7 +121,7 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
 4. **Constant pin.** The assertion restates a hand-maintained constant, config default, table row, or prompt string — it locks the value in two places instead of testing anything.
 5. **Fixture asserts fixture.** The assertion reads data the test built; the subject never runs inside the body.
 
-*Why: a dead test costs CI time and review attention while catching nothing — and a constant pin actively fights the edit it guards against, failing when someone changes the value on purpose. This is the test-design implementation of §4's "a check that cannot fail does not count" and of AGENTS-STARTER.md rule 3's "evidence must discriminate."*
+*Why: a dead test costs CI time and review attention while catching nothing — and a constant pin actively fights the edit it guards against, failing when someone changes the value on purpose. This is the test-design implementation of §4's "a check that cannot fail does not count" and of AGENTS.md rule 3's "evidence must discriminate."*
 *Boundary: keep tests of a relation across data (a key present in two tables, a parent that exists) and compile-time checks (e.g. `*.test-d.ts`) — they assert structure, not behavior, and say so. When no honest assertion exists, delete the test instead of weakening it to green.*
 
 ```text

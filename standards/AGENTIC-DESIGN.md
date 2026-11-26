@@ -1,9 +1,9 @@
 ---
 title: Agentic Design
-version: "1.6"
+version: "1.7"
 scope: "Designing agentic systems: autonomy justification, architecture simplicity, human control, evaluation"
 consult_when: "When about to give a system model-directed autonomy — 'let's make it an agent', 'the model can decide this', 'how many agents do we need' — or when setting autonomy boundaries and evaluation."
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-21
 ---
 
 # Agentic Design
@@ -29,7 +29,7 @@ The model adds a probabilistic reasoning component inside the system. It does no
 
 Detailed protocol-specific tool, authorization, prompt-injection, and MCP security controls belong in the project's dedicated security standards. The rules here define the enduring architecture boundaries.
 
-Agent-security mechanics have their own sources of truth — `AGENTIC-SAFETY.md` (skill vetting, Rule of Two, exfiltration channels), `TRUST-CLASSIFICATION.md` (what counts as trusted input), `SECRETS.md` (credential handling). This section states the architecture principles and points at them; it does not restate them.
+Agent-security mechanics have their own sources of truth — `AGENTIC-SAFETY.md` (skill vetting, exfiltration channels), `TRUST-CLASSIFICATION.md` (what counts as trusted input; the Rule of Two, Rule 7), `SECRETS.md` (credential handling). This section states the architecture principles and points at them; it does not restate them.
 
 ## 1. Use Autonomy Only Where It Earns Its Cost
 
@@ -148,7 +148,7 @@ For consequential loops, each stage writes a signed receipt — who acted, what 
 **No red-capable repro, no hypothesis.** Before theorizing about a bug, build one command that goes red on the exact symptom — red-capable, deterministic, fast. Hypotheses come next as 3–5 ranked, falsifiable predictions.
 
 - Why: agents anchor on the first plausible theory; the repro gate converts debugging from opinion into experiment.
-- Boundary: the rule-sized core only — the full multi-phase discipline is a parked future-research idea (future-ideas.md), not an existing skill; this rule is the complete prescription.
+- Boundary: the rule-sized core only — the full multi-phase discipline is a parked future-research idea, not an existing skill; this rule is the complete prescription.
 
 ## 5. Treat Model and Tool Outputs as Evidence, Not Authority
 

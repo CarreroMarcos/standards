@@ -10,7 +10,7 @@ Find real bugs hiding in working code — every finding proven, none speculative
 
 ## Workflow
 1. **Charter.** State the scope (files or diff) and the bug classes under hunt. Time-box the hunt — if the box expires mid-lens, report the remaining classes as "not examined", never as clean.
-2. **Hunt with lenses.** Read the code once per bug class in `references/bug-classes.md` — one lens per class. A lens you skip is reported as "not examined", never as clean.
+2. **Hunt with lenses.** Read the code once per bug class in `skills/hunt-bugs/references/bug-classes.md` — one lens per class. A lens you skip is reported as "not examined", never as clean.
 3. **Prove each candidate.** A finding needs a concrete trigger: an input, a trace, or a failing test that demonstrates the bug. "Might fail if…" without the trigger is not a finding — file it as a hypothesis or drop it.
 4. **Report.** File:line, bug class, the trigger that proves it, severity.
 
@@ -19,7 +19,7 @@ Find real bugs hiding in working code — every finding proven, none speculative
 - Non-findings: bug classes examined and declared clean, one line each.
 - No fix code unless asked — findings first; fixes are a separate task.
 - Disposition: every open finding ends `fixed` / `dismissed-with-reason` / `frozen`, with the reason recorded.
-- A trigger that takes the form of a failing test SHOULD be kept as a regression test (via `tdd`) — proof that evaporates with the session is not proof.
+- Keep a trigger that takes the form of a failing test as a regression test (via `tdd`) — proof that evaporates with the session is not proof.
 
 ## Operating Rules
 1. No speculative findings. If you cannot name the input or trace that triggers it, it is not a bug report.
@@ -27,4 +27,4 @@ Find real bugs hiding in working code — every finding proven, none speculative
 3. Rank by proof strength, not scariness. A proven crash beats a hypothetical exploit.
 4. If the code is clean, say so — an empty findings list is a valid result.
 
-Bug-class catalog → `references/bug-classes.md`.
+Bug-class catalog → `skills/hunt-bugs/references/bug-classes.md`.

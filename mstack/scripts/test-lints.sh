@@ -114,6 +114,14 @@ expect 1 "frontmatter unclosed fixture" bash "$FF" "$FX/check-frontmatter/missin
 expect_output "frontmatter unclosed reports" "never closed" bash "$FF" "$FX/check-frontmatter/missing-close.md"
 expect 0 "frontmatter no-frontmatter fixture" bash "$FF" "$FX/check-frontmatter/no-frontmatter.md"
 expect_no_output "frontmatter no-frontmatter silent" "no-frontmatter.md" bash "$FF" "$FX/check-frontmatter/no-frontmatter.md"
+# check-frontmatter's PyYAML guard: a python3 that fails `import yaml`
+# must trip the exit-2 arm and name PyYAML — never report files as bad.
+noyamlroot=$(mktemp -d)
+printf '#!/usr/bin/env bash\nexit 1\n' > "$noyamlroot/python3"
+chmod +x "$noyamlroot/python3"
+noyaml() { PATH="$noyamlroot:$PATH" "$@"; }
+expect 2 "frontmatter PyYAML guard fires" noyaml bash "$FF" "$FX/check-frontmatter/clean.md"
+expect_output "frontmatter PyYAML guard names PyYAML" "PyYAML" noyaml bash "$FF" "$FX/check-frontmatter/clean.md"
 expect 0 "frontmatter empty file" bash "$FF" "$FX/check-frontmatter/empty.md"
 expect 1 "frontmatter mixed files exit 1" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"
 expect_output "frontmatter mixed reports bad file" "bad-colon.md:3:" bash "$FF" "$FX/check-frontmatter/clean.md" "$FX/check-frontmatter/bad-colon.md"

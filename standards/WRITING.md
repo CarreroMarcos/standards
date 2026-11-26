@@ -1,9 +1,9 @@
 ---
 title: Writing
-version: "1.2"
+version: "1.3"
 scope: "Prose the agent writes: docs, PR bodies, reports, comments"
 consult_when: "When writing anything a human reads — documentation, PR descriptions, reports, commit messages — and the draft feels like it could have come from any project."
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-21
 ---
 
 # Writing
@@ -128,7 +128,7 @@ In a file with a numbered-rule catalog, rule numbers are stable IDs other rules 
 *Why: renumbering silently breaks every citation. A gap is honest — it says something used to live here and was deliberately removed.*
 *Bad:* deleting rule 12 and renumbering 13 to 12, orphaning every "see rule 13" pointer.
 *Good:* rule 12 is removed and its entry reads "[retired]" until the next edit cycle; then the number simply stays empty.
-Boundary: this file's own sections are prose sections (§§1–8), not a numbered-rule catalog — the rule binds when this file or any file grows one. New files start at 1 with no gaps — gaps appear only through retirement, never through authoring.
+Boundary: this file's own sections are prose sections (§§1–9), not a numbered-rule catalog — the rule binds when this file or any file grows one. New files start at 1 with no gaps — gaps appear only through retirement, never through authoring.
 
 ## 8. Durable prose has a rot budget
 

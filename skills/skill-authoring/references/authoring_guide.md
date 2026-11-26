@@ -6,10 +6,10 @@ Detail for the Draft and Deploy steps. Adapted from the Hatch `skill-creator` sk
 
 | Target runtime | Directory | Frontmatter `name` |
 |---|---|---|
-| Hatch workspace | `kebab-case` | `snake_case` |
+| Hatch workspace | `kebab-case` | `kebab-case` |
 | agentskills.io (Claude etc.) | `kebab-case` | hyphenated, letters/numbers/hyphens only |
 
-Keep names short, concrete, capability-based, verb-first: `skill-authoring`, not `skill-stuff`. Namespace by provider or domain when it sharpens the trigger (`google-calendar`).
+Keep names short, concrete, capability-based, not mechanism-based: `skill-authoring`, not `skill-stuff`. Namespace by provider or domain when it sharpens the trigger (`google-calendar`).
 *Why: the name is half the trigger — a vague name never gets loaded.*
 
 ## Resource split
@@ -158,7 +158,7 @@ The last line of the skill directs action, never summarizes. A recap at the end 
 
 ## Connector credentials
 
-Collecting a provider credential is `credentials.request_api_access` — a sequenced flow with external dependencies, not a file you write. Once connected, scaffold — don't start from empty. Use your runtime's connector-skill generator (on Hatch: `/opt/hatch/skills/skill-creator/bin/scaffold-connector-skill --provider <provider>`).
+Collecting a provider credential is `credentials.request_api_access` — a sequenced flow with external dependencies, not a file you write. Once connected, scaffold — don't start from empty. Use your runtime's connector-skill generator — ask the runtime where it lives.
 
 It writes a `SKILL.md` whose Tooling and Auth sections already carry the credential mechanics: which helper to import, where the value goes, allowed hosts, how to replace a dead credential. Write the CLIs into the `bin/` it creates; leave those two sections as generated.
 *Why: hand-written auth drifts from the real flow. The scaffold can't.*
