@@ -1,9 +1,9 @@
 ---
 title: Architecture
-version: "1.5"
+version: "1.6"
 scope: "Architecture and resilience: critical flows, state semantics, isolation, contracts, degradation"
 consult_when: "When designing a system or choosing architecture — 'we need microservices', 'just add a retry', 'which database' — or anytime the diagram is getting drawn before the failure modes."
-last_reviewed: 2026-11-25
+last_reviewed: 2026-11-27
 ---
 
 # Architecture
@@ -175,6 +175,21 @@ Close what the framework doesn't: one DB connection scope per worker task; trans
 
 **Define API schemas at stable service boundaries** — OpenAPI, gRPC proto, GraphQL schema, JSON Schema, or the project's equivalent — as the source of truth. Auto-generate client types and validators where the ecosystem supports it. Verify generated artifacts in CI with a clean-tree or drift check. Treat applied database migrations as the authoritative schema history and verify model/migration alignment in CI where applicable.
 
+**Route every API call through the one generated, typed client; never call the raw HTTP primitive directly.**
+- Why: the typed client is where the contract lives — a raw call bypasses the generated types, the error classification, and the request/response parsing in one stroke, so the call compiles while silently opting out of every guarantee the client enforces.
+- Bad: `fetch('/v1/projects/abc/secrets')` in a component — untyped, unclassified errors, invisible to the client contract. Good: the same call through the generated client, where the path, params, and response are typed from the spec and failures route through the one error classifier.
+- Boundary: the rule is one owned client per API, not one client for everything — a genuinely different transport (a third-party webhook receiver, a file download that needs a raw stream) gets its own named client, never a raw call in a component. (supabase/supabase `apps/studio/AGENTS.md:34`)
+
+**Verify generated API types against the deployed production spec, not the local one — and treat a fetch failure as a fetch failure, never as drift.**
+- Why: types generated from a local or staging spec describe an API nobody runs — merging them first means the client promises a shape production doesn't serve yet, and treating an unreadable spec as drift sends someone "fixing" types that were never wrong.
+- Bad: regenerate types from a local dev API, merge, and ship a client that calls an endpoint production won't have until next week's deploy. Good: deploy first, regenerate from production, verify locally, merge — and when the verifier can't reach the spec endpoint, fix the endpoint and re-run instead of editing types to match a phantom.
+- Boundary: the production gate applies to types generated from a *deployed* API's spec. A spec-first workflow inverts it deliberately — the spec is the gate there, and the rule to state is which side is authoritative, not that production always is. Verify in CI as a required merge check. (supabase/supabase `.agents/skills/api-types/SKILL.md:12, :25, :29`)
+
+**Gate a request until every input it requires exists — fail fast at the call site rather than sending a request guaranteed to fail.**
+- Why: a request fired without its required identifier doesn't test the API — it tests the API's 400 path, and every such call is a wasted round trip plus an error report for a failure the caller could have prevented.
+- Bad: firing `GET /v1/projects/{ref}/x` with `ref` still `undefined` — the request was doomed before it left. Good: the fetcher throws on a missing required variable and the query stays disabled until the variable exists, so the only requests that fire are ones that can succeed.
+- Boundary: a client-side rule — it governs the caller, not the server. The server still validates and rejects bad input; this rule is about not sending requests the caller already knows are incomplete. (supabase/supabase `.agents/skills/studio-queries/SKILL.md:38, :43`)
+
 **A wire change ships the schema, its fixtures, and its producer in one review — with one stated boundary exception below.** When a wire format changes, the schema, the valid and invalid fixtures, and the code that produces the format all change together — never the schema alone, never the producer ahead of its fixtures. A schema without a matching producer is a promise nothing keeps; a producer without fixtures is a change nothing checks.
 - Why: the three artifacts are one contract in three forms. A change that lands one without the others leaves the repo in a state where the schema describes a format nothing produces, or a producer emits a format nothing validates — and the drift is discovered by a consumer, not a test.
 - Bad: the schema gains a field in one PR, the producer starts emitting it in the next, the invalid fixture still rejects it in the meantime. Good: one review carries the schema, both fixtures, and the producer — the suite validates the new format end to end before it merges.
@@ -187,9 +202,33 @@ Close what the framework doesn't: one DB connection scope per worker task; trans
 
 Return errors in a consistent machine-readable format so clients can distinguish failure types from structured fields rather than parsing human messages.
 
+**Classify every API error once, at the data layer, into a tagged error carrying a fault, a reason slug, and a retryable flag — the render layer looks the class up, never pattern-matches the message.**
+- Why: a fault axis tells the handler who can fix it — the user retries, the platform pages, a third party waits — and a reason slug the compiler checks means a new error kind can't silently fall into a catch-all that shows the wrong remedy.
+- Bad: `catch (e) { showToast(e.message) }` — the message is the classification, so a reworded message reclassifies the error. Good: the data layer throws a tagged error `{ fault: 'platform', reason: 'db_connection_timeout', retryable: true }`; the UI looks the class up and renders its troubleshooting, and a 5xx with no pattern still lands as a platform error, never as an unclassified blob.
+- Boundary: the fault axis is about *who can fix it*, not who caused it — a user-triggered failure of a platform service is still `platform` fault. The default status mapping (5xx → platform, 4xx → unclassified) fires only when no pattern matches; a matched pattern always wins. The fault values are `user | platform | third_party` plus the project's own first-party value (Supabase's is `studio`); the reason is a snake_case slug typed as a literal union, so a mistyped one fails typecheck. Pass the full error object to the renderer, never the message — the message alone loses the class. (supabase/supabase `.agents/skills/studio-error-handling/SKILL.md:15, :21, :77`, `apps/studio/components/interfaces/ErrorHandling/README.md:12, :18`)
+
+**Every error response uses the one standard envelope — `{ message: string }` — so clients parse errors from the shape, never from a per-endpoint guess.**
+- Why: a client that has to discover each endpoint's error shape by reading it is a client that will misread one of them — one envelope means the error path is written once and works everywhere.
+- Boundary: the envelope is the *shape*, not the whole error contract — the fault/reason/retryable fields from the rule above ride inside it or alongside it; the rule is that the shape doesn't vary per endpoint. (supabase/supabase `.agents/skills/studio-mock-api-tests/SKILL.md:190-191`)
+
+**Never fabricate a status or any other classification input — classify by what the response actually carried.**
+- Why: a made-up 500 turns a local bug into a "platform outage" in every downstream decision — retry policy, alerting, the fault shown to the user — and the lie is invisible because the classifier's output looks exactly like a real classification.
+- Bad: classifying a locally thrown `TypeError` with an invented status 500 — the dashboard now counts a platform error that never happened. Good: the local error goes through the non-API classifier and lands as an unexpected error; an unparseable body (an HTML error page, say) is classified by its status and nothing else.
+- Boundary: the "classify by status alone" half applies when the body is unparseable — a body that *is* parseable still contributes its fields; the rule forbids inventing inputs, not using real ones. (supabase/supabase `apps/studio/components/interfaces/ErrorHandling/README.md:14, :16`, `.agents/skills/studio-error-handling/SKILL.md:21`)
+
+**A successful GET that declares `Content-Type: application/json` but returns an empty body is a malformed response that rejects — never resolve it as `{}`.**
+- Why: `{}` is a valid empty object — resolving an empty body as one tells every downstream consumer "the resource exists and has no fields," which is a lie the server never told; the truth is "the response was broken," and the caller deserves to know that instead of rendering an empty page that looks like an empty resource.
+- Bad: `const { data } = await get(...)` resolving with `data = {}` on an empty body — the UI renders "no rows" for a request that never actually returned. Good: the fetch layer rejects with a tagged malformed-response error, so the error path — retry, then report — runs exactly as it would for a network failure.
+- Boundary: one recovery attempt (a cache-bypassing refetch) comes first — a body that recovers isn't reported. And the rule fires only for JSON GETs: 204s, `HEAD`, non-GET requests, and empty non-JSON responses keep their empty-body normalization and don't throw. (supabase/supabase `apps/studio/components/interfaces/ErrorHandling/README.md:38`)
+
 **Design the contract before the consumers exist.** This is the deliberate exception to the Rule of Three (ENGINEERING_PRINCIPLES.md §3): a shared envelope, event shape, or agent-call format is agreed up front with its known consumers, not discovered after three copies appear in the wild. Two known consumers and a planned third is sufficient reason to define a contract. See ENGINEERING_PRINCIPLES.md §0.
 
 **Publishing a contract is a commitment.** Once another team or independently deployed component depends on it, changing it is a compatibility event (ENGINEERING_PRINCIPLES.md §6), not an internal refactor.
+
+**When code moves to a new module, update every importer to point at the new location directly; never leave a re-export shim in the old file "for backward compatibility."**
+- Why: a shim left behind for an internal move is a second source of truth for where a symbol lives — the next reader greps, finds the old location first, and edits the shim's target through a layer that exists only because nobody did a one-line import change.
+- Bad: `export { Foo } from './new-location'` left in the old file after the move, so `Foo` now has two homes. Good: every importer changed to `./new-location` in the same diff; the old file has no trace of `Foo`.
+- Boundary: this rule is for **internal** moves only. A **public** API surface follows the deprecation phases — shim plus warning window plus removal version (ENGINEERING_PRINCIPLES.md §6; languages/PYTHON.md §17 keeps shims for public names through the deprecation window) — not this rule. A deliberate compatibility shim with a documented removal date is the public-surface mechanism (see §16.4, "Two ways to do one task"); do not read this rule as overriding it. (supabase/supabase `apps/studio/AGENTS.md:74`)
 
 **Publish the smallest contract that satisfies known consumers.** Every optional field added "just in case" is a field someone may eventually depend on. Confirm required behavior with consumers before freezing rather than discovering omissions after implementation.
 
@@ -250,6 +289,11 @@ Critical flows expose the telemetry required to answer those questions. Dependin
 Observe outcomes, not only machinery. CPU at 40% does not prove releases are progressing, orders are completing, or an agent is producing valid decisions.
 
 Do not log everything merely because observability matters. Telemetry has privacy, security, cost, and signal-to-noise consequences. Instrument the decisions and flows operators actually need to understand.
+
+**Report a failed fetch once, after the last retry — not once per attempt.**
+- Why: one failure retried three times is one failure — four reports make the error look four times as common, drown the real signal, and teach the team to ignore the alert that counts it.
+- Bad: the retry loop reports on every attempt — the same outage shows up as four Sentry events. Good: the classifier runs per attempt and remembers the context; the report fires once from the error handler after the last retry, so retries produce one event, not one per attempt.
+- Boundary: the "after the last retry" gate applies to retryable failures inside a retry loop. A caller outside any retry loop (plain function, event handler) reports immediately — waiting for retries that will never come is the opposite failure. (supabase/supabase `apps/studio/components/interfaces/ErrorHandling/README.md:40`)
 
 **The common failure:** adding logs after the first production incident. If a load-bearing failure can occur without leaving enough evidence to reconstruct it, observability is part of the missing design.
 
