@@ -1,9 +1,9 @@
 ---
 title: Code Review Standard
-version: "2.17"
+version: "2.18"
 scope: How to run code reviews, including AI-assisted review
 consult_when: "When reviewing a diff — yours, a bot's, or another agent's — especially when tempted to skim because 'the tests pass' or 'it's just a small diff'."
-last_reviewed: 2026-11-25
+last_reviewed: 2026-11-27
 ---
 
 # Code Review Standard
@@ -174,6 +174,11 @@ A passing opposition review answers all four. A general statement that none appl
 
 - Bad — the hypothetical without the trace: *"What if `user` is null?"* — no caller examined.
 - Good — the trace that makes it real: *"What if `user` is null?"* — traced to `api/handlers.py:88`, which passes unvalidated input. Or the trace that kills it: `middleware/validate.py:12` rejects nulls — dismissed, reason stated.
+
+**Flag defensive handling that contradicts an established API guarantee — demand a concrete failing scenario, not a speculative one.**
+- Why: a "just in case" null-check on a field the contract guarantees present is not safety — it's a second, contradictory contract, and the next agent reads the check, concludes the field *can* be absent, and writes code that handles an absence the API never produces.
+- Bad: `if (!data.items) return []` on an endpoint whose schema guarantees `items` — the guard now asserts the opposite of the contract. Good: the review asks for the concrete scenario where `items` is absent; with none, the guard goes and the contract stands as written.
+- Boundary: the rule fires on handling that *contradicts* a guarantee, not on handling the guarantee doesn't cover — an undocumented edge is a gap to close in the contract, not a license to guard silently. (supabase/supabase `.agents/skills/code-review/SKILL.md:18`)
 
 **Dismiss the different-approach finding.** "I prefer a different approach" is not a bug, not a design flaw, and not actionable — unless the reviewer shows a concrete problem with the current approach. No concrete problem means dismissal, with the reason stated.
 
