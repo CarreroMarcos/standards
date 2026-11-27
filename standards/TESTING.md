@@ -77,7 +77,7 @@ This file owns test *creation discipline*. The philosophy, procedures, and gates
 
 **When testing code that calls an API, mock at the network layer, not by mocking the data module — so a renamed key or changed payload fails the test instead of passing it.**
 *Why: a module mock replaces the very integration the test should verify — the test then asserts the mock's behavior, and the real request-building code ships untested until a consumer hits it in production.*
-*Bad: the data module is mocked wholesale (e.g. `vi.mock('@/data/projects-query')` returning canned rows) — the test passes while the real query key was renamed last week. Good: the network layer is intercepted, the real request-building code runs, the real cache/invalidation paths run, and the mock response is typed against the API schema so drift fails at compile time.*
+*Bad: the data module is mocked wholesale with a test-framework module mock returning canned rows — the test passes while the real query key was renamed last week. Good: the network layer is intercepted, the real request-building code runs, the real cache/invalidation paths run, and the mock response is typed against the API schema so drift fails at compile time.*
 *Boundary: the rule governs tests of code that calls an API. Purely presentational components with no fetching render and assert directly — no mock of any kind. A heavy dependency that cannot run in the test environment gets a faithful implementation at its boundary, not a module mock. (supabase/supabase `.agents/skills/studio-mock-api-tests/SKILL.md:21-22, :291, :296`)*
 
 ## 8. Shape tests to diagnose
